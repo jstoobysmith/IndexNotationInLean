@@ -2,7 +2,8 @@
 % TeX-template
 % Copyright (c) 2024 Joseph Tooby-Smith. All rights reserved.
 % Released under Apache 2.0 license.
-
+% Paper content: 
+% Copyright (c) 2024 Joseph Tooby-Smith. All rights reserved.
 \usepackage{xcolor}
 \usepackage{setspace}
 
@@ -69,6 +70,9 @@
 
 \newcommand{\js}[1]{ {\color{magenta} js:  #1}}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%SVG images
+\usepackage{svg}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Paragraph markers
 %\newcommand{\paragraphMarker}[1]{ %{\color{gray} $\langle$#1$\rangle$}
@@ -153,8 +157,40 @@
 \maketitle
 \vspace{-1cm}
 \begin{abstract}
-Abstract
+Index notation is tool commonly used in physics to manipulate tensors.
+In physics, we use index notation for three different types of tensors: 
+Einstein tensors (e.g., ordinary vectors and matrices), Lorentz tensors, and 
+Van der Waerden tensors. In this paper, we discuss how these are implemented in Lean 4 using a 
+general mathematical theory based on category theory, and related to the notation of an operad.
 \end{abstract}
+
+
+\section{Overview}
+\includegraphics[width=\textwidth]{overviewFlow.png}
+
+Index notation in Lean, and really in any language including pen and paper, involves three steps:
+\section{Color}
+
+One of the key features of our construction will be the notation of a color. 
+A color is a property associated to an index.  
+To start with an example, Lorentz tensors have two colors up and down, in other words an 
+index can be an up-index or a down-index. Einstien tensors only have one index, and 
+Van der Waerden tensors have six colors; two for left-handed fermions, two for right-handed 
+fermions, and two for four-vector indices. 
+
+We generically denote by $C$ the type of colors. As an example, for
+Lorentz tensors $C = {up, down}$. 
+
+Let $\mathcal{S}$ be the category of types (or sets). The category $\mathcal{S}_{/C}$ is the 
+category 
+of types over $C$, that is whose objects are maps $X\to C$ and whose morphisms from 
+$X\to C$ to $Y\to C$ are maps $X\to Y$ making the obvious triangle diagram commutes. 
+
+The core of $\mathcal{S}_{/C}$, denoted $\mathcal{S}_{/C}^\times$, can be thought of as the 
+category of indexing sets of tensors of a given type. We will see this made manifest with 
+a symmetric monoidal functor later.
+
+
 
 
 \bibliographystyle{unsrturl}
