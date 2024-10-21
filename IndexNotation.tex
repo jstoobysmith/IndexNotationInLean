@@ -148,7 +148,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Title, author, date
 \title{Index notation in Lean 4}
-\author{Joseph Tooby-Smith \\ \textit{Affiliation}}
+\author{Joseph Tooby-Smith \\ \textit{Reykjavik University}}
 \date{\today}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -164,11 +164,33 @@ Van der Waerden tensors. In this paper, we discuss how these are implemented in 
 general mathematical theory based on category theory, and related to the notation of an operad.
 \end{abstract}
 
+\section{Introduction}
+
+\begin{itemize}
+\item Notational conventions abound in physics, and non-more so then index notation. 
+\item Notation, in general, is a way for the writer to compactly write down a term in a 
+  mathematical expression. The reader can implicitly unfold or elborate the compactly written term 
+  back into its full underlying meaning. 
+\item Index notation is a compact way of writing expressions involving tensors.
+\item With tensors there is a notion of contraction, evaluation and permutation.
+\item All of these notions can defined independently of index notation.
+\item Index notation is a way of writing these operations in a compact way.
+\item In a previous work by the current author, the first foray of formalizing high energy physics 
+  in Lean 4 was undertaken, in a project called `HepLean'.
+\item One aim of that project is to make Lean easier for the high-energy phsycisists to use. 
+\item Motiviated by this aim, we have implemented index notation in Lean 4.
+\item In this paper, we will discuss how this is done.
+\item This is, of course, not the first paper dicussing the implmentation of index notation in a 
+  programming language. However, Lean, being a proof assistant, has a different set of requirements. 
+\item In particular, Lean has to be provided a proof of everything. 
+\item We also believe that the underlying mathematics used to implement index notation here 
+ is novel. 
+\end{itemize}
 
 \section{Overview}
 \includegraphics[width=\textwidth]{overviewFlow.png}
 
-Index notation in Lean, and really in any language including pen and paper, involves three steps:
+
 \section{Color}
 
 One of the key features of our construction will be the notation of a color. 

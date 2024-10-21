@@ -1,4 +1,4 @@
-// dot -Tsvg -o overviewFlow.svg overviewFlow.dot
+// dot -Tpng  -Gdpi=300 -o overviewFlow.png overviewFlow.dot
 digraph G {
     rankdir=LR; 
     syntax [label = "Syntax", shape = box, style = dashed]
