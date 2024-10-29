@@ -20,6 +20,11 @@
   urlcolor=mycolor,
   citecolor=mycolor
 }
+%%%%%%%%%%%%%
+%Watermark
+\usepackage{draftwatermark}
+\SetWatermarkText{\color{mycolor} DRAFT}
+\SetWatermarkScale{1.5}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Mathematics
 \usepackage{amsmath}
@@ -157,7 +162,7 @@
 \maketitle
 \vspace{-1cm}
 \begin{abstract}
-Index notation is tool commonly used in physics to manipulate tensors.
+Index notation is a tool commonly used in physics to manipulate tensors.
 In physics, we use index notation for three different types of tensors: 
 Einstein tensors (e.g., ordinary vectors and matrices), Lorentz tensors, and 
 Van der Waerden tensors. In this paper, we discuss how these are implemented in Lean 4 using a 
@@ -165,6 +170,33 @@ general mathematical theory based on category theory, and related to the notatio
 \end{abstract}
 
 \section{Introduction}
+
+A previous work by the current author, presented the first steps of digitalizing (or formalizing)
+results from high energy physics into the interactive theorem prover Lean 4. This 
+project is called HepLean. Lean is a programming language whose syntax looks similar to 
+what we pen-and-paper mathematics, and is used to write and automatically check 
+ statements of definitions and theorems, and proofs of theorems.
+HepLean has four main motivations: \js{sorry}
+
+
+When writing and proving results on paper, the physicists is accustumed to using notation, and no
+notation abounds in physics more than index notation.
+Thus as part of the larger HepLean project, index notation has been implemented by 
+the author in to Lean 4.
+Any such implementation must satisfy two basic requirements: 
+\begin{enumerate}
+  \item Must be mathematically rigourous. 
+  \item Must be easy to use.
+\end{enumerate} 
+The first requirement is a consequence of Lean being a proof assistant, and not able to accept 
+anything else but formally defined results. 
+The second requirement is due to the fact that many other results will depend on the 
+implementation of index notation. We beleive the implementation dicussed within this paper 
+does satisfy both of these requirements.  
+
+
+
+
 
 \begin{itemize}
 \item Notational conventions abound in physics, and non-more so then index notation. 
@@ -187,33 +219,46 @@ general mathematical theory based on category theory, and related to the notatio
  is novel. 
 \end{itemize}
 
-\section{Overview}
+\section{Implementation of index notation into Lean 4}
 \includegraphics[width=\textwidth]{overviewFlow.png}
 
 
-\section{Color}
+\section{Complex Lorentz Tensors}
+There are three different species of tensors that physicists deal with: 
+\begin{itemize} 
+  \item Einstien tensors (i.e., ordinary vectors and matrices transforming under $SO(n)$)
+  \item Real Lorentz tensors (i.e., tensors in a real vector space transforming under the Lorentz group)
+  \item Complex Lorentz tensors (i.e., tensors in a complex vector space transforming under the $SL(2,\mathbb{C})$)
+\end{itemize} 
+In this paper, since it is the most complicated, we will use the complex Lorentz tensors as an example.
 
-One of the key features of our construction will be the notation of a color. 
-A color is a property associated to an index.  
-To start with an example, Lorentz tensors have two colors up and down, in other words an 
-index can be an up-index or a down-index. Einstien tensors only have one index, and 
-Van der Waerden tensors have six colors; two for left-handed fermions, two for right-handed 
-fermions, and two for four-vector indices. 
-
-We generically denote by $C$ the type of colors. As an example, for
-Lorentz tensors $C = {up, down}$. 
-
-Let $\mathcal{S}$ be the category of types (or sets). The category $\mathcal{S}_{/C}$ is the 
-category 
-of types over $C$, that is whose objects are maps $X\to C$ and whose morphisms from 
-$X\to C$ to $Y\to C$ are maps $X\to Y$ making the obvious triangle diagram commutes. 
-
-The core of $\mathcal{S}_{/C}$, denoted $\mathcal{S}_{/C}^\times$, can be thought of as the 
-category of indexing sets of tensors of a given type. We will see this made manifest with 
-a symmetric monoidal functor later.
+In a tensor species there are different kinds of indices. We shall call the different 
+kinds of indices `colors'. For example, for complex Lorentz tensors there are six colors of indices.
+In Lean we put these colors into an inductive type 
+\begin{code}
+inductive Color
+  | upL : Color
+  | downL : Color
+  | upR : Color
+  | downR : Color
+  | up : Color
+  | down : Color
+\end{code}
 
 
+\subsection{Symmetric and anti-symmetric tensor}
 
+Let  $S_{\mu \nu}$ be complex Lorentz tensors where $\mu$ and $\nu$ are 
+4-vector indices. The corresponding 
+\begin{code}
+(S : complexLorentzTensor.F.obj (OverColor.mk ![Color.down, Color.down]))
+\end{code}
+
+To explain this notation let us work from the right to the left.
+
+
+
+\section{Future work}
 
 \bibliographystyle{unsrturl}
 \begin{spacing}{0.5}
