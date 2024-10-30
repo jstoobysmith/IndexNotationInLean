@@ -171,102 +171,261 @@ general mathematical theory based on category theory, and related to the notatio
 
 \section{Introduction}
 
-A previous work by the current author, presented the first steps of digitalizing (or formalizing)
-results from high energy physics into the interactive theorem prover Lean 4. This 
-project is called HepLean. Lean is a programming language whose syntax looks similar to 
-what we pen-and-paper mathematics, and is used to write and automatically check 
- statements of definitions and theorems, and proofs of theorems.
+\paragraph{HepLean} In previous work, the author initiated the formalization of high energy physics 
+results using the interactive theorem prover Lean 4 in a project called HepLean. 
+Lean is an interactive theorem prover and 
+programming language with syntax resembling traditional pen-and-paper mathematics. 
+Lean allows users to write definitions, theorems, and proofs 
+which are then automatically checked, using its foundation of dependent-type theory, for correctness.
 HepLean has four main motivations: \js{sorry}
 
+\paragraph{Other works in Lean} HepLean is part of a broader movement of projects
+to formalize parts, or all, of 
+mathematics and science. The largest of these projects is Mathlib, which aims to formalize
+mathematics. Indeed, HepLean is built downstream of Mathlib, meaning it has Mathlib as a 
+dependency and uses many of the definitions and theorems from there. 
+Other projects include the ongoing effort led by Kevin Buzzard to formalize the proof of Fermat's
+Last Theorem into Lean. 
+In the realm of the sciences, \js{sorry}
 
-When writing and proving results on paper, the physicists is accustumed to using notation, and no
-notation abounds in physics more than index notation.
-Thus as part of the larger HepLean project, index notation has been implemented by 
-the author in to Lean 4.
-Any such implementation must satisfy two basic requirements: 
+\paragraph{Notation in physics and index notation:}
+Physicists heavily rely on specialized notation to express complex concepts succinctly. 
+Among these, index notation is particularly prevalent,
+ as it provides a compact and readable way to represent specfic types of tensors and operations
+ between them.
+
+\paragraph{Challange:} Formalizing index notation into an interactive theorem prover like Lean 
+is chalanging due to the complexity and implicitness 
+of the notation and the need for flexiable  and rigour in it's formalization. 
+This paper presents such an implementation of index notation within the HepLean project.
+
+
+\paragraph{Motivation:} The primary motivations for implementing index notation into Lean are:
 \begin{enumerate}
-  \item Must be mathematically rigourous. 
-  \item Must be easy to use.
-\end{enumerate} 
-The first requirement is a consequence of Lean being a proof assistant, and not able to accept 
-anything else but formally defined results. 
-The second requirement is due to the fact that many other results will depend on the 
-implementation of index notation. We beleive the implementation dicussed within this paper 
-does satisfy both of these requirements.  
+  \item To make easier to write and prove results from high energy physics into Lean. 
+  \item To make the syntax of Lean more familiar to high energy physicists use to index notation.
+\end{enumerate}
+We hope that the implementation  of index notation into Lean
+not only enhances usability but also promotes the adoption of formal methods in the 
+physics community.
+
+\paragraph{Conclusion:} The conclusion of the implentation of index notation into Lean 4 is that 
+we can write results like the following: 
+\begin{equation}
+\js{Add example}
+\end{equation}
+and lean will correctly intpret this result as a formal mathematical object which proves can be 
+applied to.
 
 
+\paragraph{Other papers:}
+Previous attempts to formalize index notation have been made in programming languages like Haskell 
+\cite{haskell-index-notation}. However, these implementations do not
+ provide the formal verification capabilities inherent in Lean. 
+ The formal verification requirement of Lean introduces unique challenges in implementing index 
+ notation, necessitating (what we beleive is) a novel solution.
 
-\begin{itemize}
-\item Notational conventions abound in physics, and non-more so then index notation. 
-\item Notation, in general, is a way for the writer to compactly write down a term in a 
-  mathematical expression. The reader can implicitly unfold or elborate the compactly written term 
-  back into its full underlying meaning. 
-\item Index notation is a compact way of writing expressions involving tensors.
-\item With tensors there is a notion of contraction, evaluation and permutation.
-\item All of these notions can defined independently of index notation.
-\item Index notation is a way of writing these operations in a compact way.
-\item In a previous work by the current author, the first foray of formalizing high energy physics 
-  in Lean 4 was undertaken, in a project called `HepLean'.
-\item One aim of that project is to make Lean easier for the high-energy phsycisists to use. 
-\item Motiviated by this aim, we have implemented index notation in Lean 4.
-\item In this paper, we will discuss how this is done.
-\item This is, of course, not the first paper dicussing the implmentation of index notation in a 
-  programming language. However, Lean, being a proof assistant, has a different set of requirements. 
-\item In particular, Lean has to be provided a proof of everything. 
-\item We also believe that the underlying mathematics used to implement index notation here 
- is novel. 
-\end{itemize}
+
+\paragraph{Outline:} This paper is split into two main sections. Section \js{ref} dicusses 
+the implementation of index notation into Lean. Section \js{ref} gives two examples 
+of theorems and proofs using index notation. A more minor section, section \js{ref} disucsses 
+the future work related to this project.
+
 
 \section{Implementation of index notation into Lean 4}
 \includegraphics[width=\textwidth]{overviewFlow.png}
-\begin{itemize}
-  \item In this paper we will discuss each part of this diagram from the left to the right.
-\end{itemize}
-\subsection{Defining tensors}
+The implementation of index notation in Lean can be  broken down into 
+three main components, illustrated in Figure \js{ref}. 
+The first component is the \emph{syntax for tensor expressions}, 
+which is what users interact with when writing results in Lean. 
+This syntax closely mirrors the notation familiar to physicists, 
+making it intuitive and accessible. 
+It appears directly in the Lean files and can be thought of as an informal string 
+that represents the tensor expressions.
+
+The second component involves transforming this syntax into a \emph{tensor tree}. 
+The tensor tree is a formal mathematical representation of the tensor expression. 
+By parsing the informal syntax into a structured tree, 
+we establish a rigorous foundation that captures the tensor expression. 
+This formal representation allows us to easily manipulate tensor expressions and
+prove results related to them in a way that Lean accepts as formal.
+
+The third and final component is the conversion of the tensor tree into an actual \emph{tensor}. 
+This process utilizes properties of the symmetric-monoidal category of representations
+ to translate the abstract tensor tree into a concrete tensor.
+
+These three steps—syntax, tensor tree, and tensor—are illustrated in Figure \js{ref}. 
+Although Lean processes information from left to right, 
+starting with the syntax and proceeding to the tensor tree, and then finally (when 
+we ask it to) to the tensors, 
+it is more effective to discuss the implementation from right to left. 
+This reverse approach is advantageous because the tensors,
+ which are the primary objects of interest, are located on the right side of the diagram. 
+ The left and middle parts of the diagram represent intermediate stages that facilitate the 
+ manipulation and understanding of these tensors and their expressions.
+
+ \subsection{Defining tensors}
 
 \subsubsection{Building blocks of tensors and color}
 
+Tensors of a species, such as complex Lorentz tensors, are constructed from a 
+set of building block representations of a group $G$ over a field $k$.
+For complex Lorentz tensors, the group $G$ is $SL(2, \mathbb{C})$, the field $k$ is the 
+field of complex numbers. 
+
+There are six building block representations for complex Lorentz tensors. These are
 \begin{itemize}
-\item Tensors are built from a set of representations.
-\item For example, complex Lorentz tensors are built from six representations of the group $SL(2, \mathbb{C})$.
-\item To each of these building blocks we assign a label, which we call the color.
-\item For complex complex Lorentz tensor the colors are. 
-\item In Lean this information is encoded as follows. We define a type $C$ containing the colors.
-\item For complex Lorentz tensors this type is \js{sorry} 
-\item Then we define a discrete functor from $C$ to the category of complex representations of $SL(2, \mathbb{C})$.
-\item For complex Lorentz tensors this functor is defined as \js{sorry}.
-\item We will see a number of reasons shortly why we have used a functor here. 
+  \item \lstinline|Fermion.leftHanded| is the
+   representation of $SL(2, \mathbb{C})$ corresponding 
+      $v \mapsto M v$, corresponding to Left-handed Weyl fermions.
+  \item \lstinline|Fermion.altLeftHanded| is the
+  representation of $SL(2, \mathbb{C})$ corresponding 
+     $v \mapsto M^{-1 T} v$, corresponding to alternative Left-handed Weyl fermions (as we will 
+     call them).
+  \item \lstinline|Fermion.rightHanded| is the representation of $SL(2, \mathbb{C})$ corresponding 
+  $v \mapsto M^\star v$, corresponding Right-handed Weyl fermions.
+  \item \lstinline|Fermion.altRightHanded| is the representation of $SL(2, \mathbb{C})$ corresponding
+  $v \mapsto M^{-1 \dagger} v$, corresponding to alternative Right-handed Weyl fermions.
+  \item \lstinline|Lorentz.complexContr| is the representation of $SL(2, \mathbb{C})$ 
+   induced by the homomorphism of $SL(2, \mathbb{C})$ into the Lorentz group and the contravariant 
+   action of the Lorentz group on four-vectors
+  \item \lstinline|Lorentz.complexCo| is the representation of $SL(2, \mathbb{C})$
+    induced by the homomorphism of $SL(2, \mathbb{C})$ into the Lorentz group and the covariant
+    action of the Lorentz group on four-vectors.
 \end{itemize}
+As an example the representation \lstinline|Fermion.leftHanded| is defined in Lean as follows:
+\begin{code}
+def leftHanded : Rep ℂ SL(2,ℂ) := Rep.of {
+    toFun := fun M => {
+      toFun := fun (ψ : LeftHandedModule) =>
+        LeftHandedModule.toFin2ℂEquiv.symm (M.1 * ψ.toFin2ℂ),
+      map_add' := by
+        intro ψ ψ'
+        simp [mulVec_add]
+      map_smul' := by
+        intro r ψ
+        simp [mulVec_smul]}
+    map_one' := by
+      ext i
+      simp
+    map_mul' := fun M N => by
+      simp only [SpecialLinearGroup.coe_mul]
+      ext1 x
+      simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearEquiv.apply_symm_apply,
+        mulVec_mulVec]}  
+\end{code} \js{Not exact definiton as could not type $*\_v$}
+Here the  outer \lstinline|toFun| argument is defining a map from $SL(2,\mathbb{C})$ to linear maps 
+from \lstinline|LeftHandedModule| (equivalent to $\mathbb{C}^2$) to itself. The inner \lstinline|toFun|, 
+\lstinline|map_add'| and \lstinline|map_smul'| are defining defining respectively, the underlying 
+function of this linear map, and proving it it linear with respect to addition and scalar multiplication.
+The \lstinline|map_one'| and \lstinline|map_mul'| are proving that action of the identity is trivial, 
+and that the action of the product of two elements is the product of the actions of the elements.
+
+We assign a unique label, which we refer to as a \emph{color}, to each of the 
+building block representations. We denote the type of colors for a given species of tensors as $C$.
+For complex Lorentz tensors 
+$C$ is defined as 
+\begin{code}
+inductive Color
+  | upL : Color
+  | downL : Color
+  | upR : Color
+  | downR : Color
+  | up : Color
+  | down : Color
+\end{code}
+Here \lstinline|Color| is the name of our type and \lstinline|upL|, \lstinline|downL|, etc. are the
+colors. 
+
+To formally associate each color with its corresponding representation, we define
+a discrete functor from the set $C$ to the category of $k$-representations of $G$, denoted 
+$\mathrm{Rep} k G$, that is, a functor
+\begin{equation} 
+  F_{D} : C \Rightarrow \mathrm{Rep} k G.
+\end{equation}
+
+
+For complex Lorentz tensors this functor in Lean as follows:
+\begin{code}
+FDiscrete := Discrete.functor fun c =>
+  match c with
+  | Color.upL => Fermion.leftHanded
+  | Color.downL => Fermion.altLeftHanded
+  | Color.upR => Fermion.rightHanded
+  | Color.downR => Fermion.altRightHanded
+  | Color.up => Lorentz.complexContr
+  | Color.down => Lorentz.complexCo
+\end{code}
+
+The reason why we have used a functor here, rather than just a function, will become apparent
+in what follows.
+
 
 \subsubsection{A general tensor}
 
-\begin{itemize} 
-\item A general tensor of a given species is roughly an element of a vector space 
-  built by taking the tensor product of the building block representations. 
-\item To be more formal, let $X$ be a type, and $f : X \to C$ a function from that type 
-  into the type of colors. 
-  Associated with $f$ we can define a representation of $SL(2, \mathbb{C})$, 
-  by taking the tensor product of the representations $f(x)$ for $x \in X$. 
-\item A general complex Lorentz tensor is then an element of one of these representations.
-\item To give an explicit example $X$ may be something like $Fin 2$, i.e. the type of 
-  numbers $(0,1)$. The function $f$ may be $![Color.up, Color.down]$, and the corresponding 
-  representation is then (equivalent to) \js{sorry}. 
-\item This can can be described categorically. 
-\item The functions $f :X \to C$ live in a category whose objects are \js{sorry} and 
- whose morphisms are \js{sorry}. This is equivalent the core of \js{sorry}. 
-\item As such, we denote this category $\mathcal{S}_{/C}^\times$.
-\item This category has a symmetric monoidal structure, given by the disjoint union of $X$.
-\item There is a functor $C \to \mathrm{Rep}_{SL(2, \mathbb{C})} \to 
-  \mathrm{BraiFun} \mathcal{S}_{/C}^\times \mathrm{Rep}_{SL(2, \mathbb{C})}$.
-  from functors from $C \to \mathrm{Rep}_{SL(2, \mathbb{C})} $ to symmetric 
-  monoidal \js{sorry}.
-\item We call this functor $\mathrm{lift}$. 
-\item A general tensor of a given species, which has discrete functor $F_{dis}$ is then 
- an element of a representation in the image of $\mathrm{lift}\; F_{dis}$.
-\item We will be most intrested in the case when $X = Fin n$ for some $n$.
-\end{itemize}
+For a given tensor species, given the symmetric monoidal structure on $\mathrm{Rep} k G$, 
+we can take the tensor product of the building block representations. 
+Elements of such tensor products form the general notion of a tensor for that given 
+species. 
+
+To formalize this in Lean, we consider the category  $\mathcal{S}_{/C}^\times$. The objects 
+of $\mathcal{S}_{/C}^\times$ are functions $f : X \to C$  for some type $X$. 
+A morphism from $f : X \to C$ to $g : Y \to C$ is a bijection $\phi : X \to Y$ such that 
+$f = g \circ \phi$. 
+This category is equivalent to the core of the category of types ($\mathcal{s}$) over $C$, hence 
+our notation. 
+
+Any functor $H : C \Rightarrow \mathrm{Rep} k G$ can be lifted to a symmetric monoidal 
+functor $\mathcal{S}_{/C}^\times \Rightarrow \mathrm{Rep} k G$ which takes $f$ to the 
+tensor product $\bigotimes_{x \in X} H(f(x))$ and morphisms to the linear maps 
+of representations corresponding to reindexings of
+tensor products.
+
+This construction is itself functorial, 
+giving a functor: 
+\begin{equation}
+  \mathrm{lift} : \mathrm{Fun}(C, \mathrm{Rep} k G) \Rightarrow
+  \mathrm{SymmMonFun}(\mathcal{S}_{/C}^\times, \mathrm{Rep} k G)
+\end{equation} 
+In the previous subsection we defined the functor $F_{D}$ which associates to each color 
+its corresponding representation. We can then define a functor $F$ by the image of $F_{D}$ under
+the lift functor. 
+
+A tensor of a given species can then be thought of as a vector in the representations in the of $F$.
+Defining a tensor in this way allows us to utalize the 
+structur of monodial categories and functors in a useful way. 
+
+In HepLean we formally define $\mathrm{lift}$ and $F$. 
+
+For most purposes in physics $X$ will be a type $\mathrm{Fin} n$, corresponding to the type 
+(set) of natural numbers (including 0) less $n$. Later on we will restrict to these types.
 
 \subsubsection{Basic operations}
+
+Now we have discussed how tensors of a given species can be formally defined, we can define 
+basic operations on these tensors. 
+
+With the exception of evaluation, all the operations we perform on tensors comes from one of four 
+place. From the definition of a vector space and a representation, 
+from the monoidal structure of the categories and functors involved, the functor $F$ itself
+or from morphisms in $\mathrm{Fun}(C, \mathrm{Rep} k G)$. 
+
+\paragraph{Operations from the representations:} These are the simplist operations one can perform 
+on a tensor. For $f : X \to C$ an object in $\mathcal{S}_{/C}^\times$ we can add two tensors 
+in $F(f)$, multiply a tensor in $F(f)$ by a element of $k$, or use the representation 
+of $G$ on $F(f)$ to act with $G$ on a tensor in $F(f)$. 
+
+\paragraph{Operations from the monoidal structure:} The monoidal structure of the category of 
+representations gives us the tensor product of two tensors. 
+Given $f : X \to C$ and $g : Y \to C$, and tensors $t \in F(f)$ and $s \in F(g)$ we can form
+a tensor $t \otimes s \in F(f) \otimes F(g)$\footnote{\js{One can think of this as taking the tensor product of morphisms $\mathbb{1} \to F(f)$ and $\mathbb{1} \to F(g)$.}} \js{make sure defined monoidal structure on $\mathcal{S}_{/C}^\times$}. 
+Since $F$ is a symmetric monoidal functor we get a morphism from $F(f) \otimes F(g) \to F(f \otimes g)$. 
+Thus we can form a new tensor $t \otimes s \in F(f \otimes g)$.
+
+\paragraph{Operations from the functor $F$:} The functor $F$ itself gives us 
+the ablity to permute indices of a tensor.
+
+\js{More to write here.}
 
 \begin{itemize} 
 \item The formalisim we have discribed thus far gives us basic oprations on tensors for free.
