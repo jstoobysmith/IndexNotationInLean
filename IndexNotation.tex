@@ -9,7 +9,6 @@
 
 \onehalfspacing%
 %\setstretch{3} % Custom separation of lines.
-\renewcommand{\arraystretch}{1.5}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Hyperlinks
 \usepackage{hyperref}
@@ -156,6 +155,21 @@
   }
  \newcommand{\textLink}[1]{\href{https://github.com/HEPLean/HepLean/blob/1b951994ae3d882242b02d23957ef1ee7fa05f3d/HepLean/#1}{source}}
  \newcommand{\textLinkB}[1]{\href{https://github.com/HEPLean/HepLean/blob/1b951994ae3d882242b02d23957ef1ee7fa05f3d/HepLean/#1}{(source)}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Syntax elab code block 
+\usepackage[table]{xcolor}
+\newcommand{\syntaxElab}[2]{ 
+  \arrayrulecolor{mycolor}
+  \begin{center}
+    \begin{tabular}{|p{1.6in} | p{4in}|}
+    \hline
+    \hfill {#1} & {#2} \\
+    \hline
+    \end{tabular}
+    \end{center}
+  \arrayrulecolor{black}
+}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Title, author, date
 \title{Index notation in Lean 4}
@@ -534,7 +548,6 @@ is down to this data.
 In Lean it useful to work with general tensor species where possible, so important results have 
 to be defined only ones. Thus we make the following definition 
 \begin{code}
-
 \end{code}
 
 Then for, e.g. complex Lorentz tensors we define a specific element of this type as follows 
@@ -565,7 +578,7 @@ Since we really only care about tensors with $X = Fin n$, tensor trees in Lean a
 In Lean we define a tensor tree as follows: 
 \begin{code}
 /-- A syntax tree for tensor expressions. -/
-inductive TensorTree (S : TensorSpecies) : ∀ {n : ℕ}, (Fin n → S.C) → Type where
+inductive TensorTree (S : TensorSpecies) : {n : ℕ} → (Fin n → S.C) → Type where
   /-- A general tensor node. -/
   | tensorNode {n : ℕ} {c : Fin n → S.C} (T : S.F.obj (OverColor.mk c)) : TensorTree S c
   /-- A node corresponding to the addition of two tensors. -/
@@ -573,22 +586,32 @@ inductive TensorTree (S : TensorSpecies) : ∀ {n : ℕ}, (Fin n → S.C) → Ty
   /-- A node corresponding to the permutation of indices of a tensor. -/
   | perm {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
       (σ : (OverColor.mk c) ⟶ (OverColor.mk c1)) (t : TensorTree S c) : TensorTree S c1
+  /-- A node corresponding to the product of two tensors. -/
   | prod {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
     (t : TensorTree S c) (t1 : TensorTree S c1) : TensorTree S (Sum.elim c c1 ∘ finSumFinEquiv.symm)
+  /-- A node correpsonding to the scalar multiple of a tensor by a element of the field. -/
   | smul {n : ℕ} {c : Fin n → S.C} : S.k → TensorTree S c → TensorTree S c
-  /-- The negative of a node. -/
+  /-- A node corresponding to negation of a tensor. -/
   | neg {n : ℕ} {c : Fin n → S.C} : TensorTree S c → TensorTree S c
-  /-- The contraction of indices. -/
+  /-- A node corresponding to the contraction of indices of a tensor. -/
   | contr {n : ℕ} {c : Fin n.succ.succ → S.C} : (i : Fin n.succ.succ) →
     (j : Fin n.succ) → (h : c (i.succAbove j) = S.τ (c i)) → TensorTree S c →
     TensorTree S (c ∘ Fin.succAbove i ∘ Fin.succAbove j)
-  /-- The group action on a tensor. -/
+  /-- A node correpsonding to the action of a group element on a tensor. -/
   | action {n : ℕ} {c : Fin n → S.C} : S.G → TensorTree S c → TensorTree S c
-  /-- The evaluation of an index-/
-  | eval {n : ℕ} {c : Fin n.succ → S.C} :
-    (i : Fin n.succ) → (x : ℕ) → TensorTree S c →
+  /-- A node corresponding to the evaluation of an index of a tensor. -/
+  | eval {n : ℕ} {c : Fin n.succ → S.C} : (i : Fin n.succ) → (x : ℕ) → TensorTree S c →
     TensorTree S (c ∘ Fin.succAbove i)
 \end{code}
+Let us give an example of what this notation means. For each \lstinline|n : ℕ| and map 
+\lstinline|c : Fin n → S.C| we get type \lstinline|TensorTree S c|. This is the type of
+tensor trees corresponding to tensors in \lstinline|S.F.obj (OverColor.mk c)|.
+
+The first constructor \lstinline|tensorNode| generators a tensor tree of type  
+\lstinline|TensorTree S c| from a tensor of type \lstinline|S.F.obj (OverColor.mk c)|.
+The other constructors are slightly more complicated. The constructor \lstinline|contr| says 
+given an index \lstinline|i| and \lstinline|j|, and a tensor tree \lstinline|t| of type 
+\lstinline|TensorTree S c|, we can get a tensor tree of type \lstinline|TensorTree S (c ∘ Fin.succAbove i ∘ Fin.succAbove j)|. 
 
 So in Lean the expression above could be written as follows:
 \js{...}
@@ -596,7 +619,20 @@ So in Lean the expression above could be written as follows:
 
 This definition of a tensor tree does not rely the actual nature of the operations invovled. 
 From a tensor tree we can define a tensor itself using a recursively defined map 
-\js{...} 
+\begin{code}
+/-- The underlying tensor a tensor tree corresponds to. -/
+def tensor : ∀ {n : ℕ} {c : Fin n → S.C}, TensorTree S c → S.F.obj (OverColor.mk c) := fun
+  | tensorNode t => t
+  | add t1 t2 => t1.tensor + t2.tensor
+  | perm σ t => (S.F.map σ).hom t.tensor
+  | neg t => - t.tensor
+  | smul a t => a • t.tensor
+  | prod t1 t2 => (S.F.map (OverColor.equivToIso finSumFinEquiv).hom).hom
+    ((S.F.μ _ _).hom (t1.tensor ⊗ₜ t2.tensor))
+  | contr i j h t => (S.contrMap _ i j h).hom t.tensor
+  | eval i e t => (S.evalMap i (Fin.ofNat' e Fin.size_pos')) t.tensor
+  | action g t => (S.F.obj (OverColor.mk _)).ρ g t.tensor
+\end{code}
 This association of a tensor tree with a tensor is not one-to-one (but it is onto).
 Many tensor trees can represent the same tensor, in the same way that many 
 tensor expressions represent the same tensor. 
@@ -627,36 +663,68 @@ verified, Lean takes the outputed tensor tree as the formal object to work with.
 Instead of deleving into the nitty-gritty details of how this process works under the hood, 
 we give some examples to see how it works. 
 
-Let \lstinline|S| be a tensor species, and \lstinline|T : S.F (OverColor.mk ![c1, c2])| be a tensor with two indices 
-of color \lstinline|c1| and \lstinline|c2|. The \lstinline|OverColor.mk| can be ignored here for the purpose 
-of this conversation.
+In what follows we will assume that $T$, and $T_i$ etc are tensors defined as $S.F.obj \_$ for 
+some tensor species $S$. We will also assume that these tensors are defined correctly for the expressions below 
+to make sense.
 
 The syntax allows us to write the following 
-\begin{code}
-  {T | μ ν}ᵀ is elaborated as tensorNode T
-\end{code}
+\syntaxElab{\lstinline!\{T | μ ν\}ᵀ!}{{\lstinline!tensorNode T!}}
+for a tensor node. Here the $\mu$ and $\nu$ are free variables and it does not 
+matter what we call them - Lean will elaborate the expression in the same way.
+The elaborator also knows how many indices to expect for a tensor $T$ and will raise an error if
+the wrong number are given. The \lstinline|{_}ᵀ| notation is used to tell Lean that the syntax
+is to be treated as a tensor expression. 
 
+We can write e.g. 
+\syntaxElab{\lstinline!\{T | μ ν\}ᵀ.tensor!}{{\lstinline!(tensorNode T).tensor!}}
+to get the underlying tensor.
 
+Note that we have not lowered or risen the indices, as one would expect from pen-and-paper notation.
+There is one primary reason for this, whether an index is lower or risen does not carry any information, 
+since this information comes from the tensor itself. Also, for something like complex Lorentz tensors, 
+there are at least three different types of upper-index. 
 
-\begin{itemize}
-  \item We have dicussed the implementation of tensor species into Lean, and how to write
-    tensor expressions using tensor trees.
-  \item Really this is all one needs to effectively. 
-  \item However, we want our theorems to look like they do on paper. 
-  \item This is the role of the elaborator, which here takes a string written in lean code 
-    and turns it into a tensor tree.
-  \item It is perhpase easist to give examples: 
-  \item The basic notation for a tensor nodes is \js{sorry}. Note that ... are free indices, 
-    it does not matter what we call them the expression is the same. 
-  \item The product of two tensors is written as \js{sorry}.
-  \item The contraction of two tensors is written as \js{sorry}. Again note that the indices 
-    are free so we can call them anything without chaning how lean reads the expression. 
-  \item We also define a special notation of equality and addition. which takes account of permutation.
-  \item This part of the Lean code is not formally verified, it is just telling lean how to 
-    read the notation. Once the tensor tree is created and we start using that, things are formally 
-    verifeid.
-\end{itemize}
-\js{TODO: Include examples}
+We can extract the tensor from a tensor tree using the following syntax
+If we want to evaluate an index we can put an explicit index in place of $\mu$ or $\nu$ above, 
+for example
+\syntaxElab{\lstinline!\{T | 1 ν\}ᵀ!}{\lstinline!eval 0 1 (tensorNode T)!}
+
+The syntax and elaboration for negation, scalar multiplication and the group action 
+are fairly similar. For negation we have 
+\syntaxElab{\lstinline!\{T | μ ν\}ᵀ!}{\lstinline!neg (tensorNode T)!}
+For scalar multiplication by $a \in k$ we have 
+\syntaxElab{\lstinline!a •ₜ \{T | μ ν\}ᵀ!}{\lstinline!smul a (tensorNode T)!}
+For the group action of $g\in G$ on a tensor $T$ we have
+\syntaxElab{\lstinline!g •ₐ \{T | μ ν\}ᵀ!}{\lstinline!action g (tensorNode T)!}
+
+For the product of two tensors is also fairly simple, we have 
+\syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | σ\}!}{\lstinline!prod (tensorNode T) (tensorNode T2)!}
+\js{some missing T's }
+
+The syntax for contraction is as one expect, 
+\syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | ν σ\}!}{\lstinline!contr 1 1 rfl (prod (tensorNode T) (tensorNode T2))!}
+On the RHS here the first argument (\lstinline!1!) of \lstinline!contr! is the index of the first \lstinline|ν| on the LHS, 
+the second argument  (also \lstinline!1!) is the second index. The \lstinline!rfl! is a proof that the
+colors of the two contracted indices are actually dual to one another. If they are not, this proof will 
+fail and the elaborator will complain. It will also complain if more then two indices are traying 
+to be contracted. Although, this depends on where exactly the indices sit in the expression. For example 
+\syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | ν ν\}!}{\lstinline!(prod (tensorNode T) (contr 0 0 rfl (tensorNode T2)))!}
+works fine becuase the inner contraction is done before the product. 
+
+We now turn to addition. Our syntax allows for e.g. \lstinline!\{T | μ ν + T2 | μ ν\}! and also 
+\lstinline!\{T | μ ν + T2 | ν μ\}!, provided of course that the indices are of the correct color (which Lean will check). 
+The elabor handles both these cases, and generalizations thereof by adding a permutation node. Thus we have 
+\syntaxElab{\lstinline!\{T | μ ν + T2 | μ ν\}!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
+where here the \lstinline!_! is a placeholder for the permutation, and in this case will be trivial, but for 
+\syntaxElab{\lstinline!\{T | μ ν + T2 | ν μ\}!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
+it will be the permutation for the two indentities. 
+
+Despite not forming part of a node in our tensor tree, we also give syntax for equalitiy. 
+This is done in a very similar way to addition, with the addition of a permutation node to account for
+e.g. the fact that $T_{\mu \nu} = T_{\nu \mu}$. 
+\syntaxElab{\lstinline!\{T | μ ν = T2 | ν μ\}!}{\lstinline!(tensorNode T).tensor = (perm _ (tensorNode T2)).tensor!}
+Note the use of the \lstinline!.tensor! to extract the tensor from the tensor tree, it does not really mean much 
+to ask for equalitiy of the tensor trees themselves. 
 \section{Examples}
 
 \begin{itemize}
