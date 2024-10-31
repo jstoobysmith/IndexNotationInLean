@@ -171,6 +171,26 @@
   \arrayrulecolor{black}
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Proof step 
+
+\newcommand{\proofstep}[3]{
+  \arrayrulecolor{mycolor}
+\begin{center}
+\begin{tabular}{|p{3in}| p{3in}|}
+\hline
+{#1
+}\newline 
+\hrule~\newline
+#2
+  & ~\newline
+\makebox[3in]{%
+#3}
+  \\ \hline
+\end{tabular}
+\end{center}
+\arrayrulecolor{black}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Title, author, date
 \title{Index notation in Lean 4}
 \author{Joseph Tooby-Smith \\ \textit{Reykjavik University}}
@@ -750,83 +770,280 @@ On the left-hand side we start with the tree:
   \path [->] (C) edge (D2);
 \end{tikzpicture}
 
-\begin{center}
-  \begin{tabular}{|p{3in}| p{3in}|}
-  \hline
-  {\lstinline!hA : {A | μ ν = - (A | ν μ)}ᵀ!
-  }\newline 
-  \hrule~\newline
-  Description: 
-   & ~\newline
-  \makebox[3in]{%
-  $
-  \begin{tikzpicture}
-    \node[draw=black] (A) at (0,0) {A};
-  \end{tikzpicture} = \begin{tikzpicture}
-    \node[draw=black] (D1) at (-1,-3) {perm};
-    \node[draw=black] (E1) at (-1,-4) {neg};
-    \node[draw=black] (F1) at (-1,-5) {A};
+\proofstep{\lstinline!hA : \{A | μ ν = - (A | ν μ)\}ᵀ!}{Description: The tensor $A$ 
+  is anti-symmetric.}{
+ \begin{tikzpicture}
+    \node[draw=black] (A) at (-2,-1) {A};
+    \node[draw=black] (D1) at (0,0) {perm};
+    \node[draw=black] (E1) at (0,-1) {neg};
+    \node[draw=black] (F1) at (0,-2) {A};
+    \node (eq) at (-1, -1) {$=$};
     \path [->] (D1) edge (E1);
     \path [->] (E1) edge (F1);
   \end{tikzpicture} 
-$
-  }
-   \\ \hline
-  \end{tabular}
-  \end{center}
+}
 
-
-\begin{center}
-  \begin{tabular}{|p{3in}| p{3in}|}
-  \hline
-  {\lstinline!hS : {S | μ ν = S| ν μ}ᵀ!
-  }\newline 
-  \hrule~\newline
-  Description: 
-   & ~\newline
-  \makebox[3in]{%
-  $
-  \begin{tikzpicture}
-    \node[draw=black] (A) at (0,0) {S};
-  \end{tikzpicture} = \begin{tikzpicture}
-    \node[draw=black] (D1) at (-1,-3) {perm};
-    \node[draw=black] (E1) at (-1,-4) {S};
-    \path [->] (D1) edge (E1);
+\proofstep{\lstinline!hS : \{S | μ ν = S | ν μ\}ᵀ!}{Description: The tensor \lstinline|S|
+  is symmetric.}{
+ \begin{tikzpicture}
+    \node[draw=black] (A) at (-2,-0.5) {S};
+    \node[draw=black] (D1) at (0,0) {perm};
+    \node[draw=black] (F1) at (0,-1) {S};
+    \node (eq) at (-1, -0.5) {$=$};
+    \path [->] (D1) edge (F1);
   \end{tikzpicture} 
-$
-  }
-   \\ \hline
-  \end{tabular}
-  \end{center}
+}
 
+\proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| prod_tensor_eq_fst <| hA]!}{
+  Description: Replace the node \lstinline|A| with the RHS of \lstinline|hA|.
+}{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {contr 0 0};
+    \node[draw=black] (B) at (0,-1) {contr 0 1};
+    \node[draw=black] (C) at (0,-2) {prod};
+    \node[draw=red] (D1) at (-1,-3) {perm};
+    \node[draw=red] (E1) at (-1,-4) {neg};
+    \node[draw=red] (F1) at (-1,-5) {A};
+    \node[draw=black] (D2) at (1,-3) {S};
+    \path [->] (A) edge (B);
+    \path [->] (B) edge (C);
+    \path [->] (C) edge (D1);
+    \path [->, color = red] (D1) edge (E1);
+    \path [->, color = red] (E1) edge (F1);
+    \path [->] (C) edge (D2);
+  \end{tikzpicture}
+}
 
-\begin{center}
-\begin{tabular}{|p{3in}| p{3in}|}
-\hline
-{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| prod_tensor_eq_fst <| hA]!
-}\newline 
-\hrule~\newline
-Description: Replaces the subtree {\lstinline|A|} with that specified by the RHS of {\lstinline|hA|}.
- & ~\newline
-\makebox[3in]{%
-\begin{tikzpicture}
-  \node[draw=black] (A) at (0,0) {contr 0 0};
-  \node[draw=black] (B) at (0,-1) {contr 0 1};
-  \node[draw=black] (C) at (0,-2) {prod};
-  \node[draw=black] (D1) at (-1,-3) {perm};
-  \node[draw=black] (E1) at (-1,-4) {neg};
-  \node[draw=black] (F1) at (-1,-5) {A};
-  \node[draw=black] (D2) at (1,-3) {S};
-  \path [->] (A) edge (B);
-  \path [->] (B) edge (C);
-  \path [->] (C) edge (D1);
-  \path [->] (D1) edge (E1);
-  \path [->] (E1) edge (F1);
-  \path [->] (C) edge (D2);
-\end{tikzpicture}}
- \\ \hline
-\end{tabular}
-\end{center}
+\proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| prod_tensor_eq_snd <| hs]!}{
+  Description: Replace the node \lstinline|S| with the RHS of \lstinline|hS|.
+}{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {contr 0 0};
+    \node[draw=black] (B) at (0,-1) {contr 0 1};
+    \node[draw=black] (C) at (0,-2) {prod};
+    \node[draw=black] (D1) at (-1,-3) {perm};
+    \node[draw=black] (E1) at (-1,-4) {neg};
+    \node[draw=black] (F1) at (-1,-5) {A};
+    \node[draw=red] (D2) at (1,-3) {perm};
+    \node[draw=red] (F2) at (1,-4) {S};
+    \path [->] (A) edge (B);
+    \path [->] (B) edge (C);
+    \path [->] (C) edge (D1);
+    \path [->] (D1) edge (E1);
+    \path [->] (E1) edge (F1);
+    \path [->] (C) edge (D2);
+    \path [->, color=red] (D2) edge (F2);
+  \end{tikzpicture}
+}
+
+\proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| prod_perm_left _ _ _ _]!}{
+  Description: Move the left permutation through the product.
+}{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {contr 0 0};
+    \node[draw=black] (B) at (0,-1) {contr 0 1};
+    \node[draw=red] (C) at (0,-2) {perm};
+    \node[draw=red] (D) at (0,-3) {prod};
+    \node[draw=black] (E1) at (-1,-4) {neg};
+    \node[draw=black] (F1) at (-1,-5) {A};
+    \node[draw=black] (E2) at (1,-4) {perm};
+    \node[draw=black] (F2) at (1,-5) {S};
+    \path [->] (A) edge (B);
+    \path [->] (B) edge (C);
+    \path [->, color = red] (C) edge (D);
+    \path [->, color = red] (D) edge (E1);
+    \path [->] (E1) edge (F1);
+    \path [->] (D) edge (E2);
+    \path [->] (E2) edge (F2);
+  \end{tikzpicture}
+}
+
+\proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| perm_tensor_eq <| prod_perm_right _ _ _ _]!}{
+  Description: Move the right permutation through the product.
+}{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {contr 0 0};
+    \node[draw=black] (B) at (0,-1) {contr 0 1};
+    \node[draw=black] (C) at (0,-2) {perm};
+    \node[draw=red] (D) at (0,-3) {perm};
+    \node[draw=red] (E) at (0,-4) {prod};
+    \node[draw=black] (F1) at (-1,-5) {neg};
+    \node[draw=black] (G1) at (-1,-6) {A};
+    \node[draw=black] (F2) at (1,-5) {S};
+    \path [->] (A) edge (B);
+    \path [->] (B) edge (C);
+    \path [->] (C) edge (D);
+    \path [->, color = red] (D) edge (E);
+    \path [->] (E) edge (F1);
+    \path [->, color = red] (E) edge (F2);
+    \path [->] (F1) edge (G1);
+  \end{tikzpicture}
+}
+
+\proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| perm_perm _ _ _]!}{
+  Description: Combine the two permutations (using functoriality).
+}{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {contr 0 0};
+    \node[draw=black] (B) at (0,-1) {contr 0 1};
+    \node[draw=red] (C) at (0,-2) {perm};
+    \node[draw=black] (D) at (0,-3) {prod};
+    \node[draw=black] (E1) at (-1,-4) {neg};
+    \node[draw=black] (F1) at (-1,-5) {A};
+    \node[draw=black] (E2) at (1,-4) {S};
+    \path [->] (A) edge (B);
+    \path [->] (B) edge (C);
+    \path [->] (C) edge (D);
+    \path [->] (D) edge (E1);
+    \path [->] (D) edge (E2);
+    \path [->] (E1) edge (F1);
+  \end{tikzpicture}
+}
+
+\proofstep{\lstinline!rw [contr_tensor_eq <| perm_contr_congr 1 2]!}{
+  Description: Move the permutation through the contraction. And simplify the contraction 
+  indices to \lstinline|1| and \lstinline|2| (Lean will check if this is correct).
+}{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {contr 0 0};
+    \node[draw=red] (B) at (0,-1) {perm};
+    \node[draw=red] (C) at (0,-2) {contr 1 2};
+    \node[draw=black] (D) at (0,-3) {prod};
+    \node[draw=black] (E1) at (-1,-4) {neg};
+    \node[draw=black] (F1) at (-1,-5) {A};
+    \node[draw=black] (E2) at (1,-4) {S};
+    \path [->] (A) edge (B);
+    \path [->, color = red] (B) edge (C);
+    \path [->, color = red] (C) edge (D);
+    \path [->] (D) edge (E1);
+    \path [->] (D) edge (E2);
+    \path [->] (E1) edge (F1);
+  \end{tikzpicture}
+}
+
+\proofstep{\lstinline!rw [perm_contr_congr 0 0]!}{
+  Description: Move the permutation through the contraction. And simplify the contraction 
+  indices to \lstinline|0| and \lstinline|0| (Lean will check if this is correct).
+}{
+  \begin{tikzpicture}
+    \node[draw=red] (A) at (0,0) {perm};
+    \node[draw=red] (B) at (0,-1) {contr 0 0};
+    \node[draw=black] (C) at (0,-2) {contr 1 2};
+    \node[draw=black] (D) at (0,-3) {prod};
+    \node[draw=black] (E1) at (-1,-4) {neg};
+    \node[draw=black] (F1) at (-1,-5) {A};
+    \node[draw=black] (E2) at (1,-4) {S};
+    \path [->, color = red] (A) edge (B);
+    \path [->, color = red] (B) edge (C);
+    \path [->] (C) edge (D);
+    \path [->] (D) edge (E1);
+    \path [->] (D) edge (E2);
+    \path [->] (E1) edge (F1);
+  \end{tikzpicture}
+}
+
+\proofstep{\lstinline!rw [perm_tensor_eq <| contr_contr _ _ _]!}{
+  Description: Swap the two contractions. This introduces a permutation.
+}{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {perm};
+    \node[draw=red] (A') at (0,-1) {perm};
+    \node[draw=red] (B) at (0,-2) {contr 0 0};
+    \node[draw=red] (C) at (0,-3) {contr 0 1};
+    \node[draw=black] (D) at (0,-4) {prod};
+    \node[draw=black] (E1) at (-1,-5) {neg};
+    \node[draw=black] (F1) at (-1,-6) {A};
+    \node[draw=black] (E2) at (1,-5) {S};
+    \path [->] (A) edge (A');
+    \path [->, color = red] (A') edge (B);
+    \path [->, color = red] (B) edge (C);
+    \path [->, color = red] (C) edge (D);
+    \path [->] (D) edge (E1);
+    \path [->] (D) edge (E2);
+    \path [->] (E1) edge (F1);
+  \end{tikzpicture}
+}
+
+\proofstep{\lstinline!rw [perm_perm]!}{
+  Description: Combine the two permutations.
+}{
+  \begin{tikzpicture}
+    \node[draw=red] (A) at (0,0) {perm};
+    \node[draw=black] (B) at (0,-1) {contr 0 0};
+    \node[draw=black] (C) at (0,-2) {contr 0 1};
+    \node[draw=black] (D) at (0,-3) {prod};
+    \node[draw=black] (E1) at (-1,-4) {neg};
+    \node[draw=black] (F1) at (-1,-5) {A};
+    \node[draw=black] (E2) at (1,-4) {S};
+    \path [->] (A) edge (B);
+    \path [->] (B) edge (C);
+    \path [->] (C) edge (D);
+    \path [->] (D) edge (E1);
+    \path [->] (D) edge (E2);
+    \path [->] (E1) edge (F1);
+  \end{tikzpicture}
+}
+
+\proofstep{\lstinline!rw [perm_tensor_eq <| contr_tensor_eq <| contr_tensor_eq <| neg_fst_prod _ _]!}{
+  Description: Move the negation through the product.
+}{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {perm};
+    \node[draw=black] (B) at (0,-1) {contr 0 0};
+    \node[draw=black] (C) at (0,-2) {contr 0 1};
+    \node[draw=red] (D) at (0,-3) {neg};
+    \node[draw=red] (E) at (0,-4) {prod};
+    \node[draw=black] (F1) at (-1,-5) {A};
+    \node[draw=black] (F2) at (1,-5) {S};
+    \path [->] (A) edge (B);
+    \path [->] (B) edge (C);
+    \path [->] (C) edge (D);
+    \path [->, color = red] (D) edge (E);
+    \path [->, color = red] (E) edge (F1);
+    \path [->] (E) edge (F2);
+  \end{tikzpicture}
+}
+
+\proofstep{\lstinline!rw [perm_tensor_eq <| contr_tensor_eq <| neg_contr _]!}{
+  Description: Move the negation through the first contraction.
+}{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {perm};
+    \node[draw=black] (B) at (0,-1) {contr 0 0};
+    \node[draw=red] (C) at (0,-2) {neg};
+    \node[draw=red] (D) at (0,-3) {contr 0 1};
+    \node[draw=black] (E) at (0,-4) {prod};
+    \node[draw=black] (F1) at (-1,-5) {A};
+    \node[draw=black] (F2) at (1,-5) {S};
+    \path [->] (A) edge (B);
+    \path [->] (B) edge (C);
+    \path [->, color = red] (C) edge (D);
+    \path [->, color = red] (D) edge (E);
+    \path [->] (E) edge (F1);
+    \path [->] (E) edge (F2);
+  \end{tikzpicture}
+}
+
+\proofstep{\lstinline!rw [perm_tensor_eq <| neg_contr _]!}{
+  Description: Move the negation through the second contraction.
+}{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {perm};
+    \node[draw=red] (B) at (0,-1) {neg};
+    \node[draw=red] (C) at (0,-2) {contr 0 0};
+    \node[draw=black] (D) at (0,-3) {contr 0 1};
+    \node[draw=black] (E) at (0,-4) {prod};
+    \node[draw=black] (F1) at (-1,-5) {A};
+    \node[draw=black] (F2) at (1,-5) {S};
+    \path [->] (A) edge (B);
+    \path [->, color = red] (B) edge (C);
+    \path [->, color = red] (C) edge (D);
+    \path [->] (D) edge (E);
+    \path [->] (E) edge (F1);
+    \path [->] (E) edge (F2);
+  \end{tikzpicture}
+}
+
 \subsection{Example 2: Pauli matrices and bispinors}
 
 Using the formlism we have set up thus far it is possible to define Pauli matrices and bispinors 
@@ -891,21 +1108,6 @@ To more complicated results such as
 theorem pauliCo_contr_pauliContr :
     {pauliCo | ν α β ⊗ pauliContr | ν α' β' = 2 •ₜ εL | α α' ⊗ εR | β β'}ᵀ := by
 \end{code}
-
-\begin{itemize}
-\item Definition of Pauli matrices. 
-\item Normally would explicity calculate this relation.
-\item Way we do it is write the pauli matrices in a basis. 
-\item One can define tensor tree relations involving basis. 
-\item For example .... 
-\item One can then use the sorts of thensor manipulations in Section ... 
-\item To prove the relation.
-\end{itemize}
-\subsection{Example 3: Definitions of bispinors}
-\begin{itemize}
-\item We have defined bispinors using this formalism. 
-\item And can use them to prove results. 
-\end{itemize}
 
 
 \section{Future work}
