@@ -82,6 +82,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %tikzcd
 \usepackage{tikz-cd} 			
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Paragraph markers
 %\newcommand{\paragraphMarker}[1]{ %{\color{gray} $\langle$#1$\rangle$}
@@ -220,16 +222,16 @@ physics community.
 
 \paragraph{Conclusion:} The conclusion of the implentation of index notation into Lean 4 is that 
 we can write results like the following: 
-\begin{equation}
-\js{Add example}
-\end{equation}
+\begin{code}
+{pauliCo | ν α β ⊗ pauliContr | ν α' β' = 2 •ₜ εL | α α' ⊗ εR | β β'}ᵀ
+\end{code}
 and lean will correctly intpret this result as a formal mathematical object which proves can be 
-applied to.
+applied to.\js{Mention that we will return to this example later.}
 
 
 \paragraph{Other papers:}
 Previous attempts to formalize index notation have been made in programming languages like Haskell 
-\cite{haskell-index-notation}. However, these implementations do not
+\cite{ref}. However, these implementations do not
  provide the formal verification capabilities inherent in Lean. 
  The formal verification requirement of Lean introduces unique challenges in implementing index 
  notation, necessitating (what we beleive is) a novel solution.
@@ -523,44 +525,119 @@ complicated to define but involves extracting the $i$th index.
 
 \subsubsection{Tensor Species}
 
-\begin{itemize}
-  \item The data we have given so far consitutes what we have losely being calling a Tensor species. 
-  \item In Lean we make this more precise 
-\end{itemize}
+The data of the field $k$, the group $G$, the functor $F_D$ (from which $F$ can be derived), the involution $\tau$, the natural
+transformations for contraction, metric, and unit, and basis needed for evaluation, 
+form formally what we have lossely been calling a Tensor species.
 
+That is, the difference between complex Lorentz tensors, Einstien tensors, and real Lorentz tensors 
+is down to this data. 
+In Lean it useful to work with general tensor species where possible, so important results have 
+to be defined only ones. Thus we make the following definition 
+\begin{code}
+
+\end{code}
+
+Then for, e.g. complex Lorentz tensors we define a specific element of this type as follows 
+\js{defn of complex Lorentz tensors}
+
+\js{Discuss here the notation for defining a tensor.}
 \subsection{Tensor trees}
-\subsubsection{Structure}
-\begin{itemize}
-  \item A tensor expression consists of a series of tensors and operations performed on them. 
-  \item We can represent such an expression using a tensor tree, similar to the notion of a 
-    syntax tree.
-  \item A tensor tree has different types of nodes either representing a tensor or a operation 
-    on or between tensors. 
-  \item Since we really only care about tensors with $X = Fin n$, tensor trees in Lean are 
+A tensor expression consists of a series of tensors and operations between them. 
+For example 
+\begin{equation}
+  \eta_{\mu \nu}P^\nu_\sigma+ V_{\mu \sigma},
+\end{equation}
+consists of a product of tensors, a contraction and a addition. 
+Such an expression is a tensor in its own right, and we could just use the operations discussed above 
+to define it. 
+
+However, it is useful for briding the gap between syntax and a tensor to have a more structured way 
+of representing such expressions.
+This is where tensor trees come in. Tensor trees will also be useful when it comes to proving 
+results about tensors. 
+
+A tensor tree is essentially a tree with nodes representing tensors or operations on tensors.
+For example the tensor tree for the expression above is: 
+
+Since we really only care about tensors with $X = Fin n$, tensor trees in Lean are 
     implemented only for these. 
-  \item Let us give the definition of a tensor tree and then dicuss in turn each of the nodes. 
-  \item \js{Lean defn of tensor tree}
-  \item The basic node is a tensor node. The definition in Lean tells us how this is defined. 
-  \item Then for each operation addition, scalar mult, group action etc. we get a node. 
-  \item For example let us look at contraction 
-  \item \js{sorry}
-  \item How we turn these tensor trees into tensors will be dicussed in the next section
-\end{itemize}
 
-\subsubsection{To a tensor}
+In Lean we define a tensor tree as follows: 
+\begin{code}
+/-- A syntax tree for tensor expressions. -/
+inductive TensorTree (S : TensorSpecies) : ∀ {n : ℕ}, (Fin n → S.C) → Type where
+  /-- A general tensor node. -/
+  | tensorNode {n : ℕ} {c : Fin n → S.C} (T : S.F.obj (OverColor.mk c)) : TensorTree S c
+  /-- A node corresponding to the addition of two tensors. -/
+  | add {n : ℕ} {c : Fin n → S.C} : TensorTree S c → TensorTree S c → TensorTree S c
+  /-- A node corresponding to the permutation of indices of a tensor. -/
+  | perm {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
+      (σ : (OverColor.mk c) ⟶ (OverColor.mk c1)) (t : TensorTree S c) : TensorTree S c1
+  | prod {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
+    (t : TensorTree S c) (t1 : TensorTree S c1) : TensorTree S (Sum.elim c c1 ∘ finSumFinEquiv.symm)
+  | smul {n : ℕ} {c : Fin n → S.C} : S.k → TensorTree S c → TensorTree S c
+  /-- The negative of a node. -/
+  | neg {n : ℕ} {c : Fin n → S.C} : TensorTree S c → TensorTree S c
+  /-- The contraction of indices. -/
+  | contr {n : ℕ} {c : Fin n.succ.succ → S.C} : (i : Fin n.succ.succ) →
+    (j : Fin n.succ) → (h : c (i.succAbove j) = S.τ (c i)) → TensorTree S c →
+    TensorTree S (c ∘ Fin.succAbove i ∘ Fin.succAbove j)
+  /-- The group action on a tensor. -/
+  | action {n : ℕ} {c : Fin n → S.C} : S.G → TensorTree S c → TensorTree S c
+  /-- The evaluation of an index-/
+  | eval {n : ℕ} {c : Fin n.succ → S.C} :
+    (i : Fin n.succ) → (x : ℕ) → TensorTree S c →
+    TensorTree S (c ∘ Fin.succAbove i)
+\end{code}
 
-\begin{itemize}
-  \item The notion of a tensor tree is defined without reference to the category theory 
-    we have been discussing. 
-  \item We can however turn a tensor tree into a tensor using said constructions. 
-  \item The definition of how we do this is defined recursively. 
-\end{itemize}
+So in Lean the expression above could be written as follows:
+\js{...}
+
+
+This definition of a tensor tree does not rely the actual nature of the operations invovled. 
+From a tensor tree we can define a tensor itself using a recursively defined map 
+\js{...} 
+This association of a tensor tree with a tensor is not one-to-one (but it is onto).
+Many tensor trees can represent the same tensor, in the same way that many 
+tensor expressions represent the same tensor. 
+
 
 \subsubsection{Using Tensor trees in proofs}
-\begin{itemize}
-  \item \js{Discuss fact about `tensor\_eq'}
-\end{itemize}
-\subsection{Elboration}
+Tensor trees can be used in proofs for the following reason. Define a sub-tree of a tensor trees 
+to be a node and all child nodes of that node. 
+If $T$ is a tensor tree and $S$ a sub-tree of $T$, we can replace $S$ in $T$ 
+with another tensor tree $S'$
+to get a new overall tensor-tree $T'$. If $S$ and $S'$ have the same underlying tensor, 
+then $T$ and $T'$ will. 
+
+In Lean this property is encoded in a number of lemmas, for example: 
+\js{lemma}
+
+We will this at play in the example section of this paper.
+
+
+\subsection{Elaboration}
+
+We now dicuss how we make the Lean code look similar to what we would use on pen-and-paper physics. 
+
+This is done using a two step process. Firstly, we define syntax for tensor expressions. 
+Then we write code to turn this syntax into a tensor tree. This process is not formally defined or 
+verified, Lean takes the outputed tensor tree as the formal object to work with.
+
+Instead of deleving into the nitty-gritty details of how this process works under the hood, 
+we give some examples to see how it works. 
+
+Let \lstinline|S| be a tensor species, and \lstinline|T : S.F (OverColor.mk ![c1, c2])| be a tensor with two indices 
+of color \lstinline|c1| and \lstinline|c2|. The \lstinline|OverColor.mk| can be ignored here for the purpose 
+of this conversation.
+
+The syntax allows us to write the following 
+\begin{code}
+  {T | μ ν}ᵀ is elaborated as tensorNode T
+\end{code}
+
+
+
 \begin{itemize}
   \item We have dicussed the implementation of tensor species into Lean, and how to write
     tensor expressions using tensor trees.
@@ -579,6 +656,7 @@ complicated to define but involves extracting the $i$th index.
     read the notation. Once the tensor tree is created and we start using that, things are formally 
     verifeid.
 \end{itemize}
+\js{TODO: Include examples}
 \section{Examples}
 
 \begin{itemize}
@@ -591,20 +669,133 @@ complicated to define but involves extracting the $i$th index.
 
 \subsection{Example 1: Symmetric and anti-symmetric tensor}
 
+On the left-hand side we start with the tree: 
+\begin{tikzpicture}
+  \node[draw=black] (A) at (0,0) {contr 0 0};
+  \node[draw=black] (B) at (0,-1) {contr 0 1};
+  \node[draw=black] (C) at (0,-2) {prod};
+  \node[draw=black] (D1) at (-1,-3) {A};
+  \node[draw=black] (D2) at (1,-3) {S};
+  \path [->] (A) edge (B);
+  \path [->] (B) edge (C);
+  \path [->] (C) edge (D1);
+  \path [->] (C) edge (D2);
+\end{tikzpicture}
 
+\begin{center}
+  \begin{tabular}{|p{3in}| p{3in}|}
+  \hline
+  {\lstinline!hA : {A | μ ν = - (A | ν μ)}ᵀ!
+  }\newline 
+  \hrule~\newline
+  Description: 
+   & ~\newline
+  \makebox[3in]{%
+  $
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {A};
+  \end{tikzpicture} = \begin{tikzpicture}
+    \node[draw=black] (D1) at (-1,-3) {perm};
+    \node[draw=black] (E1) at (-1,-4) {neg};
+    \node[draw=black] (F1) at (-1,-5) {A};
+    \path [->] (D1) edge (E1);
+    \path [->] (E1) edge (F1);
+  \end{tikzpicture} 
+$
+  }
+   \\ \hline
+  \end{tabular}
+  \end{center}
+
+
+\begin{center}
+  \begin{tabular}{|p{3in}| p{3in}|}
+  \hline
+  {\lstinline!hS : {S | μ ν = S| ν μ}ᵀ!
+  }\newline 
+  \hrule~\newline
+  Description: 
+   & ~\newline
+  \makebox[3in]{%
+  $
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {S};
+  \end{tikzpicture} = \begin{tikzpicture}
+    \node[draw=black] (D1) at (-1,-3) {perm};
+    \node[draw=black] (E1) at (-1,-4) {S};
+    \path [->] (D1) edge (E1);
+  \end{tikzpicture} 
+$
+  }
+   \\ \hline
+  \end{tabular}
+  \end{center}
+
+
+\begin{center}
+\begin{tabular}{|p{3in}| p{3in}|}
+\hline
+{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| prod_tensor_eq_fst <| hA]!
+}\newline 
+\hrule~\newline
+Description: Replaces the subtree {\lstinline|A|} with that specified by the RHS of {\lstinline|hA|}.
+ & ~\newline
+\makebox[3in]{%
+\begin{tikzpicture}
+  \node[draw=black] (A) at (0,0) {contr 0 0};
+  \node[draw=black] (B) at (0,-1) {contr 0 1};
+  \node[draw=black] (C) at (0,-2) {prod};
+  \node[draw=black] (D1) at (-1,-3) {perm};
+  \node[draw=black] (E1) at (-1,-4) {neg};
+  \node[draw=black] (F1) at (-1,-5) {A};
+  \node[draw=black] (D2) at (1,-3) {S};
+  \path [->] (A) edge (B);
+  \path [->] (B) edge (C);
+  \path [->] (C) edge (D1);
+  \path [->] (D1) edge (E1);
+  \path [->] (E1) edge (F1);
+  \path [->] (C) edge (D2);
+\end{tikzpicture}}
+ \\ \hline
+\end{tabular}
+\end{center}
 \subsection{Example 2: Contracting Pauli matrices}
-
+\begin{itemize}
+\item Definition of Pauli matrices. 
+\item Normally would explicity calculate this relation.
+\item Way we do it is write the pauli matrices in a basis. 
+\item One can define tensor tree relations involving basis. 
+\item For example .... 
+\item One can then use the sorts of thensor manipulations in Section ... 
+\item To prove the relation.
+\end{itemize}
 \subsection{Example 3: Definitions of bispinors}
-
+\begin{itemize}
+\item We have defined bispinors using this formalism. 
+\item And can use them to prove results. 
+\end{itemize}
 
 
 \section{Future work}
 
 \begin{itemize}
 \item Informal lemmas and definitions. 
+\begin{itemize} 
+  \item The shear scale of the task of formalising all results index notation and tensors 
+   is too large for any one person. 
+  \item Thus impsired by Lean blueprints we have created a list of informal-definitions and reslults 
+   which we hope someone (or something) will formalise in the future. 
+\end{itemize}
 \item Improvement of tactics. 
-\item spinor-hleicity formalism. 
-\item Tensor fields and derivatives. 
+\begin{itemize} 
+  \item As can be seen in the example of ..., there are lots of tedious calculations involved in 
+    manipulating the tensor trees. 
+  \item In the future we would like to see a lot of these manipulations automated with sutiable 
+    tactics. We hope the tensor tree structure will lend itself nicely to this.
+\end{itemize} 
+\item There are two main ways we can take the concepts here further. 
+\item We could define spinor-hleicity formalism, or extend things to tensor fields and derivatives thereof. 
+\item We do not beleive there to be any unsumountable chanangle in these tasks.
 \end{itemize}
 \bibliographystyle{unsrturl}
 \begin{spacing}{0.5}
