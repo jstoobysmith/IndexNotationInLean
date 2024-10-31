@@ -289,7 +289,7 @@ This reverse approach is advantageous because the tensors,
  The left and middle parts of the diagram represent intermediate stages that facilitate the 
  manipulation and understanding of these tensors and their expressions.
 
- \subsection{Defining tensors}
+\subsection{Defining tensors}
 
 \subsubsection{Building blocks of tensors and color}
 
@@ -827,7 +827,71 @@ Description: Replaces the subtree {\lstinline|A|} with that specified by the RHS
  \\ \hline
 \end{tabular}
 \end{center}
-\subsection{Example 2: Contracting Pauli matrices}
+\subsection{Example 2: Pauli matrices and bispinors}
+
+Using the formlism we have set up thus far it is possible to define Pauli matrices and bispinors 
+as complex Lorentz tensors.
+ 
+The pauli matrices appear in HepLean as follows 
+\begin{code}
+/-- The Pauli matrices as the complex Lorentz tensor `σ^μ^α^{dot β}`. -/
+def pauliContr := {PauliMatrix.asConsTensor | ν α β}ᵀ.tensor
+
+/-- The Pauli matrices as the complex Lorentz tensor `σ_μ^α^{dot β}`. -/
+def pauliCo := {η' | μ ν ⊗ pauliContr | ν α β}ᵀ.tensor
+
+/-- The Pauli matrices as the complex Lorentz tensor `σ_μ_α_{dot β}`. -/
+def pauliCoDown := {pauliCo | μ α β ⊗ εL' | α α' ⊗ εR' | β β'}ᵀ.tensor
+
+/-- The Pauli matrices as the complex Lorentz tensor `σ^μ_α_{dot β}`. -/
+def pauliContrDown := {pauliContr | μ α β ⊗ εL' | α α' ⊗ εR' | β β'}ᵀ.tensor
+\end{code}
+The first of these definitions depends on \lstinline|PauliMatrix.asConsTensor| which is defined as 
+using an explcit basis expansion. 
+
+In these expressions we have the appearence of metrics \lstinline|η'| is the metric usually written as 
+$\eta_{\mu \nu}$, \js{etc.}
+
+With these we can define bispinors 
+\begin{code}
+/-- A bispinor `pᵃᵃ` created from a lorentz vector `p^μ`. -/
+def contrBispinorUp (p : complexContr) :=
+  {pauliCo | μ α β ⊗ p | μ}ᵀ.tensor
+
+/-- A bispinor `pₐₐ` created from a lorentz vector `p^μ`. -/
+def contrBispinorDown (p : complexContr) :=
+  {εL' | α α' ⊗ εR' | β β' ⊗ contrBispinorUp p | α β}ᵀ.tensor
+
+/-- A bispinor `pᵃᵃ` created from a lorentz vector `p_μ`. -/
+def coBispinorUp (p : complexCo) := {pauliContr | μ α β ⊗ p | μ}ᵀ.tensor
+
+/-- A bispinor `pₐₐ` created from a lorentz vector `p_μ`. -/
+def coBispinorDown (p : complexCo) :=
+  {εL' | α α' ⊗ εR' | β β' ⊗ coBispinorUp p | α β}ᵀ.tensor
+\end{code}
+Here \lstinline|complexContr| and \lstinline|complexCo| are complex contravariant and covariant Lorentz vectors.
+Lean knows to treat these as tensors when they appear in tensor expressions. 
+
+
+Using these definitions we can start to prove results about the pauli matrices and bispinors. 
+These proofs reyl on essentially the sorts of manipulations in the last section, although in some cases 
+we expand tensors in terms of a basis and use rules about how the basis interacts with the operations in a tensor tree. 
+
+Examples of things we have proven range  
+\begin{code}
+lemma coBispinorDown_eq_pauliContrDown_contr (p : complexCo) :
+  {coBispinorDown p | α β = pauliContrDown | μ α β ⊗ p | μ}ᵀ := by
+\end{code}
+the proof of which is an application of associativity of the tensor product, and appropratly shuffling 
+around of the contractions. 
+
+To more complicated results such as
+\begin{code}
+/-- The statement that `η_{μν} σ^{μ α dot β} σ^{ν α' dot β'} = 2 ε^{αα'} ε^{dot β dot β'}`. -/
+theorem pauliCo_contr_pauliContr :
+    {pauliCo | ν α β ⊗ pauliContr | ν α' β' = 2 •ₜ εL | α α' ⊗ εR | β β'}ᵀ := by
+\end{code}
+
 \begin{itemize}
 \item Definition of Pauli matrices. 
 \item Normally would explicity calculate this relation.
