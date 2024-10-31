@@ -77,7 +77,11 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %SVG images
+
 \usepackage{svg}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%tikzcd
+\usepackage{tikz-cd} 			
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Paragraph markers
 %\newcommand{\paragraphMarker}[1]{ %{\color{gray} $\langle$#1$\rangle$}
@@ -172,13 +176,17 @@ In the background, our implementation leverages a novel application of category 
 
 \section{Introduction}
 
-\paragraph{HepLean} In previous work, the author initiated the formalization of high energy physics 
+\paragraph{HepLean} In previous work, the author initiated the digitalization (or formalization) 
+of high energy physics 
 results using the interactive theorem prover Lean 4 in a project called HepLean. 
 Lean is an interactive theorem prover and 
 programming language with syntax resembling traditional pen-and-paper mathematics. 
 Lean allows users to write definitions, theorems, and proofs 
-which are then automatically checked, using its foundation of dependent-type theory, for correctness.
-HepLean has four main motivations: \js{sorry}
+which are then automatically checked for correctness, using its foundation of dependent-type theory.
+HepLean has four main motivations: A linear storage of information makes look-up of results 
+easier; Allows for the creation and proof of new results using automated tactics like AI; 
+Makes it easier to check the correctness of results; And allows for new ways 
+high-energy physics and computer science can be taught. 
 
 \paragraph{Other works in Lean} HepLean is part of a broader movement of projects
 to formalize parts, or all, of 
@@ -406,55 +414,112 @@ For most purposes in physics $X$ will be a type $\mathrm{Fin} n$, corresponding 
 Now we have discussed how tensors of a given species can be formally defined, we can define 
 basic operations on these tensors. 
 
-With the exception of evaluation, all the operations we perform on tensors comes from one of four 
-place. From the definition of a vector space and a representation, 
-from the monoidal structure of the categories and functors involved, the functor $F$ itself
-or from morphisms in $\mathrm{Fun}(C, \mathrm{Rep} k G)$. 
 
-\paragraph{Operations from the representations:} These are the simplist operations one can perform 
-on a tensor. For $f : X \to C$ an object in $\mathcal{S}_{/C}^\times$ we can add two tensors 
-in $F(f)$, multiply a tensor in $F(f)$ by a element of $k$, or use the representation 
-of $G$ on $F(f)$ to act with $G$ on a tensor in $F(f)$. 
+The simipalist of these operations are addition, scalar multiplication and group action.
+Addition and scalar multiplication are given to us for free from the vector space structure 
+on $F(f)$. The action of the group $G$ on tensors also comes for free from the fact that 
+$F(f)$ lives in $\mathrm{Rep} k G$.
 
-\paragraph{Operations from the monoidal structure:} The monoidal structure of the category of 
-representations gives us the tensor product of two tensors. 
-Given $f : X \to C$ and $g : Y \to C$, and tensors $t \in F(f)$ and $s \in F(g)$ we can form
-a tensor $t \otimes s \in F(f) \otimes F(g)$\footnote{\js{One can think of this as taking the tensor product of morphisms $\mathbb{1} \to F(f)$ and $\mathbb{1} \to F(g)$.}} \js{make sure defined monoidal structure on $\mathcal{S}_{/C}^\times$}. 
-Since $F$ is a symmetric monoidal functor we get a morphism from $F(f) \otimes F(g) \to F(f \otimes g)$. 
-Thus we can form a new tensor $t \otimes s \in F(f \otimes g)$.
+The next simplest operation is permutation of indices (or building block representations).
+Such permutations arise from applying $F$ to morphisms in $\mathcal{S}_{/C}^\times$. 
+Theses sorts of permutations are often implicit in the notation physicists use, but arise 
+in tensor expressions such as $T_{\mu \nu} = T_{\nu \mu}$.
 
-\paragraph{Operations from the functor $F$:} The functor $F$ itself gives us 
-the ablity to permute indices of a tensor.
+The next operation is the tensor product of two tensors. Given $f : X \to C$ and
+$g : Y \to C$, and tensors $t \in F(f)$ and $s \in F(g)$ we can form a vector in 
+$F(f) \otimes F(g)$. Formally this can be done by taking the tensor product of the morphisms
+$\mathbb{1} \to F(f)$ and $\mathbb{1} \to F(g)$ in the category of vector spaces over $k$.
+We can then use the tensorate of $F$ to get a tensor in $F(f \otimes g)$.
 
-\js{More to write here.}
+We now turn to the slightly more complicated operation of contraction of indices, 
+and the related metric and unit. 
+To define the contraction of introduce an involution $\tau : C \to C$. For complex Lorentz tensors
+this is defined as follows
+\begin{code} 
+  τ := fun c =>
+    match c with
+    | Color.upL => Color.downL
+    | Color.downL => Color.upL
+    | Color.upR => Color.downR
+    | Color.downR => Color.upR
+    | Color.up => Color.down
+    | Color.down => Color.up
+\end{code}
+We say that $\tau$ takes a color to it's dual. With $\tau$ and $F_D$ we can define 
+the functor  $F_\tau : C \Rightarrow Rep k G$ which takes $c$ to $F(c) \otimes F(\tau c)$. 
+Letting $\mathbb{1}$ be the constant functor from $C$ landing on the, we basic data 
+for contraction is contained in a natural transformation from $F_\tau$ to $\mathbb{1}$.
+That is, for each $c \in C$ an equivariant map from $F(c) \otimes F(\tau c)$ to the trivial 
+representation. 
 
-\begin{itemize} 
-\item The formalisim we have discribed thus far gives us basic oprations on tensors for free.
-\item We get addition, scalar multiplication and the action of the group $SL(2, \mathbb{C})$ from 
-  the fact that things sit in representations. 
-\item We also get the tensor product of two tensors, from the category of representations 
-  and the fact that our lift function is symmetric monoidal. 
-\item We get permutation of indices from the fact we have a functor. 
-\item We get negation of tensors because \js{sorry}
-\item We also get the interplay between all of these
-\item There somethings we do not get for free however: Contraction, the unit of the contraction, 
-  and the metrics. 
-\item To define these we need introduce an involution $\tau : C \to C$. We will call the image of 
-  $c$ under $\tau$ the dual of $c$.
-\item Colors can be self-dual, as there for Einstein tensors, for which there is only one color. 
-\item From $\tau$ we get a functor $\tau_* : \mathcal{S}_{/C}^\times \to \mathcal{S}_{/C}^\times$.
-\item We let $F_\tau$ be the functor from $C$ to $F(c) \otimes F(\tau c)$.
-\item To define contraction we define a natural transformation $ F_\tau \to \mathbb{1}$.
-\item That is for each $c$ a morphism of representations from   $F(c) \otimes F(\tau c)$ to the 
-  trivial representation.
-\item To give an example for complex Lorentz tensors \js{sorry}
-\item Using $F_\tau$ we can contract indices of tensors of dual colors. 
-\item Lifiting $F_\tau$ gives us a functor which would allow us to contract all indices of a tensor
- at ones. This may be useful for come computations. 
-\item In addition to contraction we want the notion of a metric.  
-\item \js{Unit}
-\item  \js{Conditions}
+To see how this is can be used to contract indices, consider a tensor $t \in F(f)$, 
+for $f : \mathrm{Fin} \; n.succ.succ \to C$. Here $\mathrm{Fin} \; n.succ.succ$ is the type 
+of all number ${0, 1, 2, \ldots, n+1}$ less than $n.succ.succ = n + 2$. 
+Choosing two distinct indices $i, j : \mathrm{Fin} \; n.succ.succ$ we can contract them 
+using the following chain of maps
+\begin{equation}
+  F f \equiv F_\tau (f i) \otimes F (f' i) \to \mathbb{1} \otimes F (f' i) \to F (f' i)
+\end{equation}
+Here $f' : \mathrm{Fin} \; n \to C$ is the function defived from $f$ by removing the indices $i$ 
+and $j$. The first equivalence is somewhat complicated to define formally, but essentially involves 
+extracting $i$ and $j$. 
+
+The metric and unit are defined in a similar way. The metric is a natural transformation from
+$\mathbb{1}$ to $F_D\otimes F_D$. That is, for each $c \in C$ an equivariant map from the trivial
+representation to $F_D(c) \otimes F_D(c)$. The unit is a natural transformation from $\mathbb{1}$ to
+$F_\tau'$ which takes $c$ to $F_D(\tau c) \otimes F_D(c)$. That is, for each $c \in C$ an 
+equivariant map from the trivial representation to  $F_D(\tau c) \otimes F_D(c)$.
+
+The choice of contraction, metric and unit are subject to a number of conditions.
+\begin{itemize}
+\item Contraction must be symmetric.
+\begin{equation}
+  \begin{tikzcd}
+    F_D(c) \otimes F(\tau c) \arrow[r] \arrow[d] & F_D(\tau c) \otimes F_D (c) \arrow[d] \\
+    \mathbb{I} \arrow[r] & F_D(\tau c) \otimes F_D (\tau \tau c)
+  \end{tikzcd}
+  \end{equation}
+  \item Contraction with the unit does nothing. 
+  \begin{equation}
+    \begin{tikzcd}
+      F_D(c) \arrow[r] &  F_D(c) \otimes \mathbb{I} \arrow[r] & F_D(c) \otimes (F_D (\tau c) \otimes F_D(c)) \arrow[d] \\
+      \mathbb{I} \otimes F_D(c) \arrow[u] &   &(F_D(c) \otimes F_D(\tau c)) \otimes F_D(c) \arrow[ll] 
+  \end{tikzcd}
+  \end{equation}
+  \item The unit is symmetric 
+  \begin{equation} 
+    \begin{tikzcd}
+      \mathbb{I} \arrow[r] \arrow[d] & F_D(\tau c) \otimes F_D(c) \\
+      F_D(\tau \tau c) \otimes F_D(\tau c) \arrow[r] & F_D(\tau c) \otimes F_D(\tau \tau c) \arrow[u]
+    \end{tikzcd}
+  \end{equation}
+  \item Contraction with the metric its dual returns the unit
+  \begin{equation}
+    \begin{tikzcd}
+      \mathbb{I} \arrow[r] \arrow[d] & F_D(\tau c) \otimes F_D (c) \\ 
+      (F_D c \otimes F_d c) \otimes (F_D (\tau c) \otimes F_D (\tau c) ) \arrow [d]  & F_D (c) \otimes F_D(\tau c) \arrow[u] \\ 
+      F_D c \otimes (F_d c \otimes (F_D (\tau c) \otimes F_D (\tau c) )) \arrow [r] &  F_D c \otimes ((F_d c \otimes F_D (\tau c)) \otimes F_D (\tau c) ) \arrow[u]
+    \end{tikzcd}
+  \end{equation}
 \end{itemize}
+In Lean we quite write these conditions in this way, instead we give them in a simpiler equivalent form 
+in which we apply the maps in the above diagram to pure tensors. As an example, 
+the condition is written in Lean as 
+
+The last operation we want to talk about is evaluation. Where one specifies the exact value of 
+one of the indices of a tensor e.g. $\eta_{0i}$. 
+All of the operations disucsed thus far have related to the category $\mathrm{Rep} k G$. As such, 
+they have respect the group action. Evaluation, on the other hand, does not respect the group action. 
+For example, taking the $0$th component of a four-vector is not Lorentz invariant. 
+Nevertheless, we can define evaluation in the categor of vector spaces. 
+To do this, we need a basis for each $F_D(c)$, the coordinates of a vector in $F_D(c)$ in that basis 
+is discrbed by a linear map of vector spaces from $F_D(c)$ to $k$. This can be used 
+to evaluate the index of a tensor in the following way: 
+\begin{equation} 
+  F f \equiv F_D (f i) \otimes F (f' i) \to \mathbb{1} \otimes F (f' i) \to F (f' i)
+\end{equation}
+where $f'$ is $f$ with the $i$th index removed, and again the first equivalence is somewhat
+complicated to define but involves extracting the $i$th index.
 
 \subsubsection{Tensor Species}
 
@@ -526,15 +591,11 @@ the ablity to permute indices of a tensor.
 
 \subsection{Example 1: Symmetric and anti-symmetric tensor}
 
-Let  $S_{\mu \nu}$ be complex Lorentz tensors where $\mu$ and $\nu$ are 
-4-vector indices. The corresponding 
-\begin{code}
-(S : complexLorentzTensor.F.obj (OverColor.mk ![Color.down, Color.down]))
-\end{code}
-
-To explain this notation let us work from the right to the left.
 
 \subsection{Example 2: Contracting Pauli matrices}
+
+\subsection{Example 3: Definitions of bispinors}
+
 
 
 \section{Future work}
