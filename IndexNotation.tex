@@ -567,7 +567,7 @@ That is, the difference between complex Lorentz tensors, Einstien tensors, and r
 is down to this data. 
 In Lean it useful to work with general tensor species where possible, so important results have 
 to be defined only ones. Thus we make the following definition 
-\begin{code}
+\begin{codeLong}
 /-- The sturcture of a type of tensors e.g. Lorentz tensors, Einstien tensors,
   complex Lorentz tensors. -/
 structure TensorSpecies where
@@ -632,8 +632,7 @@ structure TensorSpecies where
     ((metric.app (Discrete.mk c)).hom (1 : k) ⊗ₜ[k]
       (metric.app (Discrete.mk (τ c))).hom (1 : k))))))
     = (unit.app (Discrete.mk c)).hom (1 : k)
-
-\end{code}
+\end{codeLong}
 
 We can then let e.g. \lstinline|S : TensorSpecies| and recover the functor $F_D$ 
 by \lstinline|S.FDiscrete|. The functor $F$ is defined seperatrly can can be recovered
@@ -673,7 +672,7 @@ Since we really only care about tensors with $X = Fin n$, tensor trees in Lean a
     implemented only for these. 
 
 In Lean we define a tensor tree as follows: 
-\begin{code}
+\begin{codeLong}
 /-- A syntax tree for tensor expressions. -/
 inductive TensorTree (S : TensorSpecies) : {n : ℕ} → (Fin n → S.C) → Type where
   /-- A general tensor node. -/
@@ -699,7 +698,7 @@ inductive TensorTree (S : TensorSpecies) : {n : ℕ} → (Fin n → S.C) → Typ
   /-- A node corresponding to the evaluation of an index of a tensor. -/
   | eval {n : ℕ} {c : Fin n.succ → S.C} : (i : Fin n.succ) → (x : ℕ) → TensorTree S c →
     TensorTree S (c ∘ Fin.succAbove i)
-\end{code}
+\end{codeLong}
 Let us give an example of what this notation means. For each \lstinline|n : ℕ| and map 
 \lstinline|c : Fin n → S.C| we get type \lstinline|TensorTree S c|. This is the type of
 tensor trees corresponding to tensors in \lstinline|S.F.obj (OverColor.mk c)|.
