@@ -491,32 +491,31 @@ be considered as an object of \lstinline|OverColor C|, not just as an object of 
 
 \subsubsection{Tensor operations} \label{sec:tensorOperations}
 
-\js{In rewrite - I got up to here.}
+There are eight fundamental operations one might wish to perform on tensors: addition, scalar multiplication, negation, action by the group 
+$G$, permutation of indices, tensor product, contraction of indices, and evaluation of an index. 
+In this section, we explore how each of these operations arises within the framework we have established so far.
+The operations we will discuss will reappear in Section \ref{}, where we dicuss how to go from 
+a tensor tree to a tensor.
 
+The first three operations—addition, scalar multiplication, and negation—directly result from 
+$F(f)$ being a vector space over $k$. Consequently, in Lean, these structures are inherently available.
+Similarly, since $F(f)$ resides in $\Rep k G$, it naturally comes equipped with a group action,
+which is again inherently available to us in Lean. 
 
-Now we have discussed how tensors of a given species can be formally defined, we can define 
-basic operations on these tensors. 
+Permuting indices of a tensors, or altering their indexing sets, can be achived by applying 
+$F$ to morphisms in $\mathrm{T}_{/C}^\times$. Essentially, the morphisms in $\mathrm{T}_{/C}^\times$
+can be thought of as valid permutations or reindexings of indices. They are valid in the sense that
+they will never interchange an `up' index with a `down' index, for instance.
 
+Next, we consider the tensor product of two tensors. The tensor product of vectors is 
+already defined in Mathlib. Using this, if we have $t \in F(f)$ and $s \in F(g)$, we can form a vector in $F(f) \otimes F(g)$.
+In Lean, this is denoted as \js{sorry}. Our goal is to obtain some elemnet in some $F \_$,
+which we can achieve using the tensorate of $F$. Recall that $F$ is a symmetric monoidal functor,
+and its tensorate is an isomorphism between $F(f) \otimes F(g)$ and $F(f \otimes g)$.
 
-The simipalist of these operations are addition, scalar multiplication and group action.
-Addition and scalar multiplication are given to us for free from the vector space structure 
-on $F(f)$. The action of the group $G$ on tensors also comes for free from the fact that 
-$F(f)$ lives in $\mathrm{Rep} k G$.
-
-The next simplest operation is permutation of indices (or building block representations).
-Such permutations arise from applying $F$ to morphisms in $\mathrm{T}_{/C}^\times$. 
-Theses sorts of permutations are often implicit in the notation physicists use, but arise 
-in tensor expressions such as $T_{\mu \nu} = T_{\nu \mu}$.
-
-The next operation is the tensor product of two tensors. Given $f : X \to C$ and
-$g : Y \to C$, and tensors $t \in F(f)$ and $s \in F(g)$ we can form a vector in 
-$F(f) \otimes F(g)$. Formally this can be done by taking the tensor product of the morphisms
-$\mathbbm{1} \to F(f)$ and $\mathbbm{1} \to F(g)$ in the category of vector spaces over $k$.
-We can then use the tensorate of $F$ to get a tensor in $F(f \otimes g)$.
-
-We now turn to the slightly more complicated operation of contraction of indices, 
-and the related metric and unit. 
-To define the contraction of introduce an involution $\tau : C \to C$. For complex Lorentz tensors
+We now turn to contraction, where we will also discuss the metric and unit. 
+To define contraction we need to know what indices can be contracted with what others. 
+For this we introduce an involution $\tau : C \to C$. For complex Lorentz tensors
 this is defined as follows
 \begin{code} 
   τ := fun c =>
@@ -528,83 +527,110 @@ this is defined as follows
     | Color.up => Color.down
     | Color.down => Color.up
 \end{code}
-We say that $\tau$ takes a color to it's dual. With $\tau$ and $F_D$ we can define 
-the functor  $F_\tau : C \Rightarrow Rep k G$ which takes $c$ to $F(c) \otimes F(\tau c)$. 
-Letting $\mathbbm{1}$ be the constant functor from $C$ landing on the, we basic data 
-for contraction is contained in a natural transformation from $F_\tau$ to $\mathbbm{1}$.
-That is, for each $c \in C$ an equivariant map from $F(c) \otimes F(\tau c)$ to the trivial 
-representation. 
+For a color $c \in C$ we say that $\tau(c)$ is the dual of $C$. What this will mean is that 
+we can contract indices of color $c$ with indices of color $\tau(c)$.
+For a color $c$ the contraction corresponding to that color is an equivariant map from
+$F(c) \otimes F(\tau c)$ to the trivial representation, which in this paper we will denote 
+$\mathbbm{1}$.  That is to say, a morphism $\mathcal{C}(c)$ in $\Rep{k}{G}$ from $F(c) \otimes F(\tau c)$ to 
+the unit of the monoidal structure, which is the trivial representation.
+Collectively, and somewhat trivally,  $\mathcal{C}$ forms a natural transformation from the functor 
+$F \_ \otimes F (\tau \_)$ to the constant functor landing on $\mathbbm{1}$, which we will also 
+denote $\mathbbm{1}$. 
 
-To see how this is can be used to contract indices, consider a tensor $t \in F(f)$, 
-for $f : \mathrm{Fin} \; n.succ.succ \to C$. Here $\mathrm{Fin} \; n.succ.succ$ is the type 
-of all number ${0, 1, 2, \ldots, n+1}$ less than $n.succ.succ = n + 2$. 
-Choosing two distinct indices $i, j : \mathrm{Fin} \; n.succ.succ$ we can contract them 
-using the following chain of maps
+We expect that the contraction  $\mathcal{C}(c)$ and the contraction $\mathcal{C}(\tau(c))$ are 
+essentially the same. After all, for four-vectors one is the contraction of an up index with a down index 
+whilst the other is the contraction of a down index with an up index. 
+To make this formal we put a condition on $\mathcal{C}$ which can 
+succinctly be written as a diagram: 
 \begin{equation}
-  F f \equiv F_\tau (f i) \otimes F (f' i) \to \mathbbm{1} \otimes F (f' i) \to F (f' i)
+\begin{tikzcd}
+  F_D(c) \otimes F_D(\tau c) \arrow[r, "{\beta}"] \arrow[d, "{\mathcal{C}(c)}", swap] & F_D(\tau c) \otimes F_D (c) \arrow[d, "\mathbbm{1} \otimes F_D \tau_c"] \\
+  \mathbb{I} & F_D(\tau c) \otimes F_D (\tau \tau c) \arrow[l, "{\mathcal{C}(\tau(c))}", ] 
+\end{tikzcd}
 \end{equation}
-Here $f' : \mathrm{Fin} \; n \to C$ is the function defived from $f$ by removing the indices $i$ 
-and $j$. The first equivalence is somewhat complicated to define formally, but essentially involves 
-extracting $i$ and $j$. 
+where $\beta$ is the braiding of the symmetric monoidal category, and $\tau_c$ is the isomorphism
+in $C$ between $\tau(\tau(c))$ and $c$, which exists since $\tau$ is an involution.
+In Lean this condition is written in a easier-to-prove but equivalent way, by acting the relevent maps 
+on pure vectors within $F_D(c) \otimes F_D(\tau c)$. We will see this in the next subsection.
 
-The metric and unit are defined in a similar way. The metric is a natural transformation from
-$\mathbbm{1}$ to $F_D\otimes F_D$. That is, for each $c \in C$ an equivariant map from the trivial
-representation to $F_D(c) \otimes F_D(c)$. The unit is a natural transformation from $\mathbbm{1}$ to
-$F_\tau'$ which takes $c$ to $F_D(\tau c) \otimes F_D(c)$. That is, for each $c \in C$ an 
-equivariant map from the trivial representation to  $F_D(\tau c) \otimes F_D(c)$.
+The contraction we have defined so far does not specify how to contract indices of a general tensor 
+in $F(f)$. Suppose we wish to contract the indices $i$ and $j$ in $X$, and that their 
+colors allow such a contraction, i.e., $f(j) = \tau (f (i))$.
+To achieve this, we establish an equivalence in $\mathrm{T}_{/C}^\times$ between $f$ and
+$![f i]\otimes ![f j]! \otimes f'$, where $![f i] : \mathrm{Fin}\, 1 \to C$ lands on $f i$ and
+similarly for $f j$, and $f'$ can be thought of as $f$ with $i$ and $j$ removed.
 
-The choice of contraction, metric and unit are subject to a number of conditions.
-\begin{itemize}
-\item Contraction must be symmetric.
+Using the tensorate of $F$ and the equivalence just discussed, we obtain an equivalence 
+between $F(f)$ and $(F(f(i)) \otimes F(f (j))) \otimes F(f')$.
+This in turn is equivalent to $(F_D (f (i)) \otimes F_D (\tau (f (i)))) \otimes F(f')$.
+The contraction morphism $\mathcal{C}(f(i))$ can then be applied to the first part of this expression,
+reducing it to a vector in $\mathbbm{1} \otimes F(f')$. 
+Finally, we can use the left unitor of $\Rep{k}{G}$ to obtain $F(f')$.
+\begin{equation}
+  F f \equiv (F_D (f i) \otimes F_D(\tau (f i)))\otimes F (f' i) \to \mathbbm{1} \otimes F (f' i) \to F (f' i)
+\end{equation}
+\js{Maybe restirct to $Fin n$ here.}
+
+We have some conditions on contraction. Firstly, we expect there to be a unit.
+That is a, group-invariant element of 
+$F(\tau(c)) \otimes F(c)$ which when contracted with does nothing. 
+A group invariant element of $F_D(\tau(c)) \otimes F_D(c)$ is the same thing as a morphism from
+$\delta(c) : \mathbbm{1} \to F_D(\tau(c)) \otimes F_D(c)$. Again we can lift $\delta$ to a 
+natural transformation from $\mathbbm{1}$ to $F(\tau \_) \otimes F \_$. The condition that it does nothing 
+when contracted with is that the following diagram commutes:
 \begin{equation}
   \begin{tikzcd}
-    F_D(c) \otimes F_D(\tau c) \arrow[r, "{\beta}"] \arrow[d, "{\mathcal{C}\, c}", swap] & F_D(\tau c) \otimes F_D (c) \arrow[d, "\mathbbm{1} \otimes F_D t"] \\
-    \mathbb{I} & F_D(\tau c) \otimes F_D (\tau \tau c) \arrow[l, "{\mathcal{C}\, \tau(c)}", ] 
-  \end{tikzcd}
-  \end{equation}
-  \item Contraction with the unit does nothing. 
-  \begin{equation}
-    \begin{tikzcd}
-      F_D(c) \arrow[r] &  F_D(c) \otimes \mathbb{I} \arrow[r] & F_D(c) \otimes (F_D (\tau c) \otimes F_D(c)) \arrow[d] \\
-      \mathbb{I} \otimes F_D(c) \arrow[u] &   &(F_D(c) \otimes F_D(\tau c)) \otimes F_D(c) \arrow[ll] 
-  \end{tikzcd}
-  \end{equation}
-  \item The unit is symmetric 
-  \begin{equation} 
-    \begin{tikzcd}
-      \mathbb{I} \arrow[r] \arrow[d] & F_D(\tau c) \otimes F_D(c) \\
-      F_D(\tau \tau c) \otimes F_D(\tau c) \arrow[r] & F_D(\tau c) \otimes F_D(\tau \tau c) \arrow[u]
-    \end{tikzcd}
-  \end{equation}
-  \item Contraction with the metric its dual returns the unit
-  \begin{equation}
-    \begin{tikzcd}
-      \mathbb{I} \arrow[r] \arrow[d] & F_D(\tau c) \otimes F_D (c) \\ 
-      (F_D c \otimes F_d c) \otimes (F_D (\tau c) \otimes F_D (\tau c) ) \arrow [d]  & F_D (c) \otimes F_D(\tau c) \arrow[u] \\ 
-      F_D c \otimes (F_d c \otimes (F_D (\tau c) \otimes F_D (\tau c) )) \arrow [r] &  F_D c \otimes ((F_d c \otimes F_D (\tau c)) \otimes F_D (\tau c) ) \arrow[u]
-    \end{tikzcd}
-  \end{equation}
-\end{itemize}
-In Lean we quite write these conditions in this way, instead we give them in a simpiler equivalent form 
-in which we apply the maps in the above diagram to pure tensors. We will see how they are 
-written explicitly in Lean when we come to formally define the tensor species in the next section.
-
-The last operation we want to talk about is evaluation. Where one specifies the exact value of 
-one of the indices of a tensor e.g. $\eta_{0i}$. 
-All of the operations disucsed thus far have related to the category $\mathrm{Rep} k G$. As such, 
-they have respect the group action. Evaluation, on the other hand, does not respect the group action. 
-For example, taking the $0$th component of a four-vector is not Lorentz invariant. 
-Nevertheless, we can define evaluation in the categor of vector spaces. 
-To do this, we need a basis for each $F_D(c)$, the coordinates of a vector in $F_D(c)$ in that basis 
-is discrbed by a linear map of vector spaces from $F_D(c)$ to $k$. This can be used 
-to evaluate the index of a tensor in the following way: 
-\begin{equation} 
-  F f \equiv F_D (f i) \otimes F (f' i) \to \mathbbm{1} \otimes F (f' i) \to F (f' i)
+    F_D(c) \arrow[r, "{\rho^{-1}}"] &  F_D(c) \otimes \mathbb{I} \arrow[r, "{\mathbbm{1}\otimes \delta(c)}"] & F_D(c) \otimes (F_D (\tau c) \otimes F_D(c)) \arrow[d, "{\alpha^{-1}}"] \\
+    \mathbb{I} \otimes F_D(c) \arrow[u, "{\lambda}"] &   &(F_D(c) \otimes F_D(\tau c)) \otimes F_D(c) \arrow[ll, "{\mathcal{C}(c)\otimes \mathbbm{1}}"] 
+\end{tikzcd}
 \end{equation}
-where $f'$ is $f$ with the $i$th index removed, and again the first equivalence is somewhat
-complicated to define but involves extracting the $i$th index.
+where $\rho$ is the right-unitor, $\lambda$ the left-unitor, and $\alpha$ is the associator. 
+Again in Lean, we write this condition in an easier-to-prove but equivalent way. 
+
+We want these units to be symmetric, that is satisfy the condition that
+\begin{equation} 
+  \begin{tikzcd}
+    \mathbb{I} \arrow[r, "{\delta(c)}"] \arrow[d, "{\delta(\tau(c))}"] & F_D(\tau c) \otimes F_D(c) \\
+    F_D(\tau \tau c) \otimes F_D(\tau c) \arrow[r, "{\beta}"] & F_D(\tau c) \otimes F_D(\tau \tau c) \arrow[u, "{\mathbbm{1} \otimes F_D \tau_c}"]
+  \end{tikzcd}
+\end{equation}
+
+Lastly, before we turn to evaluation, we want to have metrics. That is a group-invariant element of
+$F_D(c) \otimes F_D(c)$ which when contracted together give the unit. As above, a group-invariant element of
+$F_D(c) \otimes F_D(c)$ is the same thing as a morphism from $\eta(c) : \mathbbm{1} \to F_D(c) \otimes F_D(c)$.
+We can treat $\eta$ to a natural transformation from $\mathbbm{1}$ to $F_D \_ \otimes F_D \_$. 
+The condition that it gives the unit when contracted together is that the following diagram commutes:
+\begin{equation}
+  \begin{tikzcd}
+    \mathbb{I} \arrow[r, "{\delta(c)}"] \arrow[d, "{\eta(c)\otimes \eta(\tau(c))}"] & F_D(\tau c) \otimes F_D (c) \\ 
+    (F_D c \otimes F_d c) \otimes (F_D (\tau c) \otimes F_D (\tau c) ) \arrow [d]  & F_D (c) \otimes F_D(\tau c) \arrow[u, "{\beta}"] \\ 
+    F_D c \otimes (F_d c \otimes (F_D (\tau c) \otimes F_D (\tau c) )) \arrow [r] &  F_D c \otimes ((F_d c \otimes F_D (\tau c)) \otimes F_D (\tau c) ) \arrow[u, "{\mathbbm{1} \otimes(\mathcal{C}(c) \otimes \mathbbm{1})}"]
+  \end{tikzcd}
+\end{equation}
+These metrics ensure that the representations $F_D(c)$ and $F_D(\tau (c))$ are actually equivalent 
+to one another, and establish an isomorphism in $\Rep{k}{G}$ between them. 
+
+Let us turn to our last operation, evaluation of an index. This is perhaps the least important 
+of the operations, not least because it is not equivariant with repsect to the group action, 
+like all of the other operations are. 
+However, it is used often in physics so we include it here. 
+To define evaluation, we give each $F_D(c)$ a basis $\{e_j^c\}$. For 
+each $e_j^c$  we get a morphism in the category of vector spaces from 
+$F_D(c) \to k$ corresponding to taking the coordinate of a vector with respect to $e$. 
+This can be made into an evaluation map for $F(f)$ in a similar way to how we did contraction. 
+We take an $i$ in $X$ and define an equivalence $f \equiv ![f i] \otimes f'$, formed by removing 
+$i$ from $X$. Using the tensorate of $F$ we get an equivalence between $F(f)$ and
+$F_D(f(i)) \otimes F(f')$. Moving to the category of vector spaces, we can use evaluation for our 
+a chosen $e_j^{f(i)}$ to get a map from $F_D(f(i)) \otimes F(f')$ to $\mathbbm{1} \otimes F(f')$.
+Finally, we can use the left unitor to get a map from $F(f)$ to $F(f')$.
+Putting this together we get a morphism, in the category of vector spaces 
+\begin{equation}
+  F f \equiv F_D(f(i)) \otimes F(f') \to \mathbbm{1} \otimes F(f') \to F(f')
+\end{equation}
 
 \subsubsection{Tensor Species} \label{sec:tensorSpecies}
+
+\js{In rewrite - I got up to here.}
 
 The data of the field $k$, the group $G$, the functor $F_D$ (from which $F$ can be derived), the involution $\tau$, the natural
 transformations for contraction, metric, and unit, and basis needed for evaluation, 
