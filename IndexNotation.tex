@@ -191,6 +191,9 @@
 \arrayrulecolor{black}
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Math commands 
+\newcommand{\Rep}[2]{\mathrm{Rep} \; #1 \; #2}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Title, author, date
 \title{Index notation in Lean 4}
 \author{Joseph Tooby-Smith \\ \textit{Reykjavik University}}
@@ -265,13 +268,13 @@ Previous implmentations of index notation have been made in programming language
  notation, necessitating (what we beleive is) a novel solution.
 
 
-This paper is split into two main sections. Section \js{ref} dicusses 
+This paper is split into two main sections. Section~\ref{sec:Implementation} dicusses 
 the implementation of index notation into Lean. Section \js{ref} gives two examples 
 of theorems and proofs using index notation. A more minor section, section \js{ref} disucsses 
 the future work related to this project.
 
 
-\section{Implementation of index notation into Lean 4}
+\section{Implementation of index notation into Lean 4}\label{sec:Implementation}
 \begin{figure}
   \centering
   \begin{tikzpicture}[
@@ -325,9 +328,9 @@ This reverse approach is advantageous because the tensors,
  The left and middle parts of the diagram represent intermediate stages that facilitate the 
  manipulation and understanding of these tensors and their expressions.
 
-\subsection{Defining tensors}
+\subsection{Defining tensors} \label{sec:definingTensors}
 
-\subsubsection{Building blocks of tensors and color}
+\subsubsection{Building blocks of tensors and color} \label{sec:buildingBlocks}
 
 Tensors of a species, such as complex Lorentz tensors, are constructed from a 
 set of building block representations of a group $G$ over a field $k$.
@@ -408,9 +411,9 @@ colors.
 
 To formally associate each color with its corresponding representation, we define
 a discrete functor from the set $C$ to the category of $k$-representations of $G$, denoted 
-$\mathrm{Rep} k G$, that is, a functor
+$\Rep k G$, that is, a functor
 \begin{equation} 
-  F_{D} : C \Rightarrow \mathrm{Rep} k G.
+  F_{D} : C \Rightarrow \Rep k G
 \end{equation}
 
 
@@ -430,7 +433,7 @@ The reason why we have used a functor here, rather than just a function, will be
 in what follows.
 
 
-\subsubsection{A general tensor}
+\subsubsection{General tensors} \label{sec:generalTensors}
 
 For a given tensor species, given the symmetric monoidal structure on $\mathrm{Rep} k G$, 
 we can take the tensor product of the building block representations. 
@@ -469,7 +472,7 @@ In HepLean we formally define $\mathrm{lift}$ and $F$.
 For most purposes in physics $X$ will be a type $\mathrm{Fin} n$, corresponding to the type 
 (set) of natural numbers (including 0) less $n$. Later on we will restrict to these types.
 
-\subsubsection{Basic operations}
+\subsubsection{Tensor operations} \label{sec:tensorOperations}
 
 Now we have discussed how tensors of a given species can be formally defined, we can define 
 basic operations on these tensors. 
@@ -581,7 +584,7 @@ to evaluate the index of a tensor in the following way:
 where $f'$ is $f$ with the $i$th index removed, and again the first equivalence is somewhat
 complicated to define but involves extracting the $i$th index.
 
-\subsubsection{Tensor Species}
+\subsubsection{Tensor Species} \label{sec:tensorSpecies}
 
 The data of the field $k$, the group $G$, the functor $F_D$ (from which $F$ can be derived), the involution $\tau$, the natural
 transformations for contraction, metric, and unit, and basis needed for evaluation, 
@@ -674,7 +677,7 @@ $T^\mu_\nu$ can be written as
 T : complexLorentzTensor.F.obj (OverColor.mk ![Color.up, Color.down])
 \end{code}
 
-\subsection{Tensor trees}
+\subsection{Tensor trees} \label{sec:tensorTrees}
 A tensor expression consists of a series of tensors and operations between them. 
 For example 
 \begin{equation}
@@ -760,7 +763,7 @@ Many tensor trees can represent the same tensor, in the same way that many
 tensor expressions represent the same tensor. 
 
 
-\subsubsection{Using Tensor trees in proofs}
+\subsubsection{Using Tensor trees in proofs} \label{sec:usingTensorTrees}
 Tensor trees can be used in proofs for the following reason. Define a sub-tree of a tensor trees 
 to be a node and all child nodes of that node. 
 If $T$ is a tensor tree and $S$ a sub-tree of $T$, we can replace $S$ in $T$ 
@@ -774,7 +777,7 @@ In Lean this property is encoded in a number of lemmas, for example:
 We will this at play in the example section of this paper.
 
 
-\subsection{Elaboration}
+\subsection{Elaboration} \label{sec:elaboration}
 
 We now dicuss how we make the Lean code look similar to what we would use on pen-and-paper physics. 
 
@@ -846,7 +849,7 @@ e.g. the fact that $T_{\mu \nu} = T_{\nu \mu}$.
 \syntaxElab{\lstinline!\{T | μ ν = T2 | ν μ\}ᵀ!}{\lstinline!(tensorNode T).tensor = (perm _ (tensorNode T2)).tensor!}
 Note the use of the \lstinline!.tensor! to extract the tensor from the tensor tree, it does not really mean much 
 to ask for equalitiy of the tensor trees themselves. 
-\section{Examples}
+\section{Examples} \label{sec:examples}
 
 We give two examples in this section. The first example is a simple theorem involving index notation and 
 tensor trees. We will show here, in rather explicit detail, how we can manipulate tensor trees to solve 
@@ -855,7 +858,7 @@ The second example we shall give will show a number of definitions in HepLean co
 Here we will not give so much detail, the point rather being to show the reader the broad use of our 
 construction. 
 
-\subsection{Example 1: Symmetric and anti-symmetric tensor}
+\subsection{Example 1: Symmetric and anti-symmetric tensor} \label{sec:exampleSymmAntiSymm}
 If $A^{\mu \nu}$ is an anti-symmetric tensor and $S_{\mu \nu}$ and $S$ is a symmetric tensor, then
 it is true that $A^{\mu \nu} S_{\mu \nu} = - A^{\mu \nu} S_{\mu \nu}$. In Lean this result, and 
 it's lemma are written as follows: 
@@ -1204,7 +1207,7 @@ We go through each step in turn.
 
 The remainder of the proof \lstinline|apply perm_congr _ rfl| and \lstinline|decide| that the 
 tensor trees on the LHS and RHS are actually equal.
-\subsection{Example 2: Pauli matrices and bispinors}
+\subsection{Example 2: Pauli matrices and bispinors} \label{sec:examplePauliBispinor}
 
 Using the formlism we have set up thus far it is possible to define Pauli matrices and bispinors 
 as complex Lorentz tensors.
@@ -1270,7 +1273,7 @@ theorem pauliCo_contr_pauliContr :
 \end{code}
 
 
-\section{Future work}
+\section{Future work} \label{sec:future}
 The scale of formalizing all results regarding index notation is a task that surpasses 
 the capacity of any single individual. Inspired by the Lean community's 
 blueprint projects, we have added to HepLean informal lemmas related to index notation and tensors. 
