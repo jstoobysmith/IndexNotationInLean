@@ -162,7 +162,7 @@
 \newcommand{\syntaxElab}[2]{ 
   \arrayrulecolor{mycolor}
   \begin{center}
-    \begin{tabular}{|p{1.6in} | p{4in}|}
+    \begin{tabular}{|p{1.7in} | p{4in}|}
     \hline
     \hfill {#1} & {#2} \\
     \hline
@@ -713,63 +713,83 @@ The syntax and elaboration for negation, scalar multiplication and the group act
 are fairly similar. For negation we have 
 \syntaxElab{\lstinline!\{T | μ ν\}ᵀ!}{\lstinline!neg (tensorNode T)!}
 For scalar multiplication by $a \in k$ we have 
-\syntaxElab{\lstinline!a •ₜ \{T | μ ν\}ᵀ!}{\lstinline!smul a (tensorNode T)!}
+\syntaxElab{\lstinline!\{a •ₜ T | μ ν\}ᵀ!}{\lstinline!smul a (tensorNode T)!}
 For the group action of $g\in G$ on a tensor $T$ we have
-\syntaxElab{\lstinline!g •ₐ \{T | μ ν\}ᵀ!}{\lstinline!action g (tensorNode T)!}
+\syntaxElab{\lstinline!\{g •ₐ T | μ ν\}ᵀ!}{\lstinline!action g (tensorNode T)!}
 
 For the product of two tensors is also fairly simple, we have 
-\syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | σ\}!}{\lstinline!prod (tensorNode T) (tensorNode T2)!}
-\js{some missing T's }
+\syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | σ\}ᵀ!}{\lstinline!prod (tensorNode T) (tensorNode T2)!}
 
 The syntax for contraction is as one expect, 
-\syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | ν σ\}!}{\lstinline!contr 1 1 rfl (prod (tensorNode T) (tensorNode T2))!}
+\syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | ν σ\}ᵀ!}{\lstinline!contr 1 1 rfl (prod (tensorNode T) (tensorNode T2))!}
 On the RHS here the first argument (\lstinline!1!) of \lstinline!contr! is the index of the first \lstinline|ν| on the LHS, 
 the second argument  (also \lstinline!1!) is the second index. The \lstinline!rfl! is a proof that the
 colors of the two contracted indices are actually dual to one another. If they are not, this proof will 
 fail and the elaborator will complain. It will also complain if more then two indices are traying 
 to be contracted. Although, this depends on where exactly the indices sit in the expression. For example 
-\syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | ν ν\}!}{\lstinline!(prod (tensorNode T) (contr 0 0 rfl (tensorNode T2)))!}
+\syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | ν ν\}ᵀ!}{\lstinline!(prod (tensorNode T) (contr 0 0 rfl (tensorNode T2)))!}
 works fine becuase the inner contraction is done before the product. 
 
-We now turn to addition. Our syntax allows for e.g. \lstinline!\{T | μ ν + T2 | μ ν\}! and also 
+We now turn to addition. Our syntax allows for e.g. \lstinline!\{T | μ ν + T2 | μ ν\}ᵀ! and also 
 \lstinline!\{T | μ ν + T2 | ν μ\}!, provided of course that the indices are of the correct color (which Lean will check). 
 The elabor handles both these cases, and generalizations thereof by adding a permutation node. Thus we have 
-\syntaxElab{\lstinline!\{T | μ ν + T2 | μ ν\}!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
+\syntaxElab{\lstinline!\{T | μ ν + T2 | μ ν\}ᵀ!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
 where here the \lstinline!_! is a placeholder for the permutation, and in this case will be trivial, but for 
-\syntaxElab{\lstinline!\{T | μ ν + T2 | ν μ\}!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
+\syntaxElab{\lstinline!\{T | μ ν + T2 | ν μ\}ᵀ!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
 it will be the permutation for the two indentities. 
 
 Despite not forming part of a node in our tensor tree, we also give syntax for equalitiy. 
 This is done in a very similar way to addition, with the addition of a permutation node to account for
 e.g. the fact that $T_{\mu \nu} = T_{\nu \mu}$. 
-\syntaxElab{\lstinline!\{T | μ ν = T2 | ν μ\}!}{\lstinline!(tensorNode T).tensor = (perm _ (tensorNode T2)).tensor!}
+\syntaxElab{\lstinline!\{T | μ ν = T2 | ν μ\}ᵀ!}{\lstinline!(tensorNode T).tensor = (perm _ (tensorNode T2)).tensor!}
 Note the use of the \lstinline!.tensor! to extract the tensor from the tensor tree, it does not really mean much 
 to ask for equalitiy of the tensor trees themselves. 
 \section{Examples}
 
-\begin{itemize}
-\item We give two examples of theorems and proves related to index notation.
-\item Our first example is related to symmetric and anti-symmetric tensors. 
-\item For this example we will go into explicit detail.
-\item Our second example is a more detailed one, where we prove that ... 
-\item For this example we will only give a sketch of the prove, and discuss how things are done.
-\end{itemize}
+We give two examples in this section. The first example is a simple theorem involving index notation and 
+tensor trees. We will show here, in rather explicit detail, how we can manipulate tensor trees to solve 
+such theorems. 
+The second example we shall give will show a number of definitions in HepLean concerning index notation.
+Here we will not give so much detail, the point rather being to show the reader the broad use of our 
+construction. 
 
 \subsection{Example 1: Symmetric and anti-symmetric tensor}
+If $A^{\mu \nu}$ is an anti-symmetric tensor and $S_{\mu \nu}$ and $S$ is a symmetric tensor, then
+it is true that $A^{\mu \nu} S_{\mu \nu} = - A^{\mu \nu} S_{\mu \nu}$. In Lean this result, and 
+it's lemma are written as follows: 
+\begin{code}
+lemma antiSymm_contr_symm 
+    {A : complexLorentzTensor.F.obj (OverColor.mk ![Color.up, Color.up])}
+    {S : complexLorentzTensor.F.obj (OverColor.mk ![Color.down, Color.down])}
+    (hA : {A | μ ν = - (A | ν μ)}ᵀ) (hs : {S | μ ν = S | ν μ}ᵀ) :
+    {A | μ ν ⊗ S | μ ν = - A | μ ν ⊗ S | μ ν}ᵀ := by
+  conv =>
+    lhs
+    rw [contr_tensor_eq <| contr_tensor_eq <| prod_tensor_eq_fst <| hA]
+    rw [contr_tensor_eq <| contr_tensor_eq <| prod_tensor_eq_snd <| hs]
+    rw [contr_tensor_eq <| contr_tensor_eq <| prod_perm_left _ _ _ _]
+    rw [contr_tensor_eq <| contr_tensor_eq <| perm_tensor_eq <| prod_perm_right _ _ _ _]
+    rw [contr_tensor_eq <| contr_tensor_eq <| perm_perm _ _ _]
+    rw [contr_tensor_eq <| perm_contr_congr 1 2]
+    rw [perm_contr_congr 0 0]
+    rw [perm_tensor_eq <| contr_contr _ _ _]
+    rw [perm_perm]
+    rw [perm_tensor_eq <| contr_tensor_eq <| contr_tensor_eq <| neg_fst_prod _ _]
+    rw [perm_tensor_eq <| contr_tensor_eq <| neg_contr _]
+    rw [perm_tensor_eq <| neg_contr _]
+  apply perm_congr _ rfl
+  decide
+\end{code}
+Let us break this down. The statements 
+\begin{code} 
+{A : complexLorentzTensor.F.obj (OverColor.mk ![Color.up, Color.up])}
+{S : complexLorentzTensor.F.obj (OverColor.mk ![Color.down, Color.down])}
+\end{code}
+are simply defining $A$ and $S$ to be tensors of type $A^{\mu \nu}$ and $S_{\mu \nu}$ respectively.
+This agrees with the notation set out in \S\ref{} \js{ref}.
 
-On the left-hand side we start with the tree: 
-\begin{tikzpicture}
-  \node[draw=black] (A) at (0,0) {contr 0 0};
-  \node[draw=black] (B) at (0,-1) {contr 0 1};
-  \node[draw=black] (C) at (0,-2) {prod};
-  \node[draw=black] (D1) at (-1,-3) {A};
-  \node[draw=black] (D2) at (1,-3) {S};
-  \path [->] (A) edge (B);
-  \path [->] (B) edge (C);
-  \path [->] (C) edge (D1);
-  \path [->] (C) edge (D2);
-\end{tikzpicture}
-
+The parameter \lstinline|hA| is stating that $A$ is anti-symmetric. Expanded in terms of tree diagrams 
+we have
 \proofstep{\lstinline!hA : \{A | μ ν = - (A | ν μ)\}ᵀ!}{Description: The tensor $A$ 
   is anti-symmetric.}{
  \begin{tikzpicture}
@@ -782,7 +802,7 @@ On the left-hand side we start with the tree:
     \path [->] (E1) edge (F1);
   \end{tikzpicture} 
 }
-
+Similarly, the parameter \lstinline|hs| is stating that $S$ is symmetric. Expanded in terms of tree diagrams
 \proofstep{\lstinline!hS : \{S | μ ν = S | ν μ\}ᵀ!}{Description: The tensor \lstinline|S|
   is symmetric.}{
  \begin{tikzpicture}
@@ -794,6 +814,42 @@ On the left-hand side we start with the tree:
   \end{tikzpicture} 
 }
 
+The line \lstinline!{A | μ ν ⊗ S | μ ν = - A | μ ν ⊗ S | μ ν}ᵀ! is the statment we are trying to prove. 
+In terms of tree diagrams it says that 
+\begin{center}
+\begin{tikzpicture}
+  \node (eq) at (2.5,-1) {$=$};
+  \node (t1) at (1.5,-1) {\lstinline|.tensor|};
+  \node (t2) at (5.5,-1) {\lstinline|.tensor|};
+  \node[draw=black] (A) at (0,0) {contr 0 0};
+  \node[draw=black] (B) at (0,-1) {contr 0 1};
+  \node[draw=black] (C) at (0,-2) {prod};
+  \node[draw=black] (D1) at (-1,-3) {A};
+  \node[draw=black] (D2) at (1,-3) {S};
+  \path [->] (A) edge (B);
+  \path [->] (B) edge (C);
+  \path [->] (C) edge (D1);
+  \path [->] (C) edge (D2);
+  \node[draw=black] (P') at (4,1) {perm $\_$};
+  \node[draw=black] (N') at (4,0) {neg};
+  \node[draw=black] (A') at (4,-1) {contr 0 0};
+  \node[draw=black] (B') at (4,-2) {contr 0 1};
+  \node[draw=black] (C') at (4,-3) {prod};
+  \node[draw=black] (D1') at (3,-4) {A};
+  \node[draw=black] (D2') at (5,-4) {S};
+  \path [->] (P') edge (N');
+  \path [->] (N') edge (A');
+  \path [->] (A') edge (B');
+  \path [->] (B') edge (C');
+  \path [->] (C') edge (D1');
+  \path [->] (C') edge (D2');
+\end{tikzpicture}
+\end{center}
+The perm here actually does nothing, but is included by Lean. 
+
+The lines of the proof in the \lstinline|conv| block are manipulations of the tensor tree on the 
+LHS of the equation. The \lstinline|rw| tactic is used to rewrite the tensor tree using the various lemmas. 
+We go through each step in turn. 
 \proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| prod_tensor_eq_fst <| hA]!}{
   Description: Replace the node \lstinline|A| with the RHS of \lstinline|hA|.
 }{
@@ -1135,7 +1191,7 @@ First, we could incorporate the spinor-helicity formalism, which is used in the 
 amplitudes. Second, we could extend our approach to encompass tensor \emph{fields}, their derivatives
 etc. We do not anticipate any insurmountable challenges in pursuing these extensions. 
 They represent promising avenues for future research and have the potential to significantly enhance
- the utility of formal methods in physics.
+the utility of formal methods in physics.
 \bibliographystyle{unsrturl}
 \begin{spacing}{0.5}
 \bibliography{MyBib}
