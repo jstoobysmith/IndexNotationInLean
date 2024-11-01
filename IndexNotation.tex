@@ -6,8 +6,8 @@
 % Copyright (c) 2024 Joseph Tooby-Smith. All rights reserved.
 \usepackage{xcolor}
 \usepackage{setspace}
-
 \onehalfspacing%
+\usepackage{bbm}
 %\setstretch{3} % Custom separation of lines.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Hyperlinks
@@ -568,12 +568,89 @@ is down to this data.
 In Lean it useful to work with general tensor species where possible, so important results have 
 to be defined only ones. Thus we make the following definition 
 \begin{code}
+/-- The sturcture of a type of tensors e.g. Lorentz tensors, Einstien tensors,
+  complex Lorentz tensors. -/
+structure TensorSpecies where
+  /-- The colors of indices e.g. up or down. -/
+  C : Type
+  /-- The symmetry group acting on these tensor e.g. the Lorentz group or SL(2,ℂ). -/
+  G : Type
+  /-- An instance of `G` as a group. -/
+  G_group : Group G
+  /-- The field over which we want to consider the tensors to live in, usually `ℝ` or `ℂ`. -/
+  k : Type
+  /-- An instance of `k` as a commutative ring. -/
+  k_commRing : CommRing k
+  /-- A `MonoidalFunctor` from `OverColor C` giving the rep corresponding to a map of colors
+    `X → C`. -/
+  FDiscrete : Discrete C ⥤ Rep k G
+  /-- A map from `C` to `C`. An involution. -/
+  τ : C → C
+  /-- The condition that `τ` is an involution. -/
+  τ_involution : Function.Involutive τ
+  /-- The natural transformation describing contraction. -/
+  contr : OverColor.Discrete.pairτ FDiscrete τ ⟶ 𝟙_ (Discrete C ⥤ Rep k G)
+  /-- The natural transformation describing the metric. -/
+  metric : 𝟙_ (Discrete C ⥤ Rep k G) ⟶ OverColor.Discrete.pair FDiscrete
+  /-- The natural transformation describing the unit. -/
+  unit : 𝟙_ (Discrete C ⥤ Rep k G) ⟶ OverColor.Discrete.τPair FDiscrete τ
+  /-- A specification of the dimension of each color in C. This will be used for explicit
+    evaluation of tensors. -/
+  repDim : C → ℕ
+  /-- repDim is not zero for any color. This allows casting of `ℕ` to `Fin (S.repDim c)`. -/
+  repDim_neZero (c : C) : NeZero (repDim c)
+  /-- A basis for each Module, determined by the evaluation map. -/
+  basis : (c : C) → Basis (Fin (repDim c)) k (FDiscrete.obj (Discrete.mk c)).V
+  /-- Contraction is symmetric with respect to duals. -/
+  contr_tmul_symm (c : C) (x : FDiscrete.obj (Discrete.mk c))
+      (y : FDiscrete.obj (Discrete.mk (τ c))) :
+    (contr.app (Discrete.mk c)).hom (x ⊗ₜ[k] y) = (contr.app (Discrete.mk (τ c))).hom
+      (y ⊗ₜ (FDiscrete.map (Discrete.eqToHom (τ_involution c).symm)).hom x)
+  /-- Contraction with unit leaves invariant. -/
+  contr_unit (c : C) (x : FDiscrete.obj (Discrete.mk (c))) :
+    (λ_ (FDiscrete.obj (Discrete.mk (c)))).hom.hom
+    (((contr.app (Discrete.mk c)) ▷ (FDiscrete.obj (Discrete.mk (c)))).hom
+    ((α_ _ _ (FDiscrete.obj (Discrete.mk (c)))).inv.hom
+    (x ⊗ₜ[k] (unit.app (Discrete.mk c)).hom (1 : k)))) = x
+  /-- The unit is symmetric. -/
+  unit_symm (c : C) :
+    ((unit.app (Discrete.mk c)).hom (1 : k)) =
+    ((FDiscrete.obj (Discrete.mk (τ (c)))) ◁
+      (FDiscrete.map (Discrete.eqToHom (τ_involution c)))).hom
+    ((β_ (FDiscrete.obj (Discrete.mk (τ (τ c)))) (FDiscrete.obj (Discrete.mk (τ (c))))).hom.hom
+    ((unit.app (Discrete.mk (τ c))).hom (1 : k)))
+  /-- On contracting metrics we get back the unit. -/
+  contr_metric (c : C) :
+    (β_ (FDiscrete.obj (Discrete.mk c)) (FDiscrete.obj (Discrete.mk (τ c)))).hom.hom
+    (((FDiscrete.obj (Discrete.mk c)) ◁ (λ_ (FDiscrete.obj (Discrete.mk (τ c)))).hom).hom
+    (((FDiscrete.obj (Discrete.mk c)) ◁ ((contr.app (Discrete.mk c)) ▷
+    (FDiscrete.obj (Discrete.mk (τ c))))).hom
+    (((FDiscrete.obj (Discrete.mk c)) ◁ (α_ (FDiscrete.obj (Discrete.mk (c)))
+      (FDiscrete.obj (Discrete.mk (τ c))) (FDiscrete.obj (Discrete.mk (τ c)))).inv).hom
+    ((α_ (FDiscrete.obj (Discrete.mk (c))) (FDiscrete.obj (Discrete.mk (c)))
+      (FDiscrete.obj (Discrete.mk (τ c)) ⊗ FDiscrete.obj (Discrete.mk (τ c)))).hom.hom
+    ((metric.app (Discrete.mk c)).hom (1 : k) ⊗ₜ[k]
+      (metric.app (Discrete.mk (τ c))).hom (1 : k))))))
+    = (unit.app (Discrete.mk c)).hom (1 : k)
+
 \end{code}
 
-Then for, e.g. complex Lorentz tensors we define a specific element of this type as follows 
-\js{defn of complex Lorentz tensors}
+We can then let e.g. \lstinline|S : TensorSpecies| and recover the functor $F_D$ 
+by \lstinline|S.FDiscrete|. The functor $F$ is defined seperatrly can can be recovered
+by \lstinline|S.F|. If \lstinline|f : X \to S.C| is map then a tensor is an element of 
+\lstinline|S.F.obj (OverColor.mk f)|. The \lstinline|OverColor.mk| tells Lean to consider $f$ as 
+a function an element of the category $\mathcal{S}_{/C}^\times$, or as it is written in Lean 
+\lstinline|OverColor S.C|. 
 
-\js{Discuss here the notation for defining a tensor.}
+A function \lstinline|f : Fin 2 → S.C|, for instance landding on $c1, c2 \in C$ can be written in 
+Lean as \lstinline|![c1, c2]|, thus we can write \lstinline|S.F.obj (OverColor.mk ![c1, c2])|. 
+
+We will see instances of this for Complex Lorentz tensors. As an example, a Lorentz tensor 
+$T^\mu_\nu$ can be written as 
+\begin{code}
+T : complexLorentzTensor.F.obj (OverColor.mk ![Color.up, Color.down])
+\end{code}
+
 \subsection{Tensor trees}
 A tensor expression consists of a series of tensors and operations between them. 
 For example 
@@ -584,7 +661,7 @@ consists of a product of tensors, a contraction and a addition.
 Such an expression is a tensor in its own right, and we could just use the operations discussed above 
 to define it. 
 
-However, it is useful for briding the gap between syntax and a tensor to have a more structured way 
+However, it is useful for bridging the gap between syntax and a tensor to have a more structured way 
 of representing such expressions.
 This is where tensor trees come in. Tensor trees will also be useful when it comes to proving 
 results about tensors. 
@@ -653,6 +730,8 @@ def tensor : ∀ {n : ℕ} {c : Fin n → S.C}, TensorTree S c → S.F.obj (Over
   | eval i e t => (S.evalMap i (Fin.ofNat' e Fin.size_pos')) t.tensor
   | action g t => (S.F.obj (OverColor.mk _)).ρ g t.tensor
 \end{code}
+Note that this definition is recursive, Lean can automatically determine that this will terminate 
+(with a little help about the number of nodes in a tensor tree). 
 This association of a tensor tree with a tensor is not one-to-one (but it is onto).
 Many tensor trees can represent the same tensor, in the same way that many 
 tensor expressions represent the same tensor. 
@@ -1100,6 +1179,8 @@ We go through each step in turn.
   \end{tikzpicture}
 }
 
+The remainder of the proof \lstinline|apply perm_congr _ rfl| and \lstinline|decide| that the 
+tensor trees on the LHS and RHS are actually equal.
 \subsection{Example 2: Pauli matrices and bispinors}
 
 Using the formlism we have set up thus far it is possible to define Pauli matrices and bispinors 
