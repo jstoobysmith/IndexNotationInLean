@@ -231,7 +231,8 @@ mathematics. Indeed, HepLean is built downstream of Mathlib, meaning it has Math
 dependency and uses many of the definitions and theorems from there. 
 Other projects include the ongoing effort led by Kevin Buzzard to formalize the proof of Fermat's
 Last Theorem into Lean. 
-In the realm of the sciences, \js{sorry}
+In the realm of the sciences, he paper~\cite{josephson} looks at absorption theory, thermodynamics, and kinematics in Lean. 
+Whilst the package SciLean~\cite{SciLean}, is a push in the direction of scientific computing whithin Lean. 
 
 \paragraph{Notation in physics and index notation:}
 Physicists heavily rely on specialized notation to express complex concepts succinctly. 
@@ -278,9 +279,15 @@ the future work related to this project.
 
 
 \section{Implementation of index notation into Lean 4}
-\includegraphics[width=\textwidth]{overviewFlow.png}
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{overviewFlow.png}
+  \caption{Overview of the implementation of index notation in Lean. The 
+  solid lines represent formally verified parts of the implementation.}
+  \label{fig:overviewFlow}
+\end{figure}
 The implementation of index notation in Lean can be  broken down into 
-three main components, illustrated in Figure \js{ref}. 
+three main components, illustrated in Figure~\ref{fig:overviewFlow}. 
 The first component is the \emph{syntax for tensor expressions}, 
 which is what users interact with when writing results in Lean. 
 This syntax closely mirrors the notation familiar to physicists, 
@@ -299,7 +306,7 @@ The third and final component is the conversion of the tensor tree into an actua
 This process utilizes properties of the symmetric-monoidal category of representations
  to translate the abstract tensor tree into a concrete tensor.
 
-These three steps—syntax, tensor tree, and tensor—are illustrated in Figure \js{ref}. 
+These three steps—syntax, tensor tree, and tensor—are illustrated in Figure~\ref{fig:overviewFlow}. 
 Although Lean processes information from left to right, 
 starting with the syntax and proceeding to the tensor tree, and then finally (when 
 we ask it to) to the tensors, 
@@ -339,32 +346,40 @@ There are six building block representations for complex Lorentz tensors. These 
     action of the Lorentz group on four-vectors.
 \end{itemize}
 As an example the representation \lstinline|Fermion.leftHanded| is defined in Lean as follows:
-\begin{code}
+\begin{codeLong}
+/-- The vector space ℂ^2 carrying the fundamental representation of SL(2,C).
+  In index notation corresponds to a Weyl fermion with indices ψ^a. -/
 def leftHanded : Rep ℂ SL(2,ℂ) := Rep.of {
-    toFun := fun M => {
-      toFun := fun (ψ : LeftHandedModule) =>
-        LeftHandedModule.toFin2ℂEquiv.symm (M.1 * ψ.toFin2ℂ),
-      map_add' := by
-        intro ψ ψ'
-        simp [mulVec_add]
-      map_smul' := by
-        intro r ψ
-        simp [mulVec_smul]}
-    map_one' := by
-      ext i
-      simp
-    map_mul' := fun M N => by
-      simp only [SpecialLinearGroup.coe_mul]
-      ext1 x
-      simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearEquiv.apply_symm_apply,
-        mulVec_mulVec]}  
-\end{code} \js{Not exact definiton as could not type $*\_v$}
-Here the  outer \lstinline|toFun| argument is defining a map from $SL(2,\mathbb{C})$ to linear maps 
-from \lstinline|LeftHandedModule| (equivalent to $\mathbb{C}^2$) to itself. The inner \lstinline|toFun|, 
-\lstinline|map_add'| and \lstinline|map_smul'| are defining defining respectively, the underlying 
-function of this linear map, and proving it it linear with respect to addition and scalar multiplication.
-The \lstinline|map_one'| and \lstinline|map_mul'| are proving that action of the identity is trivial, 
-and that the action of the product of two elements is the product of the actions of the elements.
+  /- The function from SL(2,ℂ) to endomorphisms of LeftHandedModule 
+    (which corresponds to the vector space ℂ^2). -/
+  toFun := fun M => {
+    /- Start of the definiton of the linear map. -/
+    /- The function underlying the linear map. Defined as the dot product. -/
+    toFun := fun (ψ : LeftHandedModule) =>
+      LeftHandedModule.toFin2ℂEquiv.symm (M.1 *ᵥ ψ.toFin2ℂ),
+    /- Proof that the function is linear with respect to addition. -/
+    map_add' := by
+      intro ψ ψ'
+      simp [mulVec_add]
+    /- Proof that the function is linear with respect to scalar multiplication. -/
+    map_smul' := by
+      intro r ψ
+      simp [mulVec_smul]
+    /- End of the definiton of the linear map. -/}
+  /- Proof that (the outer) toFun gives the identity map on the identity of SL(2,ℂ). -/
+  map_one' := by
+    ext i
+    simp
+  /- Proof that the action of the product of two elements is 
+    the product of the actions of the elements. -/
+  map_mul' := fun M N => by
+    simp only [SpecialLinearGroup.coe_mul]
+    ext1 x
+    simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearEquiv.apply_symm_apply,
+      mulVec_mulVec]}
+\end{codeLong} 
+We have added some explainatory comments to this code, not seen in the actual Lean code, to give 
+the reader an idea of what each part does. 
 
 We assign a unique label, which we refer to as a \emph{color}, to each of the 
 building block representations. We denote the type of colors for a given species of tensors as $C$.
@@ -808,8 +823,8 @@ to be contracted. Although, this depends on where exactly the indices sit in the
 \syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | ν ν\}ᵀ!}{\lstinline!(prod (tensorNode T) (contr 0 0 rfl (tensorNode T2)))!}
 works fine becuase the inner contraction is done before the product. 
 
-We now turn to addition. Our syntax allows for e.g. \lstinline!\{T | μ ν + T2 | μ ν\}ᵀ! and also 
-\lstinline!\{T | μ ν + T2 | ν μ\}!, provided of course that the indices are of the correct color (which Lean will check). 
+We now turn to addition. Our syntax allows for e.g. \lstinline!{T | μ ν + T2 | μ ν}ᵀ! and also 
+\lstinline!{T | μ ν + T2 | ν μ}ᵀ!, provided of course that the indices are of the correct color (which Lean will check). 
 The elabor handles both these cases, and generalizations thereof by adding a permutation node. Thus we have 
 \syntaxElab{\lstinline!\{T | μ ν + T2 | μ ν\}ᵀ!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
 where here the \lstinline!_! is a placeholder for the permutation, and in this case will be trivial, but for 
