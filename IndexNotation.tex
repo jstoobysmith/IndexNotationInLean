@@ -196,7 +196,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Title, author, date
 \title{Index notation in Lean 4}
-\author{Joseph Tooby-Smith \\ \textit{Reykjavik University}}
+\author{Joseph Tooby-Smith \\ \textit{Reykjavik University, Reykjavik, Iceland}}
 \date{\today}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -213,6 +213,8 @@ making it more accessible for physicists to write and prove results within Lean.
 In the background, our implementation leverages a novel application of category theory.
 \end{abstract}
 
+{\color{mycolor} The file you are currently reading is a draft. There will 
+be typos, mistakes, sentences that don't make sense, notation that is not defined etc.}
 \section{Introduction}
 
 In previous work, the author initiated the digitalization (or formalization) 
@@ -359,7 +361,9 @@ are
     representation of $SL(2, \mathbb{C})$ induced by the homomorphism of $SL(2, \mathbb{C})$ into 
     the Lorentz group and the covariant action of the Lorentz group on four-vectors.
 \end{itemize}
-As an example the representation \lstinline|Fermion.leftHanded| is defined in Lean as follows:
+
+An example of how these representations are defined in Lean is given below for the representation 
+of left-handed Weyl fermions, \lstinline|Fermion.leftHanded|:
 \begin{codeLong}
 /-- The vector space ℂ^2 carrying the fundamental representation of SL(2,C).
   In index notation corresponds to a Weyl fermion with indices ψ^a. -/
@@ -392,13 +396,18 @@ def leftHanded : Rep ℂ SL(2,ℂ) := Rep.of {
     simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearEquiv.apply_symm_apply,
       mulVec_mulVec]}
 \end{codeLong} 
-We have added some explainatory comments to this code, not seen in the actual Lean code, to give 
+We have added some explainatary comments to this code, not seen in the actual Lean code, to give 
 the reader an idea of what each part does. 
 
-We assign a unique label, which we refer to as a \emph{color}, to each of the 
-building block representations. We denote the type of colors for a given species of tensors as $C$.
-For complex Lorentz tensors 
-$C$ is defined as 
+Moving on, to each of the building block representations, we assign a unique label, 
+which we refer to as a \emph{color}. We then get a type of colors for a given species of tensors,
+which in this paper we will denote $C$. 
+
+For complex Lorentz tensors we associate the color \lstinline|upL| to the representation 
+\lstinline|Fermion.leftHanded|, \lstinline|downL| to \lstinline|Fermion.altLeftHanded|,
+\lstinline|upR| to \lstinline|Fermion.rightHanded|, \lstinline|downR| to \lstinline|Fermion.altRightHanded|,
+\lstinline|up| to \lstinline|Lorentz.complexContr| and \lstinline|down| to \lstinline|Lorentz.complexCo|.
+The type of colors is defined in Lean as an inductive type as follows:
 \begin{code}
 inductive Color
   | upL : Color
@@ -408,18 +417,21 @@ inductive Color
   | up : Color
   | down : Color
 \end{code}
-Here \lstinline|Color| is the name of our type and \lstinline|upL|, \lstinline|downL|, etc. are the
-colors. 
+This can roughly be thought of as the type with six elements. We will see a much more complicated form 
+of inductive type when we come to define tensor trees.
 
-To formally associate each color with its corresponding representation, we define
-a discrete functor from the set $C$ to the category of $k$-representations of $G$, denoted 
-$\Rep k G$, that is, a functor
+The assignment of colors to their corresponding representations is done via a functor $F_D$ 
+from the set $C$ to the category of $k$-representations of $G$, which we denote $\Rep k G$.
+That, is a functor
 \begin{equation} 
-  F_{D} : C \Rightarrow \Rep k G
+  F_{D} : C \Rightarrow \Rep k G\, . 
 \end{equation}
+Since the source category of this functor is just a set, we could have instead defined it as 
+a function - however we will see later that we want to lift this functor to a symmetric monoidal
+functor with a more sophiscated source category. For this reason, it is useful to have a functor here. 
 
-
-For complex Lorentz tensors this functor in Lean as follows:
+However, been a functor from a set, means that defining it for specific cases in Lean is somewhat stright forard. 
+For complex Lorentz tensors this functor is defined as follows:
 \begin{code}
 FDiscrete := Discrete.functor fun c =>
   match c with
@@ -430,51 +442,57 @@ FDiscrete := Discrete.functor fun c =>
   | Color.up => Lorentz.complexContr
   | Color.down => Lorentz.complexCo
 \end{code}
-
-The reason why we have used a functor here, rather than just a function, will become apparent
-in what follows.
-
+This code snippet actually forms part of a larger structure called a tensor species, which we will
+get on to shortly. 
 
 \subsubsection{General tensors} \label{sec:generalTensors}
 
-For a given tensor species, given the symmetric monoidal structure on $\mathrm{Rep} k G$, 
-we can take the tensor product of the building block representations. 
-Elements of such tensor products form the general notion of a tensor for that given 
-species. 
 
-To formalize this in Lean, we consider the category  $\mathcal{S}_{/C}^\times$. The objects 
-of $\mathcal{S}_{/C}^\times$ are functions $f : X \to C$  for some type $X$. 
-A morphism from $f : X \to C$ to $g : Y \to C$ is a bijection $\phi : X \to Y$ such that 
-$f = g \circ \phi$. 
-This category is equivalent to the core of the category of types ($\mathcal{s}$) over $C$, hence 
-our notation. 
+Given any type $C$, which we will think of as a type of colors, we can define 
+the category $\mathrm{T}_{/C}^\times$ as follows. Objects are functions 
+$f : X \to C$ for some type $X$. A morphism from $f : X \to C$ to $g : Y \to C$ is a bijection
+$\phi : X \to Y$ such that $f = g \circ \phi$. This category is equivalent to the core of the
+category of types sliced over $C$, which explains the origin of the notation. 
+In Lean we denote this category as \lstinline|OverColor C|, although we will use the 
+shorter notation $\mathrm{T}_{/C}^\times$ here when we can.
 
-Any functor $H : C \Rightarrow \mathrm{Rep} k G$ can be lifted to a symmetric monoidal 
-functor $\mathcal{S}_{/C}^\times \Rightarrow \mathrm{Rep} k G$ which takes $f$ to the 
-tensor product $\bigotimes_{x \in X} H(f(x))$ and morphisms to the linear maps 
-of representations corresponding to reindexings of
-tensor products.
+The category $\mathrm{T}_{/C}^\times$ is not any old category, it carries a symmetric monoidal structure, 
+which we will denote $\otimes$. The structure such that $f \otimes g$ for objects $f$ and $g$ 
+is the map $X \oplus Y \to C$ where $\oplus$ denotes the disjoint union of types. 
 
-This construction is itself functorial, 
-giving a functor: 
+The functor $F_D$ defined above, can be lifted to a symmetric monoidal functor $F$ from 
+$\mathrm{T}_{/C}^\times$ to $\Rep k G$. This functor takes $f : X \to C$ to the tensor product
+$\bigotimes_{x \in X} F_D(f(x))$ and morphisms to the linear maps of representations corresponding to
+reindexings of tensor products. This construction is general, and functorial. In otherwords, 
+there is a functor 
 \begin{equation}
   \mathrm{lift} : \mathrm{Fun}(C, \mathrm{Rep} k G) \Rightarrow
-  \mathrm{SymmMonFun}(\mathcal{S}_{/C}^\times, \mathrm{Rep} k G)
+  \mathrm{SymmMonFun}(\mathrm{T}_{/C}^\times, \mathrm{Rep} k G)
 \end{equation} 
-In the previous subsection we defined the functor $F_{D}$ which associates to each color 
-its corresponding representation. We can then define a functor $F$ by the image of $F_{D}$ under
-the lift functor. 
+In Lean we define this functor, along with the corresponding lift of $F_D$, $F$.
 
-A tensor of a given species can then be thought of as a vector in the representations in the of $F$.
-Defining a tensor in this way allows us to utalize the 
-structur of monodial categories and functors in a useful way. 
+We can think of an object $f : X \to C$ of $\mathrm{T}_{/C}^\times$ as a type of indices $X$, and a specification 
+of what repreesntation each index is associated to. The representation $F(f)$ is 
+then the tensor product of each of these representations, so that vectors $v \in F(f)$ can be thought of as 
+tensors with indices indexed by $X$ of color $C$ (e.g. `up' or `down'). 
 
-In HepLean we formally define $\mathrm{lift}$ and $F$. 
+With this in mind, we define a general tensor of a given species as a vector in the representation $F(f)$ 
+for some $f$ in $\mathrm{T}_{/C}^\times$.
 
-For most purposes in physics $X$ will be a type $\mathrm{Fin} n$, corresponding to the type 
-(set) of natural numbers (including 0) less $n$. Later on we will restrict to these types.
+In physics, we typically focus on objects $f : X \to C$ in $\mathrm{T}_{/C}^\times$ where $X$ is a 
+finite type of the form $\mathrm{Fin}\, n$ for some $n$. Here, $\mathrm{Fin}\, n$ represents the 
+type of natural numbers less than $n$, i.e., $\{0, 1, \dots, n-1\}$. When appropraite in what follows, 
+we will restrict to these objects.
+
+In Lean for a map of types \lstinline|f : X \to C|, what we have been writing as $F(f)$ is written 
+as \lstinline|S.F.obj (OverColor.mk f)|. The object \lstinline|S| is the tensor species, which we will
+define shortly. The \lstinline|OverColor.mk| tells lean that the function \lstinline|f| should 
+be considered as an object of \lstinline|OverColor C|, not just as an object of type \lstinline|X -> C|. \js{fix arrows here}
 
 \subsubsection{Tensor operations} \label{sec:tensorOperations}
+
+\js{In rewrite - I got up to here.}
+
 
 Now we have discussed how tensors of a given species can be formally defined, we can define 
 basic operations on these tensors. 
@@ -486,7 +504,7 @@ on $F(f)$. The action of the group $G$ on tensors also comes for free from the f
 $F(f)$ lives in $\mathrm{Rep} k G$.
 
 The next simplest operation is permutation of indices (or building block representations).
-Such permutations arise from applying $F$ to morphisms in $\mathcal{S}_{/C}^\times$. 
+Such permutations arise from applying $F$ to morphisms in $\mathrm{T}_{/C}^\times$. 
 Theses sorts of permutations are often implicit in the notation physicists use, but arise 
 in tensor expressions such as $T_{\mu \nu} = T_{\nu \mu}$.
 
@@ -667,7 +685,7 @@ We can then let e.g. \lstinline|S : TensorSpecies| and recover the functor $F_D$
 by \lstinline|S.FDiscrete|. The functor $F$ is defined seperatrly can can be recovered
 by \lstinline|S.F|. If \lstinline|f : X \to S.C| is map then a tensor is an element of 
 \lstinline|S.F.obj (OverColor.mk f)|. The \lstinline|OverColor.mk| tells Lean to consider $f$ as 
-a function an element of the category $\mathcal{S}_{/C}^\times$, or as it is written in Lean 
+a function an element of the category $\mathrm{T}_{/C}^\times$, or as it is written in Lean 
 \lstinline|OverColor S.C|. 
 
 A function \lstinline|f : Fin 2 → S.C|, for instance landding on $c1, c2 \in C$ can be written in 
