@@ -281,7 +281,23 @@ the future work related to this project.
 \section{Implementation of index notation into Lean 4}
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth]{overviewFlow.png}
+  \begin{tikzpicture}[
+    thick,
+    >=Stealth,
+    box/.style={rectangle, draw, minimum height=1cm, minimum width=2.5cm, align=center},
+    dashedbox/.style={rectangle, draw, dashed, minimum height=1cm, minimum width=2.5cm, align=center}
+  ]
+  
+  % Nodes
+  \node[dashedbox] (syntax) at (0,0) {Syntax};
+  \node[box] (tensorTree) at (5,0) {Tensor Tree};
+  \node[box] (tensor) at (10,0) {Tensor};
+  
+  % Edges
+  \draw[->, dashed] (syntax) -- node[above] {Elab} (tensorTree);
+  \draw[->] (tensorTree) -- node[above] {Cat theory} (tensor);
+  
+  \end{tikzpicture}
   \caption{Overview of the implementation of index notation in Lean. The 
   solid lines represent formally verified parts of the implementation.}
   \label{fig:overviewFlow}

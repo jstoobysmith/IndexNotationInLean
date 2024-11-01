@@ -1,9 +1,0 @@
-// dot -Tpng  -Gdpi=300 -o overviewFlow.png overviewFlow.dot
-digraph G {
-    rankdir=LR; 
-    syntax [label = "Syntax", shape = box, style = dashed]
-    tree [label = "Tensor Tree", shape = box]
-    tensor [label = "Tensor", shape =box]
-    syntax -> tree [label = "Elab", style = dashed]
-    tree -> tensor [label = "Cat theory"]
-}
