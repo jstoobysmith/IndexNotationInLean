@@ -1111,26 +1111,31 @@ theorem pauliCo_contr_pauliContr :
 
 
 \section{Future work}
+The scale of formalizing all results regarding index notation is a task that surpasses 
+the capacity of any single individual. Inspired by the Lean community's 
+blueprint projects, we have added to HepLean informal lemmas related to index notation and tensors. 
+An example of such is 
+\begin{code} 
+informal_lemma coBispinorUp_eq_metric_contr_coBispinorDown where
+  math :≈ "{coBispinorUp p | α β = εL | α α' ⊗ εR | β β' ⊗ coBispinorDown p | α' β' }ᵀ"
+  proof :≈ "Expand `coBispinorDown` and use fact that metrics contract to the identity."
+  deps :≈ [``coBispinorUp, ``coBispinorDown, ``leftMetric, ``rightMetric]
+\end{code}
+The lemmas  resource that we hope others—or even automated systems—will formalize in the future.
 
-\begin{itemize}
-\item Informal lemmas and definitions. 
-\begin{itemize} 
-  \item The shear scale of the task of formalising all results index notation and tensors 
-   is too large for any one person. 
-  \item Thus impsired by Lean blueprints we have created a list of informal-definitions and reslults 
-   which we hope someone (or something) will formalise in the future. 
-\end{itemize}
-\item Improvement of tactics. 
-\begin{itemize} 
-  \item As can be seen in the example of ..., there are lots of tedious calculations involved in 
-    manipulating the tensor trees. 
-  \item In the future we would like to see a lot of these manipulations automated with sutiable 
-    tactics. We hope the tensor tree structure will lend itself nicely to this.
-\end{itemize} 
-\item There are two main ways we can take the concepts here further. 
-\item We could define spinor-hleicity formalism, or extend things to tensor fields and derivatives thereof. 
-\item We do not beleive there to be any unsumountable chanangle in these tasks.
-\end{itemize}
+As demonstrated in our earlier examples, manipulating tensor expressions can involve tedious
+ calculations, especially when dealing with directly with tensor trees. 
+In the future, we intend to automate many of these routine steps by developing suitable tactics 
+within Lean. We are optimistic that the structured nature of tensor trees will lend itself well to 
+such automation, thereby streamlining computations and enhancing the efficiency of formal proofs
+involving index notation and tensor species.
+
+There are two primary directions in which we can extend the concepts presented in this work. 
+First, we could incorporate the spinor-helicity formalism, which is used in the study of scattering 
+amplitudes. Second, we could extend our approach to encompass tensor \emph{fields}, their derivatives
+etc. We do not anticipate any insurmountable challenges in pursuing these extensions. 
+They represent promising avenues for future research and have the potential to significantly enhance
+ the utility of formal methods in physics.
 \bibliographystyle{unsrturl}
 \begin{spacing}{0.5}
 \bibliography{MyBib}
