@@ -298,34 +298,33 @@ the future work related to this project.
   solid lines represent formally verified parts of the implementation.}
   \label{fig:overviewFlow}
 \end{figure}
-The implementation of index notation in Lean can be  broken down into 
+Our implementation of index notation in Lean can be  broken down into 
 three main components, illustrated in Figure~\ref{fig:overviewFlow}. 
 The first component is the \emph{syntax for tensor expressions}, 
 which is what users interact with when writing results in Lean. 
 This syntax closely mirrors the notation familiar to physicists, 
 making it intuitive and accessible. 
 It appears directly in the Lean files and can be thought of as an informal string 
-that represents the tensor expressions.
+that represents the tensor expressions. The code snippet above, involving pauli matrices, is an 
+example of this.
 
 The second component involves transforming this syntax into a \emph{tensor tree}. 
 The tensor tree is a formal mathematical representation of the tensor expression. 
-By parsing the informal syntax into a structured tree, 
+By parsing the syntax into a structured tree, 
 we establish a rigorous foundation that captures the tensor expression. 
 This formal representation allows us to easily manipulate tensor expressions and
 prove results related to them in a way that Lean accepts as formal.
 
 The third and final component is the conversion of the tensor tree into an actual \emph{tensor}. 
 This process utilizes properties of the symmetric-monoidal category of representations
- to translate the abstract tensor tree into a concrete tensor.
+ to translate the tensor tree into a tensor.
 
-These three steps—syntax, tensor tree, and tensor—are illustrated in Figure~\ref{fig:overviewFlow}. 
-Although Lean processes information from left to right, 
+Although Lean processes information from left to right in Figure~\ref{fig:overviewFlow}, 
 starting with the syntax and proceeding to the tensor tree, and then finally (when 
 we ask it to) to the tensors, 
 it is more effective to discuss the implementation from right to left. 
-This reverse approach is advantageous because the tensors,
- which are the primary objects of interest, are located on the right side of the diagram. 
- The left and middle parts of the diagram represent intermediate stages that facilitate the 
+Starting with tensors is advantageous because they are the primary objects of interest.
+ The left and middle parts of the diagram can be thought of as intermediate stages that facilitate the 
  manipulation and understanding of these tensors and their expressions.
 
 \subsection{Defining tensors} \label{sec:definingTensors}
@@ -334,28 +333,31 @@ This reverse approach is advantageous because the tensors,
 
 Tensors of a species, such as complex Lorentz tensors, are constructed from a 
 set of building block representations of a group $G$ over a field $k$.
-For complex Lorentz tensors, the group $G$ is $SL(2, \mathbb{C})$, the field $k$ is the 
-field of complex numbers. 
 
-There are six building block representations for complex Lorentz tensors. These are
+For complex Lorentz tensors, the group $G$ is $SL(2, \mathbb{C})$, the field $k$ is the 
+field of complex numbers and six building block representations. The six building block representations 
+are
 \begin{itemize}
-  \item \lstinline|Fermion.leftHanded| is the
-   representation of $SL(2, \mathbb{C})$ corresponding 
-      $v \mapsto M v$, corresponding to Left-handed Weyl fermions.
-  \item \lstinline|Fermion.altLeftHanded| is the
-  representation of $SL(2, \mathbb{C})$ corresponding 
-     $v \mapsto M^{-1 T} v$, corresponding to alternative Left-handed Weyl fermions (as we will 
-     call them).
-  \item \lstinline|Fermion.rightHanded| is the representation of $SL(2, \mathbb{C})$ corresponding 
-  $v \mapsto M^\star v$, corresponding Right-handed Weyl fermions.
-  \item \lstinline|Fermion.altRightHanded| is the representation of $SL(2, \mathbb{C})$ corresponding
-  $v \mapsto M^{-1 \dagger} v$, corresponding to alternative Right-handed Weyl fermions.
-  \item \lstinline|Lorentz.complexContr| is the representation of $SL(2, \mathbb{C})$ 
-   induced by the homomorphism of $SL(2, \mathbb{C})$ into the Lorentz group and the contravariant 
-   action of the Lorentz group on four-vectors
-  \item \lstinline|Lorentz.complexCo| is the representation of $SL(2, \mathbb{C})$
-    induced by the homomorphism of $SL(2, \mathbb{C})$ into the Lorentz group and the covariant
-    action of the Lorentz group on four-vectors.
+  \item The representation of left-handed Weyl fermions, 
+    denoted in Lean as \lstinline|Fermion.leftHanded|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M v$ for $M \in SL(2, \mathbb{C})$.
+  \item The representation of `alternative' left-handed Weyl fermions, 
+    denoted in Lean as \lstinline|Fermion.altLeftHanded|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M^{-1 T} v$ for $M \in SL(2, \mathbb{C})$.
+  \item The representation of right-handed Weyl fermions, 
+    denoted in Lean as \lstinline|Fermion.rightHanded|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M^\star v$ for $M \in SL(2, \mathbb{C})$.
+  \item The representation of `alternative' right-handed Weyl fermions,
+    denoted in Lean as \lstinline|Fermion.altRightHanded|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M^{-1 \dagger} v$ for $M \in SL(2, \mathbb{C})$.
+  \item The representation of contravariant Lorentz tensors, 
+    denoted in Lean as \lstinline|Lorentz.complexContr|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ induced by the homomorphism of $SL(2, \mathbb{C})$ into 
+    the Lorentz group and the contravariant action of the Lorentz group on four-vectors.
+  \item The representation of covariant Lorentz tensors,
+     denoted in Lean as \lstinline|Lorentz.complexCo|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ induced by the homomorphism of $SL(2, \mathbb{C})$ into 
+    the Lorentz group and the covariant action of the Lorentz group on four-vectors.
 \end{itemize}
 As an example the representation \lstinline|Fermion.leftHanded| is defined in Lean as follows:
 \begin{codeLong}
