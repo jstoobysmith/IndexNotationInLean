@@ -212,67 +212,60 @@ In the background, our implementation leverages a novel application of category 
 
 \section{Introduction}
 
-\paragraph{HepLean} In previous work, the author initiated the digitalization (or formalization) 
+In previous work, the author initiated the digitalization (or formalization) 
 of high energy physics 
 results using the interactive theorem prover Lean 4 in a project called HepLean. 
-Lean is an interactive theorem prover and 
+Lean is a
 programming language with syntax resembling traditional pen-and-paper mathematics. 
-Lean allows users to write definitions, theorems, and proofs 
-which are then automatically checked for correctness, using its foundation of dependent-type theory.
-HepLean has four main motivations: A linear storage of information makes look-up of results 
-easier; Allows for the creation and proof of new results using automated tactics like AI; 
-Makes it easier to check the correctness of results; And allows for new ways 
-high-energy physics and computer science can be taught. 
+Users can write definitions, theorems, and proofs in Lean,
+which are then automatically checked using dependent-type theory for correctness.
+The HepLean project is driven by four primary motivations: to facilitate easier look-up of results
+ through linear information storage; to support the creation and proof of new results using 
+ automated tactics and AI tools; to facilitate correctness checking of result in high energy physics; 
+ and to introduce new pedogocial methods for high-energy physics and computer science.
 
-\paragraph{Other works in Lean} HepLean is part of a broader movement of projects
+HepLean is part of a broader movement of projects
 to formalize parts, or all, of 
 mathematics and science. The largest of these projects is Mathlib, which aims to formalize
 mathematics. Indeed, HepLean is built downstream of Mathlib, meaning it has Mathlib as a 
-dependency and uses many of the definitions and theorems from there. 
+dependency and uses many of the definitions and theorems thereof. 
 Other projects include the ongoing effort led by Kevin Buzzard to formalize the proof of Fermat's
 Last Theorem into Lean. 
-In the realm of the sciences, he paper~\cite{josephson} looks at absorption theory, thermodynamics, and kinematics in Lean. 
-Whilst the package SciLean~\cite{SciLean}, is a push in the direction of scientific computing whithin Lean. 
+In the realm of the sciences, the paper~\cite{josephson} looks at absorption theory, thermodynamics, and kinematics in Lean. 
+Whilst the package SciLean~\cite{SciLean}, is a push in the direction of scientific computing within Lean. 
 
-\paragraph{Notation in physics and index notation:}
-Physicists heavily rely on specialized notation to express complex concepts succinctly. 
+Physicists heavily rely on specialized notation to express mathematical concepts succinctly. 
 Among these, index notation is particularly prevalent,
  as it provides a compact and readable way to represent specfic types of tensors and operations
- between them.
+ between them, with tensors forming a backbone of morden physics. 
 
-\paragraph{Challange:} Formalizing index notation into an interactive theorem prover like Lean 
-is chalanging due to the complexity and implicitness 
-of the notation and the need for flexiable  and rigour in it's formalization. 
-This paper presents such an implementation of index notation within the HepLean project.
-
-
-\paragraph{Motivation:} The primary motivations for implementing index notation into Lean are:
-\begin{enumerate}
-  \item To make easier to write and prove results from high energy physics into Lean. 
-  \item To make the syntax of Lean more familiar to high energy physicists use to index notation.
-\end{enumerate}
-We hope that the implementation  of index notation into Lean
-not only enhances usability but also promotes the adoption of formal methods in the 
+Because of the importance of index notation, it is crucial to have a way to write index notation in Lean. 
+This will make results from high energy physics easier to write and prove in Lean. 
+Additionally, it will make the syntax more familiar to high energy physicists.
+Such an implementation is the subject of this paper. 
+It is a challange because, not only do we need an implentation that is nice and flexiable to use, 
+we also need it to be formally well-defined and rigourous. 
+We hope that the implementation presneted here will
+not only enhances usability of Lean but also promotes the adoption of formal methods in the 
 physics community.
 
-\paragraph{Conclusion:} The conclusion of the implentation of index notation into Lean 4 is that 
-we can write results like the following: 
+
+As a taster of what is to come, our implmentation allows to write results like the following in 
+Lean:
 \begin{code}
 {pauliCo | ν α β ⊗ pauliContr | ν α' β' = 2 •ₜ εL | α α' ⊗ εR | β β'}ᵀ
 \end{code}
-and lean will correctly intpret this result as a formal mathematical object which proves can be 
-applied to.\js{Mention that we will return to this example later.}
+Lean will correctly interpret this result as a tensor expression which the correct contraction of indices 
+and permutation of indices between the sides of the expression.
 
-
-\paragraph{Other papers:}
-Previous attempts to formalize index notation have been made in programming languages like Haskell 
+Previous implmentations of index notation have been made in programming languages like Haskell 
 \cite{ref}. However, these implementations do not
  provide the formal verification capabilities inherent in Lean. 
  The formal verification requirement of Lean introduces unique challenges in implementing index 
  notation, necessitating (what we beleive is) a novel solution.
 
 
-\paragraph{Outline:} This paper is split into two main sections. Section \js{ref} dicusses 
+This paper is split into two main sections. Section \js{ref} dicusses 
 the implementation of index notation into Lean. Section \js{ref} gives two examples 
 of theorems and proofs using index notation. A more minor section, section \js{ref} disucsses 
 the future work related to this project.
@@ -495,7 +488,7 @@ in tensor expressions such as $T_{\mu \nu} = T_{\nu \mu}$.
 The next operation is the tensor product of two tensors. Given $f : X \to C$ and
 $g : Y \to C$, and tensors $t \in F(f)$ and $s \in F(g)$ we can form a vector in 
 $F(f) \otimes F(g)$. Formally this can be done by taking the tensor product of the morphisms
-$\mathbb{1} \to F(f)$ and $\mathbb{1} \to F(g)$ in the category of vector spaces over $k$.
+$\mathbbm{1} \to F(f)$ and $\mathbbm{1} \to F(g)$ in the category of vector spaces over $k$.
 We can then use the tensorate of $F$ to get a tensor in $F(f \otimes g)$.
 
 We now turn to the slightly more complicated operation of contraction of indices, 
@@ -514,8 +507,8 @@ this is defined as follows
 \end{code}
 We say that $\tau$ takes a color to it's dual. With $\tau$ and $F_D$ we can define 
 the functor  $F_\tau : C \Rightarrow Rep k G$ which takes $c$ to $F(c) \otimes F(\tau c)$. 
-Letting $\mathbb{1}$ be the constant functor from $C$ landing on the, we basic data 
-for contraction is contained in a natural transformation from $F_\tau$ to $\mathbb{1}$.
+Letting $\mathbbm{1}$ be the constant functor from $C$ landing on the, we basic data 
+for contraction is contained in a natural transformation from $F_\tau$ to $\mathbbm{1}$.
 That is, for each $c \in C$ an equivariant map from $F(c) \otimes F(\tau c)$ to the trivial 
 representation. 
 
@@ -525,15 +518,15 @@ of all number ${0, 1, 2, \ldots, n+1}$ less than $n.succ.succ = n + 2$.
 Choosing two distinct indices $i, j : \mathrm{Fin} \; n.succ.succ$ we can contract them 
 using the following chain of maps
 \begin{equation}
-  F f \equiv F_\tau (f i) \otimes F (f' i) \to \mathbb{1} \otimes F (f' i) \to F (f' i)
+  F f \equiv F_\tau (f i) \otimes F (f' i) \to \mathbbm{1} \otimes F (f' i) \to F (f' i)
 \end{equation}
 Here $f' : \mathrm{Fin} \; n \to C$ is the function defived from $f$ by removing the indices $i$ 
 and $j$. The first equivalence is somewhat complicated to define formally, but essentially involves 
 extracting $i$ and $j$. 
 
 The metric and unit are defined in a similar way. The metric is a natural transformation from
-$\mathbb{1}$ to $F_D\otimes F_D$. That is, for each $c \in C$ an equivariant map from the trivial
-representation to $F_D(c) \otimes F_D(c)$. The unit is a natural transformation from $\mathbb{1}$ to
+$\mathbbm{1}$ to $F_D\otimes F_D$. That is, for each $c \in C$ an equivariant map from the trivial
+representation to $F_D(c) \otimes F_D(c)$. The unit is a natural transformation from $\mathbbm{1}$ to
 $F_\tau'$ which takes $c$ to $F_D(\tau c) \otimes F_D(c)$. That is, for each $c \in C$ an 
 equivariant map from the trivial representation to  $F_D(\tau c) \otimes F_D(c)$.
 
@@ -542,8 +535,8 @@ The choice of contraction, metric and unit are subject to a number of conditions
 \item Contraction must be symmetric.
 \begin{equation}
   \begin{tikzcd}
-    F_D(c) \otimes F(\tau c) \arrow[r] \arrow[d] & F_D(\tau c) \otimes F_D (c) \arrow[d] \\
-    \mathbb{I} \arrow[r] & F_D(\tau c) \otimes F_D (\tau \tau c)
+    F_D(c) \otimes F_D(\tau c) \arrow[r, "{\beta}"] \arrow[d, "{\mathcal{C}\, c}", swap] & F_D(\tau c) \otimes F_D (c) \arrow[d, "\mathbbm{1} \otimes F_D t"] \\
+    \mathbb{I} & F_D(\tau c) \otimes F_D (\tau \tau c) \arrow[l, "{\mathcal{C}\, \tau(c)}", ] 
   \end{tikzcd}
   \end{equation}
   \item Contraction with the unit does nothing. 
@@ -570,8 +563,8 @@ The choice of contraction, metric and unit are subject to a number of conditions
   \end{equation}
 \end{itemize}
 In Lean we quite write these conditions in this way, instead we give them in a simpiler equivalent form 
-in which we apply the maps in the above diagram to pure tensors. As an example, 
-the condition is written in Lean as 
+in which we apply the maps in the above diagram to pure tensors. We will see how they are 
+written explicitly in Lean when we come to formally define the tensor species in the next section.
 
 The last operation we want to talk about is evaluation. Where one specifies the exact value of 
 one of the indices of a tensor e.g. $\eta_{0i}$. 
@@ -583,7 +576,7 @@ To do this, we need a basis for each $F_D(c)$, the coordinates of a vector in $F
 is discrbed by a linear map of vector spaces from $F_D(c)$ to $k$. This can be used 
 to evaluate the index of a tensor in the following way: 
 \begin{equation} 
-  F f \equiv F_D (f i) \otimes F (f' i) \to \mathbb{1} \otimes F (f' i) \to F (f' i)
+  F f \equiv F_D (f i) \otimes F (f' i) \to \mathbbm{1} \otimes F (f' i) \to F (f' i)
 \end{equation}
 where $f'$ is $f$ with the $i$th index removed, and again the first equivalence is somewhat
 complicated to define but involves extracting the $i$th index.
