@@ -254,7 +254,6 @@ We hope that the implementation presneted here will
 not only enhances usability of Lean but also promotes the adoption of formal methods in the 
 physics community.
 
-
 As a taster of what is to come, our implmentation allows to write results like the following in 
 Lean:
 \begin{code}
@@ -269,14 +268,13 @@ Previous implmentations of index notation have been made in programming language
  The formal verification requirement of Lean introduces unique challenges in implementing index 
  notation, necessitating (what we beleive is) a novel solution.
 
-
 This paper is split into two main sections. Section~\ref{sec:Implementation} dicusses 
 the implementation of index notation into Lean. Section \js{ref} gives two examples 
 of theorems and proofs using index notation. A more minor section, section \js{ref} disucsses 
 the future work related to this project.
 
-
 \section{Implementation of index notation into Lean 4}\label{sec:Implementation}
+
 \begin{figure}
   \centering
   \begin{tikzpicture}[
@@ -300,6 +298,217 @@ the future work related to this project.
   solid lines represent formally verified parts of the implementation.}
   \label{fig:overviewFlow}
 \end{figure}
+
+Our implementation of index notation can be thought of as three different representations of tensor 
+expressions and maps between them. This is illustrated in Figure~\ref{fig:overviewFlow}.
+
+The first representation is \emph{syntax}. This can (roughly) be thought of as the informal string
+that represents the tensor expression. It is what the user interacts with when 
+writing results in Lean, and what appears in raw Lean files. The code snippet above, 
+for Pauli matrices is an example of syntax. 
+
+The second representation of a tensor expression is a \emph{tensor tree}. This representaiton is 
+mathematically formal, but easy to use and manipulate. 
+It is a structured tree which has different types 
+of nodes for each of the main operations that one can perform on tensors.
+
+The process of going from syntax to a tensor tree is done via an elaborator 
+which follows a number of (informally defined) rules.
+
+The third and final representation is a bona-fide \emph{tensor}. This representation 
+is the mathematical object that we are actually intrested in. However, in going to this representation
+we lose the structure of the tensor expression itself, making it somewhat difficult to work with. 
+
+The process of going from a tensor tree to a tensor involves properties from the symmetric monoidal 
+category of representations. 
+
+Before we discuss these processes in more detail we do some set-up by defining formally a 
+`tensor species'. 
+
+\subsection{Tensor Species}
+
+A tensor species is a formalization of the data needed to define e.g., complex Lorentz tensors, 
+real Lorentz tensors or Einstein tensors. The word `species' is a nod to `graphical species'
+defining in \js{...}, from which our construction is inspired.
+
+We will start by giving the complete definition of a tensor species in Lean, and then 
+disect this definition, discussing each of the components in turn. 
+
+In Lean a tensor species is defined as follows:
+\begin{code}
+
+\end{code}
+
+Let us go through this definition piece by piece.
+Firstly \lstinline|k| is a type, has the instance \lstinline|k_commRing| of a commuative ring. 
+It represents the ring (or field) that our tensors are defined over. For complex Lorentz tensors, 
+this is naturally, the field of complex numbers. 
+
+The type \lstinline|G| has the instance of a group \lstinline|G_group|. It represents 
+the group which acts on our tensors. For complex Lorentz tensors, this is the group 
+$SL(2, \mathbb{C})$, whilst for real Lorentz tensors this is the Lorentz group. 
+
+The type \lstinline|C| is a type of colors.
+For complex Lorentz tensors, there are six colors forming the type 
+\begin{code}
+inductive Color
+  | upL : Color
+  | downL : Color
+  | upR : Color
+  | downR : Color
+  | up : Color
+  | down : Color
+\end{code}
+Colors can be thought of as labels for each of the building 
+block representations making up the tensor species.  This is made formal by the functor 
+\lstinline|FDiscrete|, which assigns to each color a representation of $G$ over $k$.
+In what follows we will use $F_D$ to denote this functor.
+For complex Lorentz tensors, this is defined as follows:
+\begin{code}
+FDiscrete := Discrete.functor fun c =>
+  match c with
+  | Color.upL => Fermion.leftHanded
+  | Color.downL => Fermion.altLeftHanded
+  | Color.upR => Fermion.rightHanded
+  | Color.downR => Fermion.altRightHanded
+  | Color.up => Lorentz.complexContr
+  | Color.down => Lorentz.complexCo
+\end{code}
+The representations defined here are: 
+\begin{itemize}
+  \item The representation of left-handed Weyl fermions, 
+    denoted in Lean as \lstinline|Fermion.leftHanded|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M v$ for $M \in SL(2, \mathbb{C})$.
+  \item The representation of `alternative' left-handed Weyl fermions, 
+    denoted in Lean as \lstinline|Fermion.altLeftHanded|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M^{-1 T} v$ for $M \in SL(2, \mathbb{C})$.
+  \item The representation of right-handed Weyl fermions, 
+    denoted in Lean as \lstinline|Fermion.rightHanded|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M^\star v$ for $M \in SL(2, \mathbb{C})$.
+  \item The representation of `alternative' right-handed Weyl fermions,
+    denoted in Lean as \lstinline|Fermion.altRightHanded|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M^{-1 \dagger} v$ for $M \in SL(2, \mathbb{C})$.
+  \item The representation of contravariant Lorentz tensors, 
+    denoted in Lean as \lstinline|Lorentz.complexContr|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ induced by the homomorphism of $SL(2, \mathbb{C})$ into 
+    the Lorentz group and the contravariant action of the Lorentz group on four-vectors.
+  \item The representation of covariant Lorentz tensors,
+     denoted in Lean as \lstinline|Lorentz.complexCo|, and corresponding to the 
+    representation of $SL(2, \mathbb{C})$ induced by the homomorphism of $SL(2, \mathbb{C})$ into 
+    the Lorentz group and the covariant action of the Lorentz group on four-vectors.
+\end{itemize}
+As an example, the representation of left-handed Weyl fermions  \lstinline|Fermion.leftHanded|
+is defined in Lean as follows:
+\begin{codeLong}
+/-- The vector space ℂ^2 carrying the fundamental representation of SL(2,C).
+  In index notation corresponds to a Weyl fermion with indices ψ^a. -/
+def leftHanded : Rep ℂ SL(2,ℂ) := Rep.of {
+  /- The function from SL(2,ℂ) to endomorphisms of LeftHandedModule 
+    (which corresponds to the vector space ℂ^2). -/
+  toFun := fun M => {
+    /- Start of the definiton of the linear map. -/
+    /- The function underlying the linear map. Defined as the dot product. -/
+    toFun := fun (ψ : LeftHandedModule) =>
+      LeftHandedModule.toFin2ℂEquiv.symm (M.1 *ᵥ ψ.toFin2ℂ),
+    /- Proof that the function is linear with respect to addition. -/
+    map_add' := by
+      intro ψ ψ'
+      simp [mulVec_add]
+    /- Proof that the function is linear with respect to scalar multiplication. -/
+    map_smul' := by
+      intro r ψ
+      simp [mulVec_smul]
+    /- End of the definiton of the linear map. -/}
+  /- Proof that (the outer) toFun gives the identity map on the identity of SL(2,ℂ). -/
+  map_one' := by
+    ext i
+    simp
+  /- Proof that the action of the product of two elements is 
+    the product of the actions of the elements. -/
+  map_mul' := fun M N => by
+    simp only [SpecialLinearGroup.coe_mul]
+    ext1 x
+    simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearEquiv.apply_symm_apply,
+      mulVec_mulVec]}
+\end{codeLong} 
+We have added some explainatary comments to this code, not seen in the actual Lean code, to give 
+the reader an idea of what each part does. 
+
+The map \lstinline|repDim| assigns to each color a natural number, which corresponds 
+to the dimension of the representation associated to that color. The condition is placed on 
+the representations that they are non-empty, i.e., that the dimension is not equal to zero \lstinline|repDim_neZero|.  
+The map \lstinline|basis| gives a basis indexed by \lstinline|(Fin (repDim c))| (numbers from 0 to $\mathrm{repDim}\; c -1 $)  of each representation for each $c \in C$.  
+We will use this basis in the definition of evaluation of tensor indices. 
+
+To each color the map \lstinline|τ|, which is an involution via \lstinline|τ_involution|, defines 
+a dual color. The dual of a color is that which it can be contracted with. So, for complex Lorentz tensors 
+the map \lstinline|τ| is given by 
+\begin{code} 
+τ := fun c =>
+  match c with
+  | Color.upL => Color.downL
+  | Color.downL => Color.upL
+  | Color.upR => Color.downR
+  | Color.downR => Color.upR
+  | Color.up => Color.down
+  | Color.down => Color.up
+\end{code}
+
+The contraction is defined by \lstinline|contr|, which is a natural transformation from the functor 
+$F_D(\_) \otimes F_D (\tau (\_))$, to the functor $\mathbbm{1}$ takes every object in $C$ to the trivial representation $k$. 
+This natural transformation is simply the assignment to each color $c$ a map from 
+$F_D(c) \otimes F_D (\tau(c))$ to $k$ which is equivariant with respect to the group action. 
+This contraction cannot be defined arbitarily, but must satisfy the symmetry condition \lstinline|contr_tmul_symm|, 
+which correpsonds to the diagram 
+\begin{equation}
+\begin{tikzcd}
+  F_D(c) \otimes F_D(\tau c) \arrow[r, "{\beta}"] \arrow[d, "{\mathcal{C}(c)}", swap] & F_D(\tau c) \otimes F_D (c) \arrow[d, "\mathbbm{1} \otimes F_D \tau_c"] \\
+  \mathbb{I} & F_D(\tau c) \otimes F_D (\tau \tau c) \arrow[l, "{\mathcal{C}(\tau(c))}", ] 
+\end{tikzcd}
+\end{equation}
+commuting, where $\beta$ is the braiding of the symmetric monoidal category, and $\tau_c$ is the isomorphism
+in $C$ between $\tau(\tau(c))$ and $c$, which exists since $\tau$ is an involution.
+
+Along with the contraction we define the \lstinline|unit|, along with its own symmetry condition 
+\lstinline|unit_symm|. The unit is a natural transformation from the functor  $\mathbbm{1}$ to 
+$F_D(\tau(\_)) \otimes F_D (\_)$. This is the assignment to each color $c$ an object of 
+$F_D(\tau(c)) \otimes F_D (c)$ which is invariant with respect to the group action. 
+The symmetry condition \lstinline|unit_symm| is represented by the diagram 
+\begin{equation} 
+  \begin{tikzcd}
+    \mathbb{I} \arrow[r, "{\delta(c)}"] \arrow[d, "{\delta(\tau(c))}"] & F_D(\tau c) \otimes F_D(c) \\
+    F_D(\tau \tau c) \otimes F_D(\tau c) \arrow[r, "{\beta}"] & F_D(\tau c) \otimes F_D(\tau \tau c) \arrow[u, "{\mathbbm{1} \otimes F_D \tau_c}"]
+  \end{tikzcd}
+\end{equation} 
+The unit is actually a unit in the sense that contraction with it does nothing. This is made formal with the condition 
+\lstinline|contr_unit|, which is corresponds to the diagram 
+\begin{equation}
+  \begin{tikzcd}
+    F_D(c) \arrow[r, "{\rho^{-1}}"] &  F_D(c) \otimes \mathbb{I} \arrow[r, "{\mathbbm{1}\otimes \delta(c)}"] & F_D(c) \otimes (F_D (\tau c) \otimes F_D(c)) \arrow[d, "{\alpha^{-1}}"] \\
+    \mathbb{I} \otimes F_D(c) \arrow[u, "{\lambda}"] &   &(F_D(c) \otimes F_D(\tau c)) \otimes F_D(c) \arrow[ll, "{\mathcal{C}(c)\otimes \mathbbm{1}}"] 
+\end{tikzcd}
+\end{equation}
+where $\rho$ is the right-unitor, $\lambda$ the left-unitor, and $\alpha$ is the associator. 
+
+The final part of the definition of a tensor species is the definition of the metric, \lstinline|metric| 
+and it's interaction with the contraction and unit \lstinline|contr_metric|. 
+The metric is a natural transformation from the functor $\mathbbm{1}$
+to the functor $F_D(\_) \otimes F_D (\_)$. It thus represents the assignement to each color $c$ an object of
+$F_D(c) \otimes F_D (c)$ which is invariant with respect to the group action.
+The metric can be used to change an index into a dual index. The condition \lstinline|contr_metric|
+corresponds to the diagram 
+\begin{equation}
+  \begin{tikzcd}
+    \mathbb{I} \arrow[r, "{\delta(c)}"] \arrow[d, "{\eta(c)\otimes \eta(\tau(c))}"] & F_D(\tau c) \otimes F_D (c) \\ 
+    (F_D c \otimes F_d c) \otimes (F_D (\tau c) \otimes F_D (\tau c) ) \arrow [d]  & F_D (c) \otimes F_D(\tau c) \arrow[u, "{\beta}"] \\ 
+    F_D c \otimes (F_d c \otimes (F_D (\tau c) \otimes F_D (\tau c) )) \arrow [r] &  F_D c \otimes ((F_d c \otimes F_D (\tau c)) \otimes F_D (\tau c) ) \arrow[u, "{\mathbbm{1} \otimes(\mathcal{C}(c) \otimes \mathbbm{1})}"]
+  \end{tikzcd}
+\end{equation}
+
+
+\section{Implementation of index notation into Lean 4}
+\js{This section is to be deleted.}
+
 Our implementation of index notation in Lean can be  broken down into 
 three main components, illustrated in Figure~\ref{fig:overviewFlow}. 
 The first component is the \emph{syntax for tensor expressions}, 
@@ -569,7 +778,8 @@ Finally, we can use the left unitor of $\Rep{k}{G}$ to obtain $F(f')$.
 \begin{equation}
   F f \equiv (F_D (f i) \otimes F_D(\tau (f i)))\otimes F (f' i) \to \mathbbm{1} \otimes F (f' i) \to F (f' i)
 \end{equation}
-\js{Maybe restirct to $Fin n$ here.}
+
+\js{When $X$ is $Fin n$ ...}
 
 We have some conditions on contraction. Firstly, we expect there to be a unit.
 That is a, group-invariant element of 
@@ -639,7 +849,7 @@ form formally what we have lossely been calling a Tensor species.
 That is, the difference between complex Lorentz tensors, Einstien tensors, and real Lorentz tensors 
 is down to this data. 
 In Lean it useful to work with general tensor species where possible, so important results have 
-to be defined only ones. Thus we make the following definition 
+to be defined only once. Thus we make the following definition 
 \begin{codeLong}
 /-- The sturcture of a type of tensors e.g. Lorentz tensors, Einstien tensors,
   complex Lorentz tensors. -/
@@ -706,6 +916,11 @@ structure TensorSpecies where
       (metric.app (Discrete.mk (τ c))).hom (1 : k))))))
     = (unit.app (Discrete.mk c)).hom (1 : k)
 \end{codeLong}
+In this definition, we see how, for example the condition that contraction is symmetric 
+is given in Lean. It is the \lstinline|contr_tmul_symm| part of the structure.
+
+The name \lstinline|TensorSpecies| is a nod to the concept of graphical species 
+dicussed in \js{cite}. 
 
 We can then let e.g. \lstinline|S : TensorSpecies| and recover the functor $F_D$ 
 by \lstinline|S.FDiscrete|. The functor $F$ is defined seperatrly can can be recovered
