@@ -507,8 +507,6 @@ corresponds to the diagram
 
 \subsection{Tensors} 
 
-
-
 Given any type $C$, which we will think of as a type of colors, we can define 
 the category $\mathrm{T}_{/C}^\times$ as follows. Objects are functions 
 $f : X \to C$ for some type $X$. A morphism from $f : X \to C$ to $g : Y \to C$ is a bijection
@@ -550,6 +548,88 @@ as \lstinline|S.F.obj (OverColor.mk f)|. The object \lstinline|S| is the tensor 
 define shortly. The \lstinline|OverColor.mk| tells lean that the function \lstinline|f| should 
 be considered as an object of \lstinline|OverColor C|, not just as an object of type \lstinline|X -> C|. \js{fix arrows here}
 
+\subsection{Tensor Trees and their map to tensors}
+
+\begin{itemize} 
+\item  Tensor trees are trees with a node for each of the baic operations one can perform on a tensor. 
+  Namely, tensor trees have nodes for addition of tensors, permutation of tensor indices, negation of tensors, 
+  scalar multiplication of tensors, group action on a tensor, tensor product of tensors, contraction of tensor indices,
+  and evaluation of tensor indices.
+\item We have a type of tensor tree for each $c : X \to C$ in $\mathrm{T}_{/C}^\times$, 
+  where $X$ is $\mathrm{Fin}\, n$ for some $n$. This restriction to $\mathrm{Fin}\, n$ is done for convience. 
+\item Tensor trees are defined inductively as 
+\js{....}
+\item Thus, for example if \js{$t$ is a tensor tree we can form another tensor tree by adding a 
+  node $neg$ to it... } Or if $t1$ and $t2$ are tensor trees, we can form a new tensor tree by adding a
+\item How each of the nodes is to be interpreted is down to how we turn them into a tensor. This process 
+  is proscribed by a function ... Since tensor trees are defined inductively, this function can be defined recursively as ... 
+\item Let us now dicuss each of the nodes in turn. 
+\item \textbf{tensorNode}: 
+  The constructor \lstinline|tensorNode| creates a tensor tree from a given tensor. 
+  This tensor tree consists of a single node that directly represents the tensor. 
+  Since all other tensor tree constructors require an existing tensor tree as input, 
+  \lstinline|tensorNode| serves as the foundational base case for building more complex trees. 
+  Naturally, the tensor associated with this node is exactly the tensor provided during construction.
+\item \textbf{smul}: 
+The constructor smul takes a scalar \lstinline|a| and an existing tensor tree 
+\lstinline|t|, and constructs a new tensor tree. Conceptually, this new tree has a root node labeled 
+\lstinline|smul a|, with the tensor tree 
+\listinline|t| as its child. The tensor associated with this new tree is obtained by multiplying the tensor associated with 
+\lstinline|t| by the scalar \lstinline|a|.
+\item \textbf{neg}: 
+The constructor \lstinline|neg| takes an existing tensor tree \lstinline|t| and constructs a new tensor tree.
+This new tree has a root node labeled \lstinline|neg|, with the tensor tree \lstinline|t| as its child.
+The tensor associated with this new tree is obtained by negating the tensor associated with \lstinline|t|.
+\item \textbf{add}:
+The constructor \lstinline|add| takes two existing tensor trees \lstinline|t1| and \lstinline|t2|, defined for the same $c$, and 
+constructs a new tensor tree. This new tree has a root node labeled \lstinline|add|, with the tensor trees \lstinline|t1| and \lstinline|t2| as its children.
+The tensor associated with this new tree is obtained by adding the tensors associated with \lstinline|t1| and \lstinline|t2|.
+\item \textbf{action}: 
+The constructor \lstinline|action| takes a group element \lstinline|g| of \lstinline|S.G|, an existing tensor tree \lstinline|t|, and constructs a new tensor tree.
+This new tree has a root node labeled \lstinline|action g|, with the tensor tree \lstinline|t| as its child.
+The tensor associated with this new tree is obtained by acting on the tensor associated with \lstinline|t| with the group element \lstinline|g|.
+\item \textbf{perm}: 
+The constructor \lstinline|perm| takes a morphism \lstinline|σ| from \lstinline|c| to \lstinline|c1| in \lstinline|OverColor S.C|, 
+  an existing tensor tree \lstinline|t| based on \lstinline|c|, and constructs a new tensor tree based on \lstinline|c1|.
+This new tree has a root node labeled \lstinline|perm σ|, with the tensor tree \lstinline|t| as its child.
+The tensor associated with this new tree is obtained by  applying the image of the morphism \lstinline|σ| under the functor \lstinline|S.F|
+to the tensor associated with \lstinline|t|.
+\item \textbf{prod}: 
+The constructor \lstinline|prod| takes two existing tensor trees \lstinline|t| based on \lstinline|c| and \lstinline|t1| based on \lstinline|c1| and constructs a new tensor tree
+based on \lstinline|Sum.elim c c1 ∘ finSumFinEquiv.symm| which is the map from \lstinline|Fin (n + n1)| 
+acting via \lstinline|c| on $0, \ldots, n-1$ and via $i\mapsto c1(i - n)$ on $n, \ldots, n + n1 -1$.
+This new tree has a root node labeled \lstinline|prod|, with the tensor trees \lstinline|t| and \lstinline|t1| as its children.
+The tensor associated with this new tree is obtained by taking the tensor product of the tensors associated with \lstinline|t| and \lstinline|t1|, 
+giving a vector in $F(c) \otimes F(c1)$, using the tensorate of $F$ to map this vector into 
+a vector in $F(c \otimes c1)$, and finally using an isomorphism between $c \otimes c1$ and \lstinline|Sum.elim c c1 ∘ finSumFinEquiv.symm| to map this vector into \lstinline|S.F.obj (Sum.elim c c1 ∘ finSumFinEquiv.symm)|.
+\item \textbf{contr}: 
+The constructor \lstinline|contr| takes an existing tensor tree \lstinline|t| based on \lstinline|c : Fin n.succ.succ -> S.C| (where here \lstinline|n.succ.succ| is $n + 1 + 1$) 
+an \lstinline|i| of type \lstinline|Fin n.succ.succ|, \lstinline|j| of type \lstinline|Fin n.succ|
+and a proof that \lstinline|c (i.succAbove j) = S.τ (c i)|, where \lstinline|i.succAbove| is the map from \lstinline|Fin n.succ| to \lstinline|Fin n.succ.succ| with a hole at \lstinline|i|. 
+The proof says that the color of the index \lstinline|i.succAbove j| is the dual of the color of the index \lstinline|i|, and that these 
+two indices can be contracted. We use a \lstinline|j| in \lstinline|Fin n.succ| and \lstinline|i.succAbove j| as the index to be contracted, instead 
+of another index in  \lstinline|Fin n.succ.succ| to ensure the two indices are not the same. 
+The constructor outputs a new tensor tree based on \lstinline|c ∘ Fin.succAbove i ∘ Fin.succAbove j|. 
+This new tree has a root node labeled \lstinline|contr i j|, with the tensor tree \lstinline|t| as its child.
+The tensor associated with the new tensor tree is constructed as follows. 
+An equivalence between $F (c)$ and \lstinline|(F_D(c (i)) \otimes F_D(\tau (c(i)))) \otimes  F(c ∘ Fin.succAbove i ∘ Fin.succAbove j)| is created 
+using the fact that $c (i.succAbove j) = \tau (c i)$, extracting $i$ and $i.succAbove j$ from $c$ with an equivalence in $OverColor C$, and using the tensorate of $F$. 
+Then, the contraction for $c(i)$ is used to turn 
+\lstinline|(F_D(c (i)) \otimes F_D(\tau (c(i)))) \otimes  F(c ∘ Fin.succAbove i ∘ Fin.succAbove j)| into 
+\lstinline|\mathbbm{1} \otimes F(c ∘ Fin.succAbove i ∘ Fin.succAbove j)|, and finally the left-unitor is used to turn this into a tensor in 
+\lstinline|F(c ∘ Fin.succAbove i ∘ Fin.succAbove j)|. 
+\item \textbf{eval}: 
+The final constructor \lstinline|eval| takes an existing tensor tree \lstinline|t| based on \lstinline|c : Fin n.succ -> S.C|,
+an \lstinline|i| of type \lstinline|Fin n.succ|, and a natural number $x$.  
+The constructor outputs a new tensor tree based on \lstinline|c ∘ Fin.succAbove i|.
+This new tree has a root node labeled \lstinline|eval i x|, with the tensor tree \lstinline|t| as its child.
+The tensor associated with the new tensor tree is constructed as follows.
+An equivalence between $F (c)$ and \lstinline|F_D(c (i)) \otimes F(c ∘ Fin.succAbove i)| is created by extracting $i$ from $c$ with an equivalence in $OverColor C$, and using the tensorate of $F$. 
+Then, the evaluation for $c(i)$ at the basis element indicated by $x$ on casting $x$ to $Fin (repDim (c(i)))$, 
+ is used move the vector from $F_D(c (i)) \otimes F(c ∘ Fin.succAbove i)$ to $\mathbbm{1} \otimes F(c ∘ Fin.succAbove i)$.
+ From this the left-unitor in modules is used to turn this into a tensor in \lstinline|F(c ∘ Fin.succAbove i)|.
+ This operation is not invariant under the group action, like the others here.
+\end{itemize}
 \section{Implementation of index notation into Lean 4}
 \js{This section is to be deleted.}
 
