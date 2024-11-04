@@ -505,6 +505,50 @@ corresponds to the diagram
   \end{tikzcd}
 \end{equation}
 
+\subsection{Tensors} 
+
+
+
+Given any type $C$, which we will think of as a type of colors, we can define 
+the category $\mathrm{T}_{/C}^\times$ as follows. Objects are functions 
+$f : X \to C$ for some type $X$. A morphism from $f : X \to C$ to $g : Y \to C$ is a bijection
+$\phi : X \to Y$ such that $f = g \circ \phi$. This category is equivalent to the core of the
+category of types sliced over $C$, which explains the origin of the notation. 
+In Lean we denote this category as \lstinline|OverColor C|, although we will use the 
+shorter notation $\mathrm{T}_{/C}^\times$ here when we can.
+
+The category $\mathrm{T}_{/C}^\times$ is not any old category, it carries a symmetric monoidal structure, 
+which we will denote $\otimes$. The structure such that $f \otimes g$ for objects $f$ and $g$ 
+is the map $X \oplus Y \to C$ where $\oplus$ denotes the disjoint union of types. 
+
+The functor $F_D$ defined above, can be lifted to a symmetric monoidal functor $F$ from 
+$\mathrm{T}_{/C}^\times$ to $\Rep k G$. This functor takes $f : X \to C$ to the tensor product
+$\bigotimes_{x \in X} F_D(f(x))$ and morphisms to the linear maps of representations corresponding to
+reindexings of tensor products. This construction is general, and functorial. In otherwords, 
+there is a functor 
+\begin{equation}
+  \mathrm{lift} : \mathrm{Fun}(C, \mathrm{Rep} k G) \Rightarrow
+  \mathrm{SymmMonFun}(\mathrm{T}_{/C}^\times, \mathrm{Rep} k G)
+\end{equation} 
+In Lean we define this functor, along with the corresponding lift of $F_D$, $F$.
+
+We can think of an object $f : X \to C$ of $\mathrm{T}_{/C}^\times$ as a type of indices $X$, and a specification 
+of what repreesntation each index is associated to. The representation $F(f)$ is 
+then the tensor product of each of these representations, so that vectors $v \in F(f)$ can be thought of as 
+tensors with indices indexed by $X$ of color $C$ (e.g. `up' or `down'). 
+
+With this in mind, we define a general tensor of a given species as a vector in the representation $F(f)$ 
+for some $f$ in $\mathrm{T}_{/C}^\times$.
+
+In physics, we typically focus on objects $f : X \to C$ in $\mathrm{T}_{/C}^\times$ where $X$ is a 
+finite type of the form $\mathrm{Fin}\, n$ for some $n$. Here, $\mathrm{Fin}\, n$ represents the 
+type of natural numbers less than $n$, i.e., $\{0, 1, \dots, n-1\}$. When appropraite in what follows, 
+we will restrict to these objects.
+
+In Lean for a map of types \lstinline|f : X \to C|, what we have been writing as $F(f)$ is written 
+as \lstinline|S.F.obj (OverColor.mk f)|. The object \lstinline|S| is the tensor species, which we will
+define shortly. The \lstinline|OverColor.mk| tells lean that the function \lstinline|f| should 
+be considered as an object of \lstinline|OverColor C|, not just as an object of type \lstinline|X -> C|. \js{fix arrows here}
 
 \section{Implementation of index notation into Lean 4}
 \js{This section is to be deleted.}
@@ -655,49 +699,7 @@ This code snippet actually forms part of a larger structure called a tensor spec
 get on to shortly. 
 
 \subsubsection{General tensors} \label{sec:generalTensors}
-
-
-Given any type $C$, which we will think of as a type of colors, we can define 
-the category $\mathrm{T}_{/C}^\times$ as follows. Objects are functions 
-$f : X \to C$ for some type $X$. A morphism from $f : X \to C$ to $g : Y \to C$ is a bijection
-$\phi : X \to Y$ such that $f = g \circ \phi$. This category is equivalent to the core of the
-category of types sliced over $C$, which explains the origin of the notation. 
-In Lean we denote this category as \lstinline|OverColor C|, although we will use the 
-shorter notation $\mathrm{T}_{/C}^\times$ here when we can.
-
-The category $\mathrm{T}_{/C}^\times$ is not any old category, it carries a symmetric monoidal structure, 
-which we will denote $\otimes$. The structure such that $f \otimes g$ for objects $f$ and $g$ 
-is the map $X \oplus Y \to C$ where $\oplus$ denotes the disjoint union of types. 
-
-The functor $F_D$ defined above, can be lifted to a symmetric monoidal functor $F$ from 
-$\mathrm{T}_{/C}^\times$ to $\Rep k G$. This functor takes $f : X \to C$ to the tensor product
-$\bigotimes_{x \in X} F_D(f(x))$ and morphisms to the linear maps of representations corresponding to
-reindexings of tensor products. This construction is general, and functorial. In otherwords, 
-there is a functor 
-\begin{equation}
-  \mathrm{lift} : \mathrm{Fun}(C, \mathrm{Rep} k G) \Rightarrow
-  \mathrm{SymmMonFun}(\mathrm{T}_{/C}^\times, \mathrm{Rep} k G)
-\end{equation} 
-In Lean we define this functor, along with the corresponding lift of $F_D$, $F$.
-
-We can think of an object $f : X \to C$ of $\mathrm{T}_{/C}^\times$ as a type of indices $X$, and a specification 
-of what repreesntation each index is associated to. The representation $F(f)$ is 
-then the tensor product of each of these representations, so that vectors $v \in F(f)$ can be thought of as 
-tensors with indices indexed by $X$ of color $C$ (e.g. `up' or `down'). 
-
-With this in mind, we define a general tensor of a given species as a vector in the representation $F(f)$ 
-for some $f$ in $\mathrm{T}_{/C}^\times$.
-
-In physics, we typically focus on objects $f : X \to C$ in $\mathrm{T}_{/C}^\times$ where $X$ is a 
-finite type of the form $\mathrm{Fin}\, n$ for some $n$. Here, $\mathrm{Fin}\, n$ represents the 
-type of natural numbers less than $n$, i.e., $\{0, 1, \dots, n-1\}$. When appropraite in what follows, 
-we will restrict to these objects.
-
-In Lean for a map of types \lstinline|f : X \to C|, what we have been writing as $F(f)$ is written 
-as \lstinline|S.F.obj (OverColor.mk f)|. The object \lstinline|S| is the tensor species, which we will
-define shortly. The \lstinline|OverColor.mk| tells lean that the function \lstinline|f| should 
-be considered as an object of \lstinline|OverColor C|, not just as an object of type \lstinline|X -> C|. \js{fix arrows here}
-
+\js{Section moved}
 \subsubsection{Tensor operations} \label{sec:tensorOperations}
 
 There are eight fundamental operations one might wish to perform on tensors: addition, scalar multiplication, negation, action by the group 
