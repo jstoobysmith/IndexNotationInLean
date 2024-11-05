@@ -1,0 +1,32 @@
+\begin{thebibliography}{1}
+
+\bibitem{HepLean}
+Joseph Tooby-Smith.
+\newblock {HepLean: Digitalising high energy physics}.
+\newblock 5 2024.
+\newblock \href {https://arxiv.org/abs/2405.08863} {\path{arXiv:2405.08863}}.
+
+\bibitem{mathlib}
+The mathlib Community.
+\newblock The lean mathematical library.
+\newblock In {\em Proceedings of the 9th ACM SIGPLAN International Conference
+  on Certified Programs and Proofs}, CPP 2020, pages 367--381, New York, NY,
+  USA, 2020. Association for Computing Machinery.
+\newblock \href {https://doi.org/10.1145/3372885.3373824}
+  {\path{doi:10.1145/3372885.3373824}}.
+
+\bibitem{josephson}
+Maxwell~P Bobbin, Samiha Sharlin, Parivash Feyzishendi, An~Hong Dang,
+  Catherine~M Wraback, and Tyler~R Josephson.
+\newblock Formalizing chemical physics using the lean theorem prover.
+\newblock {\em Digital Discovery}, 3(2):264--280, 2024.
+\newblock \href {https://doi.org//10.1039/D3DD00077J}
+  {\path{doi:/10.1039/D3DD00077J}}.
+
+\bibitem{SciLean}
+Tom\'a\v{s} Sk\v{r}ivan.
+\newblock Scilean: Scientific computing assistant.
+\newblock {\em GitHub repository}.
+\newblock URL: \url{https://github.com/lecopivo/SciLean}.
+
+\end{thebibliography}

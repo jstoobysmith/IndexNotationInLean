@@ -225,61 +225,63 @@ In the background, our implementation leverages a novel application of category 
 be typos, mistakes, sentences that don't make sense, notation that is not defined etc.}
 \section{Introduction}
 
-In previous work, the author initiated the digitalization (or formalization) 
+In previous work~\cite{HepLean}, the author initiated the digitalization (or formalization) 
 of high energy physics 
 results using the interactive theorem prover Lean 4 in a project called HepLean. 
 Lean is a
 programming language with syntax resembling traditional pen-and-paper mathematics. 
 Users can write definitions, theorems, and proofs in Lean,
-which are then automatically checked using dependent-type theory for correctness.
+which are then automatically checked for correctness using dependent-type theory.
 The HepLean project is driven by four primary motivations: to facilitate easier look-up of results
- through linear information storage; to support the creation and proof of new results using 
+ through a linear storage of information; to support the creation and proof of new results using 
  automated tactics and AI tools; to facilitate correctness checking of result in high energy physics; 
  and to introduce new pedogocial methods for high-energy physics and computer science.
 
 HepLean is part of a broader movement of projects
 to formalize parts, or all, of 
-mathematics and science. The largest of these projects is Mathlib, which aims to formalize
-mathematics. Indeed, HepLean is built downstream of Mathlib, meaning it has Mathlib as a 
-dependency and uses many of the definitions and theorems thereof. 
-Other projects include the ongoing effort led by Kevin Buzzard to formalize the proof of Fermat's
-Last Theorem into Lean. 
-In the realm of the sciences, the paper~\cite{josephson} looks at absorption theory, thermodynamics, and kinematics in Lean. 
-Whilst the package SciLean~\cite{SciLean}, is a push in the direction of scientific computing within Lean. 
+mathematics and science. The largest of these projects is Mathlib~\cite{mathlib}, which aims to formalize
+mathematics. Indeed, HepLean uses many results from Mathlib, and is built downstream thereof.
+Other projects in mathematics include the ongoing effort led by Kevin Buzzard to formalize the proof of Fermat's
+Last Theorem into Lean~\js{cite}. 
+In the realm of the sciences, the paper~\cite{josephson} looks at absorption theory, thermodynamics, and kinematics in Lean, 
+whilst the package SciLean~\cite{SciLean}, is a push in the direction of scientific computing within Lean. 
 
-Physicists heavily rely on specialized notation to express mathematical concepts succinctly. 
-Among these, index notation is particularly prevalent,
- as it provides a compact and readable way to represent specfic types of tensors and operations
- between them, with tensors forming a backbone of morden physics. 
+Physicists rely heavily on specialized notation to express mathematical concepts succinctly. 
+Among these index notation is particularly prevalent,
+ as it provides a compact and readable way to represent specific types of tensors and operations
+ between them. Such tensors form a backbone of modern physics. 
 
-Because of the importance of index notation, it is crucial to have a way to write index notation in Lean. 
-This will make results from high energy physics easier to write and prove in Lean. 
-Additionally, it will make the syntax more familiar to high energy physicists.
+Having a way to use index notation in Lean is crucial for the digitalisation of 
+results from high energy physics. 
+As well as, makeing results from high energy physics easier to write and prove in Lean, 
+it will make the syntax more familiar to high energy physicists. 
 Such an implementation is the subject of this paper. 
-It is a challange because, not only do we need an implentation that is nice and flexiable to use, 
-we also need it to be formally well-defined and rigourous. 
-We hope that the implementation presneted here will
+It is a challange because, we need an implentation that is nice and flexiable to use, 
+but which is also formally well-defined and rigourous. 
+We hope that the implementation presented here will
 not only enhances usability of Lean but also promotes the adoption of formal methods in the 
 physics community.
 
-As a taster of what is to come, our implmentation allows to write results like the following in 
-Lean:
+As a taster of what is to come, in our implementation the result regarding Pauli matrices 
+that $\sigma^{\nu \alpha \dot \beta}\sigma_\nu{ \alpha' \dot \beta'} = 2 \epsilon^{\alpha \alpha'}\epsilon^{\beta \beta'}$ 
+is written in Lean as follows
 \begin{code}
 {pauliCo | ν α β ⊗ pauliContr | ν α' β' = 2 •ₜ εL | α α' ⊗ εR | β β'}ᵀ
 \end{code}
-Lean will correctly interpret this result as a tensor expression which the correct contraction of indices 
+Lean will correctly interpret this result as a tensor expression with the correct contraction of indices 
 and permutation of indices between the sides of the expression.
 
-Previous implmentations of index notation have been made in programming languages like Haskell 
-\cite{ref}. However, these implementations do not
+Previous implementations of index notation have been made in programming languages like Haskell 
+\cite{}. However, the programs they appear in do not
  provide the formal verification capabilities inherent in Lean. 
  The formal verification requirement of Lean introduces unique challenges in implementing index 
- notation, necessitating (what we beleive is) a novel solution.
+ notation, necessitating (what we believe is) a novel solution.
 
-This paper is split into two main sections. Section~\ref{sec:Implementation} dicusses 
-the implementation of index notation into Lean. Section \js{ref} gives two examples 
-of theorems and proofs using index notation. A more minor section, section \js{ref} disucsses 
-the future work related to this project.
+In Section~\ref{sec:Implementation} of this paper, we will discuss the details of our implementation. 
+In Section~\ref{sec:examples} we will give two examples of theorems and proofs using index notation.
+The first of these examples involves a lemma regarding the contraction of indices of symmetric and anti-symmetric tensors. 
+The second involves examples related to the Pauli matrices and bi-spinors. 
+We finish this paper in Section~\ref{sec:future} by discussing potential future work related to this project.
 
 \section{Implementation of index notation into Lean 4}\label{sec:Implementation}
 
@@ -756,6 +758,7 @@ Using the contraction for \lstinline|c i|, we then get a vector in
 \lstinline|𝟙 ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i ∘ Fin.succAbove j))| which is then 
 mapped to a tensor in \lstinline|S.F.obj (OverColor.mk (c ∘ Fin.succAbove i ∘ Fin.succAbove j))| 
 using the left-unitor of \lstinline|Rep S.G S.k|.
+\js{Relate this back to the tensor construction.}
 
 \paragraph{eval:}
 The final constructor \lstinline|eval| takes an existing tensor tree \lstinline|t| based on a \lstinline|c : Fin n.succ -> S.C|,
@@ -783,10 +786,27 @@ This mapping should be thought of as occuring in the  category of modules over \
 We then fininally map  into \lstinline|S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))| 
 using the left-unitor.
 
+The main reason tensor trees are nice to work with is that they have the following property: 
+Define a sub-tree of a tensor trees 
+to be a node and all child nodes of that node. 
+If $T$ is a tensor tree and $S$ a sub-tree of $T$, we can replace $S$ in $T$ 
+with another tensor tree $S'$
+to get a new overall tensor-tree $T'$. If $S$ and $S'$ have the same underlying tensor, 
+then $T$ and $T'$ will. 
 
-\js{Examples of tensor trees here.}
+In Lean this property manifests in a series of lemmas. For instance, for instance 
+for the \lstinline|contr| constructor we have the lemma: 
+\begin{code}
+lemma contr_tensor_eq {n : ℕ} {c : Fin n.succ.succ → S.C} {T1 T2 : TensorTree S c}
+    (h : T1.tensor = T2.tensor) {i : Fin n.succ.succ} {j : Fin n.succ}
+    {h' : c (i.succAbove j) = S.τ (c i)} :
+    (contr i j h' T1).tensor = (contr i j h' T2).tensor := by
+  simp only [Nat.succ_eq_add_one, contr_tensor]
+  rw [h]
+\end{code}
+These lemmas allow us to navigate to the certain places in tensor trees and replace 
+sub-trees with other sub-trees. We will see this used exensively in the examples. 
 
-\js{Talk about proving things using tensor trees. }
 \subsection{Syntax and their map to tensor trees}
 
 
@@ -1311,11 +1331,9 @@ amplitudes. Second, we could extend our approach to encompass tensor \emph{field
 etc. We do not anticipate any insurmountable challenges in pursuing these extensions. 
 They represent promising avenues for future research and have the potential to significantly enhance
 the utility of formal methods in physics.
-%\bibliographystyle{unsrturl}
-%\begin{spacing}{0.5}
-%\bibliography{MyBib}
-%\end{spacing}
-
-
+\bibliographystyle{unsrturl}
+\begin{spacing}{0.5}
+\bibliography{MyBib}
+\end{spacing}
 %%%%%%%%%%%%%%
 \end{document}
