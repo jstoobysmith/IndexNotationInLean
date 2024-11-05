@@ -190,6 +190,20 @@
 \end{center}
 \arrayrulecolor{black}
 }
+
+\newcommand{\tensorTree}[1]{
+  \arrayrulecolor{mycolor}
+\begin{center}
+\begin{tabular}{|p{6in}|}
+\hline
+~\newline
+\makebox[3in]{%
+#1}
+  \\ \hline
+\end{tabular}
+\end{center}
+\arrayrulecolor{black}
+}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Math commands 
 \newcommand{\Rep}[2]{\mathrm{Rep} \; #1 \; #2}
@@ -550,58 +564,173 @@ be considered as an object of \lstinline|OverColor C|, not just as an object of 
 
 \subsection{Tensor Trees and their map to tensors}
 
-\begin{itemize} 
-\item  Tensor trees are trees with a node for each of the baic operations one can perform on a tensor. 
-  Namely, tensor trees have nodes for addition of tensors, permutation of tensor indices, negation of tensors, 
+Tensor trees are tress with a node for each of the basic operations one can perform on a tensor. 
+Namely, tensor trees have nodes for addition of tensors, permutation of tensor indices, negation of tensors, 
   scalar multiplication of tensors, group action on a tensor, tensor product of tensors, contraction of tensor indices,
   and evaluation of tensor indices.
-\item We have a type of tensor tree for each $c : X \to C$ in $\mathrm{T}_{/C}^\times$, 
-  where $X$ is $\mathrm{Fin}\, n$ for some $n$. This restriction to $\mathrm{Fin}\, n$ is done for convience. 
-\item Tensor trees are defined inductively as 
-\js{....}
-\item Thus, for example if \js{$t$ is a tensor tree we can form another tensor tree by adding a 
-  node $neg$ to it... } Or if $t1$ and $t2$ are tensor trees, we can form a new tensor tree by adding a
-\item How each of the nodes is to be interpreted is down to how we turn them into a tensor. This process 
-  is proscribed by a function ... Since tensor trees are defined inductively, this function can be defined recursively as ... 
-\item Let us now dicuss each of the nodes in turn. 
-\item \textbf{tensorNode}: 
-  The constructor \lstinline|tensorNode| creates a tensor tree from a given tensor. 
-  This tensor tree consists of a single node that directly represents the tensor. 
-  Since all other tensor tree constructors require an existing tensor tree as input, 
-  \lstinline|tensorNode| serves as the foundational base case for building more complex trees. 
-  Naturally, the tensor associated with this node is exactly the tensor provided during construction.
-\item \textbf{smul}: 
-The constructor smul takes a scalar \lstinline|a| and an existing tensor tree 
-\lstinline|t|, and constructs a new tensor tree. Conceptually, this new tree has a root node labeled 
+They also have nodes for tensors themselves.
+
+Given a species \lstinline|S|, we have a type of tensor tree for each map of the form
+\lstinline|c : Fin n → S.C| in \lstinline|OverColor S.C|. 
+This restriction to \lstinline|Fin n| is done for convience.
+
+Tensor trees are defined inductively through a number of constructors: 
+\begin{code}
+inductive TensorTree (S : TensorSpecies) : {n : ℕ} → (Fin n → S.C) → Type where
+  /-- A general tensor node. -/
+  | tensorNode {n : ℕ} {c : Fin n → S.C} (T : S.F.obj (OverColor.mk c)) : TensorTree S c
+  /-- A node correpsonding to the scalar multiple of a tensor by a element of the field. -/
+  | smul {n : ℕ} {c : Fin n → S.C} : S.k → TensorTree S c → TensorTree S c
+  /-- A node corresponding to negation of a tensor. -/
+  | neg {n : ℕ} {c : Fin n → S.C} : TensorTree S c → TensorTree S c
+  /-- A node corresponding to the addition of two tensors. -/
+  | add {n : ℕ} {c : Fin n → S.C} : TensorTree S c → TensorTree S c → TensorTree S c
+  /-- A node correpsonding to the action of a group element on a tensor. -/
+  | action {n : ℕ} {c : Fin n → S.C} : S.G → TensorTree S c → TensorTree S c
+  /-- A node corresponding to the permutation of indices of a tensor. -/
+  | perm {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
+      (σ : (OverColor.mk c) ⟶ (OverColor.mk c1)) (t : TensorTree S c) : TensorTree S c1
+  /-- A node corresponding to the product of two tensors. -/
+  | prod {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
+    (t : TensorTree S c) (t1 : TensorTree S c1) : TensorTree S (Sum.elim c c1 ∘ finSumFinEquiv.symm)
+  /-- A node corresponding to the contraction of indices of a tensor. -/
+  | contr {n : ℕ} {c : Fin n.succ.succ → S.C} : (i : Fin n.succ.succ) →
+    (j : Fin n.succ) → (h : c (i.succAbove j) = S.τ (c i)) → TensorTree S c →
+    TensorTree S (c ∘ Fin.succAbove i ∘ Fin.succAbove j)
+  /-- A node corresponding to the evaluation of an index of a tensor. -/
+  | eval {n : ℕ} {c : Fin n.succ → S.C} : (i : Fin n.succ) → (x : ℕ) → TensorTree S c →
+    TensorTree S (c ∘ Fin.succAbove i)
+\end{code}
+Each constructor here, e.g. \lstinline|tensorNode|, \lstinline|smul|, \lstinline|neg|, etc., can 
+be thought of a forming a different type of node in a tensor tree.
+
+Since the interpretation of each of the constructors is down to how we turn them into a tensor,
+we dicuss this before dicussing each of the constructors in turn. The process 
+of going from a tensor tree to a tensor is proscribed by a function
+\lstinline|TensorTree S c  → S.F.obj (OverColor.mk c)|, which is defined recursively as follows: 
+\begin{code}
+/-- The underlying tensor a tensor tree corresponds to. -/
+def tensor {n : ℕ} {c : Fin n → S.C} : TensorTree S c → S.F.obj (OverColor.mk c) := fun
+  | tensorNode t => t
+  | smul a t => a • t.tensor
+  | neg t => - t.tensor
+  | add t1 t2 => t1.tensor + t2.tensor
+  | action g t => (S.F.obj (OverColor.mk _)).ρ g t.tensor
+  | perm σ t => (S.F.map σ).hom t.tensor
+  | prod t1 t2 => (S.F.map (OverColor.equivToIso finSumFinEquiv).hom).hom
+    ((S.F.μ _ _).hom (t1.tensor ⊗ₜ t2.tensor))
+  | contr i j h t => (S.contrMap _ i j h).hom t.tensor
+  | eval i e t => (S.evalMap i (Fin.ofNat' _ e)) t.tensor
+\end{code}
+
+Let us now dicuss each of the constructors in turn, after which we will give some examples 
+tensor trees.  
+
+\paragraph{tensorNode:} The constructor \lstinline|tensorNode| based on \lstinline|c|
+creates a tensor tree from a tensor \lstinline|t| in \lstinline|S.F.obj (OverColor.mk c)|. 
+This tensor tree consists of a single node that directly represents the tensor. 
+Since all other tensor tree constructors require an existing tensor tree as input, 
+\lstinline|tensorNode| serves as the foundational base case for building more complex trees. 
+Diagramatically, such a tree is 
+\tensorTree{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {\lstinline|t|};
+  \end{tikzpicture} 
+}
+Naturally, the tensor associated with this node is exactly the tensor provided during construction.
+
+\paragraph{smul:} The constructor smul takes a scalar \lstinline|a| and an existing tensor tree 
+\lstinline|t| based on \lstinline|c| and constructs a new tensor tree also based on \lstinline|c|. Conceptually, this new tree has a root node labeled 
 \lstinline|smul a|, with the tensor tree 
-\listinline|t| as its child. The tensor associated with this new tree is obtained by multiplying the tensor associated with 
+\lstinline|t| as its child. Diagramatically, such a tree is 
+\tensorTree{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {\lstinline|smul a|};
+    \node (B) at (0,-1) {\lstinline|t|};
+    \draw[->] (A) -- (B);
+  \end{tikzpicture} 
+}
+The tensor associated with this new tree is obtained by multiplying the tensor associated with 
 \lstinline|t| by the scalar \lstinline|a|.
-\item \textbf{neg}: 
-The constructor \lstinline|neg| takes an existing tensor tree \lstinline|t| and constructs a new tensor tree.
+
+\paragraph{neg:} The constructor \lstinline|neg| takes an existing tensor tree \lstinline|t|
+ based on \lstinline|c| and constructs a new tensor tree also based on \lstinline|c|.
 This new tree has a root node labeled \lstinline|neg|, with the tensor tree \lstinline|t| as its child.
+Diagramatically, we have 
+\tensorTree{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {\lstinline|neg|};
+    \node (B) at (0,-1) {\lstinline|t|};
+    \draw[->] (A) -- (B);
+  \end{tikzpicture} 
+}
 The tensor associated with this new tree is obtained by negating the tensor associated with \lstinline|t|.
-\item \textbf{add}:
-The constructor \lstinline|add| takes two existing tensor trees \lstinline|t1| and \lstinline|t2|, defined for the same $c$, and 
+
+
+\paragraph{add:} 
+The constructor \lstinline|add| takes two existing tensor trees \lstinline|t1| and \lstinline|t2|, based on the same \lstinline|c|, and 
 constructs a new tensor tree. This new tree has a root node labeled \lstinline|add|, with the tensor trees \lstinline|t1| and \lstinline|t2| as its children.
+Diagramatically, this corresponds to 
+\tensorTree{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {\lstinline|add|};
+    \node (B) at (-1,-1) {\lstinline|t1|};
+    \node (C) at (1,-1) {\lstinline|t2|};
+    \draw[->] (A) -- (B);
+    \draw[->] (A) -- (C);
+  \end{tikzpicture} 
+}
 The tensor associated with this new tree is obtained by adding the tensors associated with \lstinline|t1| and \lstinline|t2|.
-\item \textbf{action}: 
-The constructor \lstinline|action| takes a group element \lstinline|g| of \lstinline|S.G|, an existing tensor tree \lstinline|t|, and constructs a new tensor tree.
+
+\paragraph{action:}
+The constructor \lstinline|action| takes a group element \lstinline|g| of \lstinline|S.G|, an existing tensor tree \lstinline|t| based on \lstinline|c|, and constructs a new tensor tree also based on \lstinline|c|.
 This new tree has a root node labeled \lstinline|action g|, with the tensor tree \lstinline|t| as its child.
+Diagramatically, 
+\tensorTree{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {\lstinline|action g|};
+    \node (B) at (0,-1) {\lstinline|t|};
+    \draw[->] (A) -- (B);
+  \end{tikzpicture} 
+}
 The tensor associated with this new tree is obtained by acting on the tensor associated with \lstinline|t| with the group element \lstinline|g|.
-\item \textbf{perm}: 
-The constructor \lstinline|perm| takes a morphism \lstinline|σ| from \lstinline|c| to \lstinline|c1| in \lstinline|OverColor S.C|, 
+
+\paragraph{perm:}
+The constructor \lstinline|perm| takes a morphism \lstinline|σ| from \lstinline|c| to \lstinline|c1| in \lstinline|OverColor S.C| and 
   an existing tensor tree \lstinline|t| based on \lstinline|c|, and constructs a new tensor tree based on \lstinline|c1|.
 This new tree has a root node labeled \lstinline|perm σ|, with the tensor tree \lstinline|t| as its child.
+Diagramatically, this is given by 
+\tensorTree{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {\lstinline|perm σ|};
+    \node (B) at (0,-1) {\lstinline|t|};
+    \draw[->] (A) -- (B);
+  \end{tikzpicture} 
+}
 The tensor associated with this new tree is obtained by  applying the image of the morphism \lstinline|σ| under the functor \lstinline|S.F|
 to the tensor associated with \lstinline|t|.
-\item \textbf{prod}: 
+
+\paragraph{prod:}
 The constructor \lstinline|prod| takes two existing tensor trees \lstinline|t| based on \lstinline|c| and \lstinline|t1| based on \lstinline|c1| and constructs a new tensor tree
 based on \lstinline|Sum.elim c c1 ∘ finSumFinEquiv.symm| which is the map from \lstinline|Fin (n + n1)| 
-acting via \lstinline|c| on $0, \ldots, n-1$ and via $i\mapsto c1(i - n)$ on $n, \ldots, n + n1 -1$.
+acting via \lstinline|c i| on $i=0, \ldots, n-1$ and via \lstinline|c1 (i - n)| on $i = n, \ldots, n + n1 -1$.
 This new tree has a root node labeled \lstinline|prod|, with the tensor trees \lstinline|t| and \lstinline|t1| as its children.
+Diagramatically, this is given by
+\tensorTree{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {\lstinline|prod|};
+    \node (B) at (-1,-1) {\lstinline|t|};
+    \node (C) at (1,-1) {\lstinline|t1|};
+    \draw[->] (A) -- (B);
+    \draw[->] (A) -- (C);
+  \end{tikzpicture} 
+}
 The tensor associated with this new tree is obtained by taking the tensor product of the tensors associated with \lstinline|t| and \lstinline|t1|, 
-giving a vector in $F(c) \otimes F(c1)$, using the tensorate of $F$ to map this vector into 
-a vector in $F(c \otimes c1)$, and finally using an isomorphism between $c \otimes c1$ and \lstinline|Sum.elim c c1 ∘ finSumFinEquiv.symm| to map this vector into \lstinline|S.F.obj (Sum.elim c c1 ∘ finSumFinEquiv.symm)|.
+giving a vector in \lstinline|S.F.obj (OverColor.mk c) ⊗ S.F.obj (OverColor.mk c1)|, using the tensorate of \lstinline|S.F| to map this vector into 
+a vector in \lstinline|S.F.obj (OverColor.mk c ⊗ OverColor.mk c1)|, and finally using an isomorphism between \lstinline|OverColor.mk c ⊗ OverColor.mk c1| and 
+\lstinline|OverColor.mk (Sum.elim c c1 ∘ finSumFinEquiv.symm)| to map this vector into
+ \lstinline|S.F.obj (OverColor.mk (Sum.elim c c1 ∘ finSumFinEquiv.symm))|.
+\begin{itemize} 
 \item \textbf{contr}: 
 The constructor \lstinline|contr| takes an existing tensor tree \lstinline|t| based on \lstinline|c : Fin n.succ.succ -> S.C| (where here \lstinline|n.succ.succ| is $n + 1 + 1$) 
 an \lstinline|i| of type \lstinline|Fin n.succ.succ|, \lstinline|j| of type \lstinline|Fin n.succ|
@@ -626,7 +755,7 @@ This new tree has a root node labeled \lstinline|eval i x|, with the tensor tree
 The tensor associated with the new tensor tree is constructed as follows.
 An equivalence between $F (c)$ and \lstinline|F_D(c (i)) \otimes F(c ∘ Fin.succAbove i)| is created by extracting $i$ from $c$ with an equivalence in $OverColor C$, and using the tensorate of $F$. 
 Then, the evaluation for $c(i)$ at the basis element indicated by $x$ on casting $x$ to $Fin (repDim (c(i)))$, 
- is used move the vector from $F_D(c (i)) \otimes F(c ∘ Fin.succAbove i)$ to $\mathbbm{1} \otimes F(c ∘ Fin.succAbove i)$.
+ is used move the vector from \lstinline|F_D(c (i)) \otimes F(c ∘ Fin.succAbove i)| to \lstinline|\mathbbm{1} \otimes F(c ∘ Fin.succAbove i)|.
  From this the left-unitor in modules is used to turn this into a tensor in \lstinline|F(c ∘ Fin.succAbove i)|.
  This operation is not invariant under the group action, like the others here.
 \end{itemize}
@@ -1642,10 +1771,10 @@ amplitudes. Second, we could extend our approach to encompass tensor \emph{field
 etc. We do not anticipate any insurmountable challenges in pursuing these extensions. 
 They represent promising avenues for future research and have the potential to significantly enhance
 the utility of formal methods in physics.
-\bibliographystyle{unsrturl}
-\begin{spacing}{0.5}
-\bibliography{MyBib}
-\end{spacing}
+%\bibliographystyle{unsrturl}
+%\begin{spacing}{0.5}
+%\bibliography{MyBib}
+%\end{spacing}
 
 
 %%%%%%%%%%%%%%
