@@ -280,9 +280,15 @@ Previous implementations of index notation have been made in programming languag
 In Section~\ref{sec:Implementation} of this paper, we will discuss the details of our implementation. 
 In Section~\ref{sec:examples} we will give two examples of theorems and proofs using index notation.
 The first of these examples involves a lemma regarding the contraction of indices of symmetric and anti-symmetric tensors. 
-The second involves examples related to the Pauli matrices and bi-spinors. 
+The second involves examples related to the Pauli matrices and bispinors. 
 We finish this paper in Section~\ref{sec:future} by discussing potential future work related to this project.
 
+\subsection*{Notation}
+In this paper, we will follow Lean's notation for types and terms. 
+For example if \lstinline|C| is a type (which can be thought of as similar to a set),
+then \lstinline|c : C| is an element of the type \lstinline|C|. 
+In addition, instead of having two streams of notation for mathematical objects, one from the Lean 
+code and one in LaTeX, we will use Lean code throughout represent mathematical objects.
 \section{Implementation of index notation into Lean 4}\label{sec:Implementation}
 
 \begin{figure}
@@ -327,7 +333,7 @@ which follows a number of (informally defined) rules.
 
 The third and final representation is a bona-fide \emph{tensor}. This representation 
 is the mathematical object that we are actually intrested in. However, in going to this representation
-we lose the structure of the tensor expression itself, making it somewhat difficult to work with. 
+we lose the structure of the tensor expression itself, making it difficult to work with. 
 
 The process of going from a tensor tree to a tensor involves properties from the symmetric monoidal 
 category of representations. 
@@ -339,7 +345,7 @@ Before we discuss these processes in more detail we do some set-up by defining f
 
 A tensor species is a formalization of the data needed to define e.g., complex Lorentz tensors, 
 real Lorentz tensors or Einstein tensors. The word `species' is a nod to `graphical species'
-defining in \js{...}, from which our construction is inspired.
+defined in~\cite{JOYAL2011105,raynor2021graphical}, from which our construction is inspired.
 
 We will start by giving the complete definition of a tensor species in Lean, and then 
 disect this definition, discussing each of the components in turn. 
@@ -362,52 +368,52 @@ structure TensorSpecies where
   C : Type
   /-- A functor from `C` to `Rep k G` giving our building block representations.
     Equivalently a function `C → Re k G`. -/
-  FDiscrete : Discrete C ⥤ Rep k G
+  FD : Discrete C ⥤ Rep k G
   /-- A specification of the dimension of each color in C. This will be used for explicit
     evaluation of tensors. -/
   repDim : C → ℕ
   /-- repDim is not zero for any color. This allows casting of `ℕ` to `Fin (S.repDim c)`. -/
   repDim_neZero (c : C) : NeZero (repDim c)
   /-- A basis for each Module, determined by the evaluation map. -/
-  basis : (c : C) → Basis (Fin (repDim c)) k (FDiscrete.obj (Discrete.mk c)).V
+  basis : (c : C) → Basis (Fin (repDim c)) k (FD.obj (Discrete.mk c)).V
   /-- A map from `C` to `C`. An involution. -/
   τ : C → C
   /-- The condition that `τ` is an involution. -/
   τ_involution : Function.Involutive τ
   /-- The natural transformation describing contraction. -/
-  contr : OverColor.Discrete.pairτ FDiscrete τ ⟶ 𝟙_ (Discrete C ⥤ Rep k G)
+  contr : OverColor.Discrete.pairτ FD τ ⟶ 𝟙_ (Discrete C ⥤ Rep k G)
   /-- Contraction is symmetric with respect to duals. -/
-  contr_tmul_symm (c : C) (x : FDiscrete.obj (Discrete.mk c))
-      (y : FDiscrete.obj (Discrete.mk (τ c))) :
+  contr_tmul_symm (c : C) (x : FD.obj (Discrete.mk c))
+      (y : FD.obj (Discrete.mk (τ c))) :
     (contr.app (Discrete.mk c)).hom (x ⊗ₜ[k] y) = (contr.app (Discrete.mk (τ c))).hom
-    (y ⊗ₜ (FDiscrete.map (Discrete.eqToHom (τ_involution c).symm)).hom x)
+    (y ⊗ₜ (FD.map (Discrete.eqToHom (τ_involution c).symm)).hom x)
   /-- The natural transformation describing the unit. -/
-  unit : 𝟙_ (Discrete C ⥤ Rep k G) ⟶ OverColor.Discrete.τPair FDiscrete τ
+  unit : 𝟙_ (Discrete C ⥤ Rep k G) ⟶ OverColor.Discrete.τPair FD τ
   /-- The unit is symmetric. -/
   unit_symm (c : C) :
     ((unit.app (Discrete.mk c)).hom (1 : k)) =
-    ((FDiscrete.obj (Discrete.mk (τ (c)))) ◁
-      (FDiscrete.map (Discrete.eqToHom (τ_involution c)))).hom
-    ((β_ (FDiscrete.obj (Discrete.mk (τ (τ c)))) (FDiscrete.obj (Discrete.mk (τ (c))))).hom.hom
+    ((FD.obj (Discrete.mk (τ (c)))) ◁
+      (FD.map (Discrete.eqToHom (τ_involution c)))).hom
+    ((β_ (FD.obj (Discrete.mk (τ (τ c)))) (FD.obj (Discrete.mk (τ (c))))).hom.hom
     ((unit.app (Discrete.mk (τ c))).hom (1 : k)))
   /-- Contraction with unit leaves invariant. -/
-  contr_unit (c : C) (x : FDiscrete.obj (Discrete.mk (c))) :
-    (λ_ (FDiscrete.obj (Discrete.mk (c)))).hom.hom
-    (((contr.app (Discrete.mk c)) ▷ (FDiscrete.obj (Discrete.mk (c)))).hom
-    ((α_ _ _ (FDiscrete.obj (Discrete.mk (c)))).inv.hom
+  contr_unit (c : C) (x : FD.obj (Discrete.mk (c))) :
+    (λ_ (FD.obj (Discrete.mk (c)))).hom.hom
+    (((contr.app (Discrete.mk c)) ▷ (FD.obj (Discrete.mk (c)))).hom
+    ((α_ _ _ (FD.obj (Discrete.mk (c)))).inv.hom
     (x ⊗ₜ[k] (unit.app (Discrete.mk c)).hom (1 : k)))) = x
   /-- The natural transformation describing the metric. -/
-  metric : 𝟙_ (Discrete C ⥤ Rep k G) ⟶ OverColor.Discrete.pair FDiscrete
+  metric : 𝟙_ (Discrete C ⥤ Rep k G) ⟶ OverColor.Discrete.pair FD
   /-- On contracting metrics we get back the unit. -/
   contr_metric (c : C) :
-    (β_ (FDiscrete.obj (Discrete.mk c)) (FDiscrete.obj (Discrete.mk (τ c)))).hom.hom
-    (((FDiscrete.obj (Discrete.mk c)) ◁ (λ_ (FDiscrete.obj (Discrete.mk (τ c)))).hom).hom
-    (((FDiscrete.obj (Discrete.mk c)) ◁ ((contr.app (Discrete.mk c)) ▷
-    (FDiscrete.obj (Discrete.mk (τ c))))).hom
-    (((FDiscrete.obj (Discrete.mk c)) ◁ (α_ (FDiscrete.obj (Discrete.mk (c)))
-      (FDiscrete.obj (Discrete.mk (τ c))) (FDiscrete.obj (Discrete.mk (τ c)))).inv).hom
-    ((α_ (FDiscrete.obj (Discrete.mk (c))) (FDiscrete.obj (Discrete.mk (c)))
-      (FDiscrete.obj (Discrete.mk (τ c)) ⊗ FDiscrete.obj (Discrete.mk (τ c)))).hom.hom
+    (β_ (FD.obj (Discrete.mk c)) (FD.obj (Discrete.mk (τ c)))).hom.hom
+    (((FD.obj (Discrete.mk c)) ◁ (λ_ (FD.obj (Discrete.mk (τ c)))).hom).hom
+    (((FD.obj (Discrete.mk c)) ◁ ((contr.app (Discrete.mk c)) ▷
+    (FD.obj (Discrete.mk (τ c))))).hom
+    (((FD.obj (Discrete.mk c)) ◁ (α_ (FD.obj (Discrete.mk (c)))
+      (FD.obj (Discrete.mk (τ c))) (FD.obj (Discrete.mk (τ c)))).inv).hom
+    ((α_ (FD.obj (Discrete.mk (c))) (FD.obj (Discrete.mk (c)))
+      (FD.obj (Discrete.mk (τ c)) ⊗ FD.obj (Discrete.mk (τ c)))).hom.hom
     ((metric.app (Discrete.mk c)).hom (1 : k) ⊗ₜ[k]
       (metric.app (Discrete.mk (τ c))).hom (1 : k))))))
     = (unit.app (Discrete.mk c)).hom (1 : k)
@@ -435,11 +441,13 @@ inductive Color
 \end{code}
 Colors can be thought of as labels for each of the building 
 block representations making up the tensor species.  This is made formal by the functor 
-\lstinline|FDiscrete|, which assigns to each color a representation of $G$ over $k$.
-In what follows we will use $F_D$ to denote this functor.
+\lstinline|FD|, which assigns to each color a representation of $G$ over $k$.
+Note that for \lstinline|c : C| to apply \lstinline|FD| we have to write 
+\lstinline|FD.obj (Discrete.mk c)| in Lean. This is somewhat cumbersome, so in what 
+follows we will abbreviate this to \lstinline|FD c|.
 For complex Lorentz tensors, this is defined as follows:
 \begin{code}
-FDiscrete := Discrete.functor fun c =>
+FD := Discrete.functor fun c =>
   match c with
   | Color.upL => Fermion.leftHanded
   | Color.downL => Fermion.altLeftHanded
@@ -511,7 +519,7 @@ the reader an idea of what each part does.
 The map \lstinline|repDim| assigns to each color a natural number, which corresponds 
 to the dimension of the representation associated to that color. The condition is placed on 
 the representations that they are non-empty, i.e., that the dimension is not equal to zero \lstinline|repDim_neZero|.  
-The map \lstinline|basis| gives a basis indexed by \lstinline|(Fin (repDim c))| (numbers from 0 to $\mathrm{repDim}\; c -1 $)  of each representation for each $c \in C$.  
+The map \lstinline|basis| gives a basis indexed by \lstinline|Fin (repDim c)| (numbers from 0 to $\mathrm{repDim}\; c -1 $)  of each representation for each $c \in C$.  
 We will use this basis in the definition of evaluation of tensor indices. 
 
 To each color the map \lstinline|τ|, which is an involution via \lstinline|τ_involution|, defines 
@@ -529,15 +537,16 @@ the map \lstinline|τ| is given by
 \end{code}
 
 The contraction is defined by \lstinline|contr|, which is a natural transformation from the functor 
-$F_D(\_) \otimes F_D (\tau (\_))$, to the functor $\mathbbm{1}$ takes every object in $C$ to the trivial representation $k$. 
-This natural transformation is simply the assignment to each color $c$ a map from 
-$F_D(c) \otimes F_D (\tau(c))$ to $k$ which is equivariant with respect to the group action. 
+\lstinline|FD _ ⊗ FD (τ _)|, to the functor \lstinline|𝟙_ (Discrete C ⥤ Rep k G)| takes every object in $C$ to the trivial representation 
+\lstinline|𝟙_ (Rep k G)|. 
+This natural transformation is simply the assignment to each color $c$ a linear-map from 
+\lstinline|FD c ⊗ FD (τ c)| to \lstinline|k| which is equivariant with respect to the group action. 
 This contraction cannot be defined arbitarily, but must satisfy the symmetry condition \lstinline|contr_tmul_symm|, 
-which correpsonds to the diagram 
+which corresponds to the diagram \js{Finish improving this diagram.}
 \begin{equation}
 \begin{tikzcd}
-  F_D(c) \otimes F_D(\tau c) \arrow[r, "{\beta}"] \arrow[d, "{\mathcal{C}(c)}", swap] & F_D(\tau c) \otimes F_D (c) \arrow[d, "\mathbbm{1} \otimes F_D \tau_c"] \\
-  \mathbb{I} & F_D(\tau c) \otimes F_D (\tau \tau c) \arrow[l, "{\mathcal{C}(\tau(c))}", ] 
+  \text{\lstinline|FD c ⊗ FD (τ c)|} \arrow[r, "{\beta}"] \arrow[d, "{\text{\lstinline|contr c|}}", swap] & F_D(\tau c) \otimes F_D (c) \arrow[d, "\mathbbm{1} \otimes F_D \tau_c"] \\
+  \mathbbm{1} & F_D(\tau c) \otimes F_D (\tau \tau c) \arrow[l, "{\text{\lstinline|contr (τ c)|}}", ] 
 \end{tikzcd}
 \end{equation}
 commuting, where $\beta$ is the braiding of the symmetric monoidal category, and $\tau_c$ is the isomorphism
@@ -581,46 +590,45 @@ corresponds to the diagram
 
 \subsection{Tensors} 
 
-Given any type $C$, which we will think of as a type of colors, we can define 
-the category $\mathrm{T}_{/C}^\times$ as follows. Objects are functions 
-$f : X \to C$ for some type $X$. A morphism from $f : X \to C$ to $g : Y \to C$ is a bijection
-$\phi : X \to Y$ such that $f = g \circ \phi$. This category is equivalent to the core of the
-category of types sliced over $C$, which explains the origin of the notation. 
-In Lean we denote this category as \lstinline|OverColor C|, although we will use the 
-shorter notation $\mathrm{T}_{/C}^\times$ here when we can.
+Given any type \lstinline|C|, we define the category \lstinline|OverColor C| as follows. 
+Objects are functions \lstinline|f : X → C| for some type \lstinline|X|. A morphism from
+\lstinline|f : X → C| to \lstinline|g : Y → C| is a bijection
+\lstinline|φ : X → Y| such that \lstinline|f = g ∘ φ|. This category is equivalent to the core of the
+category of types sliced over \lstinline|C|. 
 
-The category $\mathrm{T}_{/C}^\times$ is not any old category, it carries a symmetric monoidal structure, 
-which we will denote $\otimes$. The structure such that $f \otimes g$ for objects $f$ and $g$ 
-is the map $X \oplus Y \to C$ where $\oplus$ denotes the disjoint union of types. 
+The category \lstinline|OverColor C| is not any old category, it carries a symmetric monoidal structure,
+which we will denote \lstinline|⊗|. The structure such that \lstinline|f ⊗ g| for objects \lstinline|f| and \lstinline|g|
+is the induced map \lstinline|X ⊕ Y → C| where \lstinline|⊕| denotes the disjoint union of types.
+In Lean this is denoted \lstinline|Sum.elim f g|. 
 
-The functor $F_D$ defined above, can be lifted to a symmetric monoidal functor $F$ from 
-$\mathrm{T}_{/C}^\times$ to $\Rep k G$. This functor takes $f : X \to C$ to the tensor product
-$\bigotimes_{x \in X} F_D(f(x))$ and morphisms to the linear maps of representations corresponding to
-reindexings of tensor products. This construction is general, and functorial. In otherwords, 
-there is a functor 
-\begin{equation}
-  \mathrm{lift} : \mathrm{Fun}(C, \mathrm{Rep} k G) \Rightarrow
-  \mathrm{SymmMonFun}(\mathrm{T}_{/C}^\times, \mathrm{Rep} k G)
-\end{equation} 
-In Lean we define this functor, along with the corresponding lift of $F_D$, $F$.
+For a given tensor species \lstinline|S|, the functor \lstinline|FD| can be lifted to a functor
+to a symmetric monoidal functor from \lstinline|OverColor S.C| to \lstinline|Rep k G|.
+This functor takes \lstinline|f : X → S.C| to the tensor product,
+\lstinline|⨂[k] x, S.FD (f x)|, of all \lstinline|FD (f x)|. 
+This construction is general and functorial, allowing us to define the functor 
+\begin{code}
+def OverColor.lift : (Discrete S.C ⥤ Rep S.k S.G) ⥤ BraidedFunctor (OverColor S.C) (Rep S.k S.G) where ...
+\end{code}
+where Lean calls symmetric monoidal functors \lstinline|BraidedFunctor|.
 
-We can think of an object $f : X \to C$ of $\mathrm{T}_{/C}^\times$ as a type of indices $X$, and a specification 
-of what repreesntation each index is associated to. The representation $F(f)$ is 
-then the tensor product of each of these representations, so that vectors $v \in F(f)$ can be thought of as 
-tensors with indices indexed by $X$ of color $C$ (e.g. `up' or `down'). 
+We denote the lift of \lstinline|S.FD| by \lstinline|F|. Namely, we have
+\begin{code}
+def F : BraidedFunctor (OverColor S.C) (Rep S.k S.G) := (OverColor.lift).obj S.FD
+\end{code}
 
-With this in mind, we define a general tensor of a given species as a vector in the representation $F(f)$ 
-for some $f$ in $\mathrm{T}_{/C}^\times$.
+We can think of an object \lstinline|f : X → S.C| of \lstinline|OverColor S.C| as a type of indices \lstinline|X|,
+and a specification of what color or representation each index is associated to. 
+We can apply the functor \lstinline|S.F| to \lstinline|f : X → S.C| as follows 
+\lstinline|S.F.obj (OverColor.mk f)|, which we will abbreviate to \lstinline|S.F f|.
+This representaiton, \lstinline|S.F f|, is the tensor product of each of these representations, so that vectors
+\lstinline|v : S.F f| can be thought of as tensors with indices indexed by \lstinline|X| of color \lstinline|C|. 
 
-In physics, we typically focus on objects $f : X \to C$ in $\mathrm{T}_{/C}^\times$ where $X$ is a 
-finite type of the form $\mathrm{Fin}\, n$ for some $n$. Here, $\mathrm{Fin}\, n$ represents the 
-type of natural numbers less than $n$, i.e., $\{0, 1, \dots, n-1\}$. When appropraite in what follows, 
+With this in mind, we define a general tensor of a species \lstinline|S| as a vector in a representation 
+\lstinline|S.F f|. 
+
+In physics, we typically focus on objects \lstinline|f : X → S.C| of \lstinline|OverColor S.C|  where \lstinline|X| is a 
+finite type of the form \lstinline|Fin n| for some \lstinline|n : ℕ|. When appropraite in what follows, 
 we will restrict to these objects.
-
-In Lean for a map of types \lstinline|f : X \to C|, what we have been writing as $F(f)$ is written 
-as \lstinline|S.F.obj (OverColor.mk f)|. The object \lstinline|S| is the tensor species, which we will
-define shortly. The \lstinline|OverColor.mk| tells lean that the function \lstinline|f| should 
-be considered as an object of \lstinline|OverColor C|, not just as an object of type \lstinline|X -> C|. \js{fix arrows here}
 
 \subsection{Tensor Trees and their map to tensors}
 
@@ -814,7 +822,7 @@ Diagramatically,
 }
 The tensor associated with the new tensor tree is construced as follows. 
 We start with a tensor in \lstinline|S.F.obj (OverColor.mk c)|.
-This is mapped into a vector in \lstinline|(S.FDiscrete.obj (c i) ⊗ S.FDiscrete.obj (S.τ (c i))) ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i ∘ Fin.succAbove j))| via an equivalence from 
+This is mapped into a vector in \lstinline|(S.FD.obj (c i) ⊗ S.FD.obj (S.τ (c i))) ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i ∘ Fin.succAbove j))| via an equivalence from 
 \lstinline|S.F.obj (OverColor.mk c)|. The equivalence is constructed using an equivalence 
 in \lstinline|OverColor C| to extract \lstinline|i| and \lstinline|i.succAbove j| from \lstinline|c|,
 then using the tensorate of \lstinline|S.F|, and the fact that \lstinline|c (i.succAbove j) = S.τ (c i)|. 
@@ -839,7 +847,7 @@ Diagramatically, this corresponds to
 }
 The tensor associated with the new tensor tree is constructed as follows.
 We start with a tensor in \lstinline|S.F.obj (OverColor.mk c)|.
-This is mapped into a vector in \lstinline|S.FDiscrete.obj (c i) ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))| via an equivalence from
+This is mapped into a vector in \lstinline|S.FD.obj (c i) ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))| via an equivalence from
 \lstinline|S.F.obj (OverColor.mk c)|. The equivalence is constructed using an equivalence
 in \lstinline|OverColor C| to extract \lstinline|i| from \lstinline|c|, and
 then using the tensorate of \lstinline|S.F|.

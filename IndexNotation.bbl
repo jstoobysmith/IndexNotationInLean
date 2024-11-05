@@ -39,4 +39,22 @@ Jean-Philippe Bernardy and Patrik Jansson.
 \newblock Domain-specific tensor languages.
 \newblock {\em arXiv preprint arXiv:2312.02664}, 2023.
 
+\bibitem{JOYAL2011105}
+AndrÃ© Joyal and Joachim Kock.
+\newblock Feynman graphs, and nerve theorem for compact symmetric
+  multicategories (extended abstract).
+\newblock {\em Electronic Notes in Theoretical Computer Science},
+  270(2):105--113, 2011.
+\newblock Proceedings of the 6th International Workshop on Quantum Physics and
+  Logic (QPL 2009).
+\newblock URL:
+  \url{https://www.sciencedirect.com/science/article/pii/S1571066111000260},
+  \href {https://doi.org/10.1016/j.entcs.2011.01.025}
+  {\path{doi:10.1016/j.entcs.2011.01.025}}.
+
+\bibitem{raynor2021graphical}
+Sophie Raynor.
+\newblock Graphical combinatorics and a distributive law for modular operads.
+\newblock {\em Advances in Mathematics}, 392:108011, 2021.
+
 \end{thebibliography}
