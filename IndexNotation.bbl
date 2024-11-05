@@ -34,4 +34,9 @@ Tom\'a\v{s} Sk\v{r}ivan.
 \newblock {\em GitHub repository}.
 \newblock URL: \url{https://github.com/lecopivo/SciLean}.
 
+\bibitem{haskellPaper}
+Jean-Philippe Bernardy and Patrik Jansson.
+\newblock Domain-specific tensor languages.
+\newblock {\em arXiv preprint arXiv:2312.02664}, 2023.
+
 \end{thebibliography}
