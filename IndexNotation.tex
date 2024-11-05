@@ -192,18 +192,12 @@
 }
 
 \newcommand{\tensorTree}[1]{
-  \arrayrulecolor{mycolor}
 \begin{center}
-\begin{tabular}{|p{6in}|}
-\hline
-~\newline
-\makebox[3in]{%
+  \fcolorbox{mycolor}{white}{%
 #1}
-  \\ \hline
-\end{tabular}
 \end{center}
-\arrayrulecolor{black}
 }
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Math commands 
 \newcommand{\Rep}[2]{\mathrm{Rep} \; #1 \; #2}
@@ -730,526 +724,71 @@ giving a vector in \lstinline|S.F.obj (OverColor.mk c) ⊗ S.F.obj (OverColor.mk
 a vector in \lstinline|S.F.obj (OverColor.mk c ⊗ OverColor.mk c1)|, and finally using an isomorphism between \lstinline|OverColor.mk c ⊗ OverColor.mk c1| and 
 \lstinline|OverColor.mk (Sum.elim c c1 ∘ finSumFinEquiv.symm)| to map this vector into
  \lstinline|S.F.obj (OverColor.mk (Sum.elim c c1 ∘ finSumFinEquiv.symm))|.
-\begin{itemize} 
-\item \textbf{contr}: 
-The constructor \lstinline|contr| takes an existing tensor tree \lstinline|t| based on \lstinline|c : Fin n.succ.succ -> S.C| (where here \lstinline|n.succ.succ| is $n + 1 + 1$) 
+
+\paragraph{contr:}
+The constructor \lstinline|contr| firstly, takes an existing tensor tree \lstinline|t| based on a 
+\lstinline|c : Fin n.succ.succ -> S.C|. Here \lstinline|n.succ.succ| is $n + 1 + 1$ with \lstinline|succ| meaning 
+the succesor of a natural number. 
+It also takes,
 an \lstinline|i| of type \lstinline|Fin n.succ.succ|, \lstinline|j| of type \lstinline|Fin n.succ|
 and a proof that \lstinline|c (i.succAbove j) = S.τ (c i)|, where \lstinline|i.succAbove| is the map from \lstinline|Fin n.succ| to \lstinline|Fin n.succ.succ| with a hole at \lstinline|i|. 
-The proof says that the color of the index \lstinline|i.succAbove j| is the dual of the color of the index \lstinline|i|, and that these 
-two indices can be contracted. We use a \lstinline|j| in \lstinline|Fin n.succ| and \lstinline|i.succAbove j| as the index to be contracted, instead 
-of another index in  \lstinline|Fin n.succ.succ| to ensure the two indices are not the same. 
-The constructor outputs a new tensor tree based on \lstinline|c ∘ Fin.succAbove i ∘ Fin.succAbove j|. 
+The proof says that the color of the index \lstinline|i.succAbove j| is the dual of the color of the index \lstinline|i|, and thus that these 
+two indices can be contracted.
+Note that we use a \lstinline|j| in \lstinline|Fin n.succ| and \lstinline|i.succAbove j| as the index to be contracted, instead 
+of another index in  \lstinline|Fin n.succ.succ| to ensure the two indices to be contracted are not the same. 
+The constructor outputs a new tensor tree based on \lstinline|c ∘ i.succAbove ∘ j.succAbove|. 
 This new tree has a root node labeled \lstinline|contr i j|, with the tensor tree \lstinline|t| as its child.
-The tensor associated with the new tensor tree is constructed as follows. 
-An equivalence between $F (c)$ and \lstinline|(F_D(c (i)) \otimes F_D(\tau (c(i)))) \otimes  F(c ∘ Fin.succAbove i ∘ Fin.succAbove j)| is created 
-using the fact that $c (i.succAbove j) = \tau (c i)$, extracting $i$ and $i.succAbove j$ from $c$ with an equivalence in $OverColor C$, and using the tensorate of $F$. 
-Then, the contraction for $c(i)$ is used to turn 
-\lstinline|(F_D(c (i)) \otimes F_D(\tau (c(i)))) \otimes  F(c ∘ Fin.succAbove i ∘ Fin.succAbove j)| into 
-\lstinline|\mathbbm{1} \otimes F(c ∘ Fin.succAbove i ∘ Fin.succAbove j)|, and finally the left-unitor is used to turn this into a tensor in 
-\lstinline|F(c ∘ Fin.succAbove i ∘ Fin.succAbove j)|. 
-\item \textbf{eval}: 
-The final constructor \lstinline|eval| takes an existing tensor tree \lstinline|t| based on \lstinline|c : Fin n.succ -> S.C|,
+Diagramatically, 
+\tensorTree{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {\lstinline|contr i j|};
+    \node (B) at (0,-1) {\lstinline|t|};
+    \draw[->] (A) -- (B);
+  \end{tikzpicture} 
+}
+The tensor associated with the new tensor tree is construced as follows. 
+We start with a tensor in \lstinline|S.F.obj (OverColor.mk c)|.
+This is mapped into a vector in \lstinline|(S.FDiscrete.obj (c i) ⊗ S.FDiscrete.obj (S.τ (c i))) ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i ∘ Fin.succAbove j))| via an equivalence from 
+\lstinline|S.F.obj (OverColor.mk c)|. The equivalence is constructed using an equivalence 
+in \lstinline|OverColor C| to extract \lstinline|i| and \lstinline|i.succAbove j| from \lstinline|c|,
+then using the tensorate of \lstinline|S.F|, and the fact that \lstinline|c (i.succAbove j) = S.τ (c i)|. 
+Using the contraction for \lstinline|c i|, we then get a vector in 
+\lstinline|𝟙 ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i ∘ Fin.succAbove j))| which is then 
+mapped to a tensor in \lstinline|S.F.obj (OverColor.mk (c ∘ Fin.succAbove i ∘ Fin.succAbove j))| 
+using the left-unitor of \lstinline|Rep S.G S.k|.
+
+\paragraph{eval:}
+The final constructor \lstinline|eval| takes an existing tensor tree \lstinline|t| based on a \lstinline|c : Fin n.succ -> S.C|,
 an \lstinline|i| of type \lstinline|Fin n.succ|, and a natural number $x$.  
 The constructor outputs a new tensor tree based on \lstinline|c ∘ Fin.succAbove i|.
 This new tree has a root node labeled \lstinline|eval i x|, with the tensor tree \lstinline|t| as its child.
+Diagramatically, this corresponds to 
+\tensorTree{
+  \begin{tikzpicture}
+    \node[draw=black] (A) at (0,0) {\lstinline|eval i x|};
+    \node (B) at (0,-1) {\lstinline|t|};
+    \draw[->] (A) -- (B);
+  \end{tikzpicture} 
+}
 The tensor associated with the new tensor tree is constructed as follows.
-An equivalence between $F (c)$ and \lstinline|F_D(c (i)) \otimes F(c ∘ Fin.succAbove i)| is created by extracting $i$ from $c$ with an equivalence in $OverColor C$, and using the tensorate of $F$. 
-Then, the evaluation for $c(i)$ at the basis element indicated by $x$ on casting $x$ to $Fin (repDim (c(i)))$, 
- is used move the vector from \lstinline|F_D(c (i)) \otimes F(c ∘ Fin.succAbove i)| to \lstinline|\mathbbm{1} \otimes F(c ∘ Fin.succAbove i)|.
- From this the left-unitor in modules is used to turn this into a tensor in \lstinline|F(c ∘ Fin.succAbove i)|.
- This operation is not invariant under the group action, like the others here.
-\end{itemize}
-\section{Implementation of index notation into Lean 4}
-\js{This section is to be deleted.}
-
-Our implementation of index notation in Lean can be  broken down into 
-three main components, illustrated in Figure~\ref{fig:overviewFlow}. 
-The first component is the \emph{syntax for tensor expressions}, 
-which is what users interact with when writing results in Lean. 
-This syntax closely mirrors the notation familiar to physicists, 
-making it intuitive and accessible. 
-It appears directly in the Lean files and can be thought of as an informal string 
-that represents the tensor expressions. The code snippet above, involving pauli matrices, is an 
-example of this.
-
-The second component involves transforming this syntax into a \emph{tensor tree}. 
-The tensor tree is a formal mathematical representation of the tensor expression. 
-By parsing the syntax into a structured tree, 
-we establish a rigorous foundation that captures the tensor expression. 
-This formal representation allows us to easily manipulate tensor expressions and
-prove results related to them in a way that Lean accepts as formal.
-
-The third and final component is the conversion of the tensor tree into an actual \emph{tensor}. 
-This process utilizes properties of the symmetric-monoidal category of representations
- to translate the tensor tree into a tensor.
-
-Although Lean processes information from left to right in Figure~\ref{fig:overviewFlow}, 
-starting with the syntax and proceeding to the tensor tree, and then finally (when 
-we ask it to) to the tensors, 
-it is more effective to discuss the implementation from right to left. 
-Starting with tensors is advantageous because they are the primary objects of interest.
- The left and middle parts of the diagram can be thought of as intermediate stages that facilitate the 
- manipulation and understanding of these tensors and their expressions.
-
-\subsection{Defining tensors} \label{sec:definingTensors}
-
-\subsubsection{Building blocks of tensors and color} \label{sec:buildingBlocks}
-
-Tensors of a species, such as complex Lorentz tensors, are constructed from a 
-set of building block representations of a group $G$ over a field $k$.
-
-For complex Lorentz tensors, the group $G$ is $SL(2, \mathbb{C})$, the field $k$ is the 
-field of complex numbers and six building block representations. The six building block representations 
-are
-\begin{itemize}
-  \item The representation of left-handed Weyl fermions, 
-    denoted in Lean as \lstinline|Fermion.leftHanded|, and corresponding to the 
-    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M v$ for $M \in SL(2, \mathbb{C})$.
-  \item The representation of `alternative' left-handed Weyl fermions, 
-    denoted in Lean as \lstinline|Fermion.altLeftHanded|, and corresponding to the 
-    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M^{-1 T} v$ for $M \in SL(2, \mathbb{C})$.
-  \item The representation of right-handed Weyl fermions, 
-    denoted in Lean as \lstinline|Fermion.rightHanded|, and corresponding to the 
-    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M^\star v$ for $M \in SL(2, \mathbb{C})$.
-  \item The representation of `alternative' right-handed Weyl fermions,
-    denoted in Lean as \lstinline|Fermion.altRightHanded|, and corresponding to the 
-    representation of $SL(2, \mathbb{C})$ taking $v \mapsto M^{-1 \dagger} v$ for $M \in SL(2, \mathbb{C})$.
-  \item The representation of contravariant Lorentz tensors, 
-    denoted in Lean as \lstinline|Lorentz.complexContr|, and corresponding to the 
-    representation of $SL(2, \mathbb{C})$ induced by the homomorphism of $SL(2, \mathbb{C})$ into 
-    the Lorentz group and the contravariant action of the Lorentz group on four-vectors.
-  \item The representation of covariant Lorentz tensors,
-     denoted in Lean as \lstinline|Lorentz.complexCo|, and corresponding to the 
-    representation of $SL(2, \mathbb{C})$ induced by the homomorphism of $SL(2, \mathbb{C})$ into 
-    the Lorentz group and the covariant action of the Lorentz group on four-vectors.
-\end{itemize}
-
-An example of how these representations are defined in Lean is given below for the representation 
-of left-handed Weyl fermions, \lstinline|Fermion.leftHanded|:
-\begin{codeLong}
-/-- The vector space ℂ^2 carrying the fundamental representation of SL(2,C).
-  In index notation corresponds to a Weyl fermion with indices ψ^a. -/
-def leftHanded : Rep ℂ SL(2,ℂ) := Rep.of {
-  /- The function from SL(2,ℂ) to endomorphisms of LeftHandedModule 
-    (which corresponds to the vector space ℂ^2). -/
-  toFun := fun M => {
-    /- Start of the definiton of the linear map. -/
-    /- The function underlying the linear map. Defined as the dot product. -/
-    toFun := fun (ψ : LeftHandedModule) =>
-      LeftHandedModule.toFin2ℂEquiv.symm (M.1 *ᵥ ψ.toFin2ℂ),
-    /- Proof that the function is linear with respect to addition. -/
-    map_add' := by
-      intro ψ ψ'
-      simp [mulVec_add]
-    /- Proof that the function is linear with respect to scalar multiplication. -/
-    map_smul' := by
-      intro r ψ
-      simp [mulVec_smul]
-    /- End of the definiton of the linear map. -/}
-  /- Proof that (the outer) toFun gives the identity map on the identity of SL(2,ℂ). -/
-  map_one' := by
-    ext i
-    simp
-  /- Proof that the action of the product of two elements is 
-    the product of the actions of the elements. -/
-  map_mul' := fun M N => by
-    simp only [SpecialLinearGroup.coe_mul]
-    ext1 x
-    simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearEquiv.apply_symm_apply,
-      mulVec_mulVec]}
-\end{codeLong} 
-We have added some explainatary comments to this code, not seen in the actual Lean code, to give 
-the reader an idea of what each part does. 
-
-Moving on, to each of the building block representations, we assign a unique label, 
-which we refer to as a \emph{color}. We then get a type of colors for a given species of tensors,
-which in this paper we will denote $C$. 
-
-For complex Lorentz tensors we associate the color \lstinline|upL| to the representation 
-\lstinline|Fermion.leftHanded|, \lstinline|downL| to \lstinline|Fermion.altLeftHanded|,
-\lstinline|upR| to \lstinline|Fermion.rightHanded|, \lstinline|downR| to \lstinline|Fermion.altRightHanded|,
-\lstinline|up| to \lstinline|Lorentz.complexContr| and \lstinline|down| to \lstinline|Lorentz.complexCo|.
-The type of colors is defined in Lean as an inductive type as follows:
-\begin{code}
-inductive Color
-  | upL : Color
-  | downL : Color
-  | upR : Color
-  | downR : Color
-  | up : Color
-  | down : Color
-\end{code}
-This can roughly be thought of as the type with six elements. We will see a much more complicated form 
-of inductive type when we come to define tensor trees.
-
-The assignment of colors to their corresponding representations is done via a functor $F_D$ 
-from the set $C$ to the category of $k$-representations of $G$, which we denote $\Rep k G$.
-That, is a functor
-\begin{equation} 
-  F_{D} : C \Rightarrow \Rep k G\, . 
-\end{equation}
-Since the source category of this functor is just a set, we could have instead defined it as 
-a function - however we will see later that we want to lift this functor to a symmetric monoidal
-functor with a more sophiscated source category. For this reason, it is useful to have a functor here. 
-
-However, been a functor from a set, means that defining it for specific cases in Lean is somewhat stright forard. 
-For complex Lorentz tensors this functor is defined as follows:
-\begin{code}
-FDiscrete := Discrete.functor fun c =>
-  match c with
-  | Color.upL => Fermion.leftHanded
-  | Color.downL => Fermion.altLeftHanded
-  | Color.upR => Fermion.rightHanded
-  | Color.downR => Fermion.altRightHanded
-  | Color.up => Lorentz.complexContr
-  | Color.down => Lorentz.complexCo
-\end{code}
-This code snippet actually forms part of a larger structure called a tensor species, which we will
-get on to shortly. 
-
-\subsubsection{General tensors} \label{sec:generalTensors}
-\js{Section moved}
-\subsubsection{Tensor operations} \label{sec:tensorOperations}
-
-There are eight fundamental operations one might wish to perform on tensors: addition, scalar multiplication, negation, action by the group 
-$G$, permutation of indices, tensor product, contraction of indices, and evaluation of an index. 
-In this section, we explore how each of these operations arises within the framework we have established so far.
-The operations we will discuss will reappear in Section \ref{}, where we dicuss how to go from 
-a tensor tree to a tensor.
-
-The first three operations—addition, scalar multiplication, and negation—directly result from 
-$F(f)$ being a vector space over $k$. Consequently, in Lean, these structures are inherently available.
-Similarly, since $F(f)$ resides in $\Rep k G$, it naturally comes equipped with a group action,
-which is again inherently available to us in Lean. 
-
-Permuting indices of a tensors, or altering their indexing sets, can be achived by applying 
-$F$ to morphisms in $\mathrm{T}_{/C}^\times$. Essentially, the morphisms in $\mathrm{T}_{/C}^\times$
-can be thought of as valid permutations or reindexings of indices. They are valid in the sense that
-they will never interchange an `up' index with a `down' index, for instance.
-
-Next, we consider the tensor product of two tensors. The tensor product of vectors is 
-already defined in Mathlib. Using this, if we have $t \in F(f)$ and $s \in F(g)$, we can form a vector in $F(f) \otimes F(g)$.
-In Lean, this is denoted as \js{sorry}. Our goal is to obtain some elemnet in some $F \_$,
-which we can achieve using the tensorate of $F$. Recall that $F$ is a symmetric monoidal functor,
-and its tensorate is an isomorphism between $F(f) \otimes F(g)$ and $F(f \otimes g)$.
-
-We now turn to contraction, where we will also discuss the metric and unit. 
-To define contraction we need to know what indices can be contracted with what others. 
-For this we introduce an involution $\tau : C \to C$. For complex Lorentz tensors
-this is defined as follows
-\begin{code} 
-  τ := fun c =>
-    match c with
-    | Color.upL => Color.downL
-    | Color.downL => Color.upL
-    | Color.upR => Color.downR
-    | Color.downR => Color.upR
-    | Color.up => Color.down
-    | Color.down => Color.up
-\end{code}
-For a color $c \in C$ we say that $\tau(c)$ is the dual of $C$. What this will mean is that 
-we can contract indices of color $c$ with indices of color $\tau(c)$.
-For a color $c$ the contraction corresponding to that color is an equivariant map from
-$F(c) \otimes F(\tau c)$ to the trivial representation, which in this paper we will denote 
-$\mathbbm{1}$.  That is to say, a morphism $\mathcal{C}(c)$ in $\Rep{k}{G}$ from $F(c) \otimes F(\tau c)$ to 
-the unit of the monoidal structure, which is the trivial representation.
-Collectively, and somewhat trivally,  $\mathcal{C}$ forms a natural transformation from the functor 
-$F \_ \otimes F (\tau \_)$ to the constant functor landing on $\mathbbm{1}$, which we will also 
-denote $\mathbbm{1}$. 
-
-We expect that the contraction  $\mathcal{C}(c)$ and the contraction $\mathcal{C}(\tau(c))$ are 
-essentially the same. After all, for four-vectors one is the contraction of an up index with a down index 
-whilst the other is the contraction of a down index with an up index. 
-To make this formal we put a condition on $\mathcal{C}$ which can 
-succinctly be written as a diagram: 
-\begin{equation}
-\begin{tikzcd}
-  F_D(c) \otimes F_D(\tau c) \arrow[r, "{\beta}"] \arrow[d, "{\mathcal{C}(c)}", swap] & F_D(\tau c) \otimes F_D (c) \arrow[d, "\mathbbm{1} \otimes F_D \tau_c"] \\
-  \mathbb{I} & F_D(\tau c) \otimes F_D (\tau \tau c) \arrow[l, "{\mathcal{C}(\tau(c))}", ] 
-\end{tikzcd}
-\end{equation}
-where $\beta$ is the braiding of the symmetric monoidal category, and $\tau_c$ is the isomorphism
-in $C$ between $\tau(\tau(c))$ and $c$, which exists since $\tau$ is an involution.
-In Lean this condition is written in a easier-to-prove but equivalent way, by acting the relevent maps 
-on pure vectors within $F_D(c) \otimes F_D(\tau c)$. We will see this in the next subsection.
-
-The contraction we have defined so far does not specify how to contract indices of a general tensor 
-in $F(f)$. Suppose we wish to contract the indices $i$ and $j$ in $X$, and that their 
-colors allow such a contraction, i.e., $f(j) = \tau (f (i))$.
-To achieve this, we establish an equivalence in $\mathrm{T}_{/C}^\times$ between $f$ and
-$![f i]\otimes ![f j]! \otimes f'$, where $![f i] : \mathrm{Fin}\, 1 \to C$ lands on $f i$ and
-similarly for $f j$, and $f'$ can be thought of as $f$ with $i$ and $j$ removed.
-
-Using the tensorate of $F$ and the equivalence just discussed, we obtain an equivalence 
-between $F(f)$ and $(F(f(i)) \otimes F(f (j))) \otimes F(f')$.
-This in turn is equivalent to $(F_D (f (i)) \otimes F_D (\tau (f (i)))) \otimes F(f')$.
-The contraction morphism $\mathcal{C}(f(i))$ can then be applied to the first part of this expression,
-reducing it to a vector in $\mathbbm{1} \otimes F(f')$. 
-Finally, we can use the left unitor of $\Rep{k}{G}$ to obtain $F(f')$.
-\begin{equation}
-  F f \equiv (F_D (f i) \otimes F_D(\tau (f i)))\otimes F (f' i) \to \mathbbm{1} \otimes F (f' i) \to F (f' i)
-\end{equation}
-
-\js{When $X$ is $Fin n$ ...}
-
-We have some conditions on contraction. Firstly, we expect there to be a unit.
-That is a, group-invariant element of 
-$F(\tau(c)) \otimes F(c)$ which when contracted with does nothing. 
-A group invariant element of $F_D(\tau(c)) \otimes F_D(c)$ is the same thing as a morphism from
-$\delta(c) : \mathbbm{1} \to F_D(\tau(c)) \otimes F_D(c)$. Again we can lift $\delta$ to a 
-natural transformation from $\mathbbm{1}$ to $F(\tau \_) \otimes F \_$. The condition that it does nothing 
-when contracted with is that the following diagram commutes:
-\begin{equation}
-  \begin{tikzcd}
-    F_D(c) \arrow[r, "{\rho^{-1}}"] &  F_D(c) \otimes \mathbb{I} \arrow[r, "{\mathbbm{1}\otimes \delta(c)}"] & F_D(c) \otimes (F_D (\tau c) \otimes F_D(c)) \arrow[d, "{\alpha^{-1}}"] \\
-    \mathbb{I} \otimes F_D(c) \arrow[u, "{\lambda}"] &   &(F_D(c) \otimes F_D(\tau c)) \otimes F_D(c) \arrow[ll, "{\mathcal{C}(c)\otimes \mathbbm{1}}"] 
-\end{tikzcd}
-\end{equation}
-where $\rho$ is the right-unitor, $\lambda$ the left-unitor, and $\alpha$ is the associator. 
-Again in Lean, we write this condition in an easier-to-prove but equivalent way. 
-
-We want these units to be symmetric, that is satisfy the condition that
-\begin{equation} 
-  \begin{tikzcd}
-    \mathbb{I} \arrow[r, "{\delta(c)}"] \arrow[d, "{\delta(\tau(c))}"] & F_D(\tau c) \otimes F_D(c) \\
-    F_D(\tau \tau c) \otimes F_D(\tau c) \arrow[r, "{\beta}"] & F_D(\tau c) \otimes F_D(\tau \tau c) \arrow[u, "{\mathbbm{1} \otimes F_D \tau_c}"]
-  \end{tikzcd}
-\end{equation}
-
-Lastly, before we turn to evaluation, we want to have metrics. That is a group-invariant element of
-$F_D(c) \otimes F_D(c)$ which when contracted together give the unit. As above, a group-invariant element of
-$F_D(c) \otimes F_D(c)$ is the same thing as a morphism from $\eta(c) : \mathbbm{1} \to F_D(c) \otimes F_D(c)$.
-We can treat $\eta$ to a natural transformation from $\mathbbm{1}$ to $F_D \_ \otimes F_D \_$. 
-The condition that it gives the unit when contracted together is that the following diagram commutes:
-\begin{equation}
-  \begin{tikzcd}
-    \mathbb{I} \arrow[r, "{\delta(c)}"] \arrow[d, "{\eta(c)\otimes \eta(\tau(c))}"] & F_D(\tau c) \otimes F_D (c) \\ 
-    (F_D c \otimes F_d c) \otimes (F_D (\tau c) \otimes F_D (\tau c) ) \arrow [d]  & F_D (c) \otimes F_D(\tau c) \arrow[u, "{\beta}"] \\ 
-    F_D c \otimes (F_d c \otimes (F_D (\tau c) \otimes F_D (\tau c) )) \arrow [r] &  F_D c \otimes ((F_d c \otimes F_D (\tau c)) \otimes F_D (\tau c) ) \arrow[u, "{\mathbbm{1} \otimes(\mathcal{C}(c) \otimes \mathbbm{1})}"]
-  \end{tikzcd}
-\end{equation}
-These metrics ensure that the representations $F_D(c)$ and $F_D(\tau (c))$ are actually equivalent 
-to one another, and establish an isomorphism in $\Rep{k}{G}$ between them. 
-
-Let us turn to our last operation, evaluation of an index. This is perhaps the least important 
-of the operations, not least because it is not equivariant with repsect to the group action, 
-like all of the other operations are. 
-However, it is used often in physics so we include it here. 
-To define evaluation, we give each $F_D(c)$ a basis $\{e_j^c\}$. For 
-each $e_j^c$  we get a morphism in the category of vector spaces from 
-$F_D(c) \to k$ corresponding to taking the coordinate of a vector with respect to $e$. 
-This can be made into an evaluation map for $F(f)$ in a similar way to how we did contraction. 
-We take an $i$ in $X$ and define an equivalence $f \equiv ![f i] \otimes f'$, formed by removing 
-$i$ from $X$. Using the tensorate of $F$ we get an equivalence between $F(f)$ and
-$F_D(f(i)) \otimes F(f')$. Moving to the category of vector spaces, we can use evaluation for our 
-a chosen $e_j^{f(i)}$ to get a map from $F_D(f(i)) \otimes F(f')$ to $\mathbbm{1} \otimes F(f')$.
-Finally, we can use the left unitor to get a map from $F(f)$ to $F(f')$.
-Putting this together we get a morphism, in the category of vector spaces 
-\begin{equation}
-  F f \equiv F_D(f(i)) \otimes F(f') \to \mathbbm{1} \otimes F(f') \to F(f')
-\end{equation}
-
-\subsubsection{Tensor Species} \label{sec:tensorSpecies}
-
-\js{In rewrite - I got up to here.}
-
-The data of the field $k$, the group $G$, the functor $F_D$ (from which $F$ can be derived), the involution $\tau$, the natural
-transformations for contraction, metric, and unit, and basis needed for evaluation, 
-form formally what we have lossely been calling a Tensor species.
-
-That is, the difference between complex Lorentz tensors, Einstien tensors, and real Lorentz tensors 
-is down to this data. 
-In Lean it useful to work with general tensor species where possible, so important results have 
-to be defined only once. Thus we make the following definition 
-\begin{codeLong}
-/-- The sturcture of a type of tensors e.g. Lorentz tensors, Einstien tensors,
-  complex Lorentz tensors. -/
-structure TensorSpecies where
-  /-- The colors of indices e.g. up or down. -/
-  C : Type
-  /-- The symmetry group acting on these tensor e.g. the Lorentz group or SL(2,ℂ). -/
-  G : Type
-  /-- An instance of `G` as a group. -/
-  G_group : Group G
-  /-- The field over which we want to consider the tensors to live in, usually `ℝ` or `ℂ`. -/
-  k : Type
-  /-- An instance of `k` as a commutative ring. -/
-  k_commRing : CommRing k
-  /-- A `MonoidalFunctor` from `OverColor C` giving the rep corresponding to a map of colors
-    `X → C`. -/
-  FDiscrete : Discrete C ⥤ Rep k G
-  /-- A map from `C` to `C`. An involution. -/
-  τ : C → C
-  /-- The condition that `τ` is an involution. -/
-  τ_involution : Function.Involutive τ
-  /-- The natural transformation describing contraction. -/
-  contr : OverColor.Discrete.pairτ FDiscrete τ ⟶ 𝟙_ (Discrete C ⥤ Rep k G)
-  /-- The natural transformation describing the metric. -/
-  metric : 𝟙_ (Discrete C ⥤ Rep k G) ⟶ OverColor.Discrete.pair FDiscrete
-  /-- The natural transformation describing the unit. -/
-  unit : 𝟙_ (Discrete C ⥤ Rep k G) ⟶ OverColor.Discrete.τPair FDiscrete τ
-  /-- A specification of the dimension of each color in C. This will be used for explicit
-    evaluation of tensors. -/
-  repDim : C → ℕ
-  /-- repDim is not zero for any color. This allows casting of `ℕ` to `Fin (S.repDim c)`. -/
-  repDim_neZero (c : C) : NeZero (repDim c)
-  /-- A basis for each Module, determined by the evaluation map. -/
-  basis : (c : C) → Basis (Fin (repDim c)) k (FDiscrete.obj (Discrete.mk c)).V
-  /-- Contraction is symmetric with respect to duals. -/
-  contr_tmul_symm (c : C) (x : FDiscrete.obj (Discrete.mk c))
-      (y : FDiscrete.obj (Discrete.mk (τ c))) :
-    (contr.app (Discrete.mk c)).hom (x ⊗ₜ[k] y) = (contr.app (Discrete.mk (τ c))).hom
-      (y ⊗ₜ (FDiscrete.map (Discrete.eqToHom (τ_involution c).symm)).hom x)
-  /-- Contraction with unit leaves invariant. -/
-  contr_unit (c : C) (x : FDiscrete.obj (Discrete.mk (c))) :
-    (λ_ (FDiscrete.obj (Discrete.mk (c)))).hom.hom
-    (((contr.app (Discrete.mk c)) ▷ (FDiscrete.obj (Discrete.mk (c)))).hom
-    ((α_ _ _ (FDiscrete.obj (Discrete.mk (c)))).inv.hom
-    (x ⊗ₜ[k] (unit.app (Discrete.mk c)).hom (1 : k)))) = x
-  /-- The unit is symmetric. -/
-  unit_symm (c : C) :
-    ((unit.app (Discrete.mk c)).hom (1 : k)) =
-    ((FDiscrete.obj (Discrete.mk (τ (c)))) ◁
-      (FDiscrete.map (Discrete.eqToHom (τ_involution c)))).hom
-    ((β_ (FDiscrete.obj (Discrete.mk (τ (τ c)))) (FDiscrete.obj (Discrete.mk (τ (c))))).hom.hom
-    ((unit.app (Discrete.mk (τ c))).hom (1 : k)))
-  /-- On contracting metrics we get back the unit. -/
-  contr_metric (c : C) :
-    (β_ (FDiscrete.obj (Discrete.mk c)) (FDiscrete.obj (Discrete.mk (τ c)))).hom.hom
-    (((FDiscrete.obj (Discrete.mk c)) ◁ (λ_ (FDiscrete.obj (Discrete.mk (τ c)))).hom).hom
-    (((FDiscrete.obj (Discrete.mk c)) ◁ ((contr.app (Discrete.mk c)) ▷
-    (FDiscrete.obj (Discrete.mk (τ c))))).hom
-    (((FDiscrete.obj (Discrete.mk c)) ◁ (α_ (FDiscrete.obj (Discrete.mk (c)))
-      (FDiscrete.obj (Discrete.mk (τ c))) (FDiscrete.obj (Discrete.mk (τ c)))).inv).hom
-    ((α_ (FDiscrete.obj (Discrete.mk (c))) (FDiscrete.obj (Discrete.mk (c)))
-      (FDiscrete.obj (Discrete.mk (τ c)) ⊗ FDiscrete.obj (Discrete.mk (τ c)))).hom.hom
-    ((metric.app (Discrete.mk c)).hom (1 : k) ⊗ₜ[k]
-      (metric.app (Discrete.mk (τ c))).hom (1 : k))))))
-    = (unit.app (Discrete.mk c)).hom (1 : k)
-\end{codeLong}
-In this definition, we see how, for example the condition that contraction is symmetric 
-is given in Lean. It is the \lstinline|contr_tmul_symm| part of the structure.
-
-The name \lstinline|TensorSpecies| is a nod to the concept of graphical species 
-dicussed in \js{cite}. 
-
-We can then let e.g. \lstinline|S : TensorSpecies| and recover the functor $F_D$ 
-by \lstinline|S.FDiscrete|. The functor $F$ is defined seperatrly can can be recovered
-by \lstinline|S.F|. If \lstinline|f : X \to S.C| is map then a tensor is an element of 
-\lstinline|S.F.obj (OverColor.mk f)|. The \lstinline|OverColor.mk| tells Lean to consider $f$ as 
-a function an element of the category $\mathrm{T}_{/C}^\times$, or as it is written in Lean 
-\lstinline|OverColor S.C|. 
-
-A function \lstinline|f : Fin 2 → S.C|, for instance landding on $c1, c2 \in C$ can be written in 
-Lean as \lstinline|![c1, c2]|, thus we can write \lstinline|S.F.obj (OverColor.mk ![c1, c2])|. 
-
-We will see instances of this for Complex Lorentz tensors. As an example, a Lorentz tensor 
-$T^\mu_\nu$ can be written as 
-\begin{code}
-T : complexLorentzTensor.F.obj (OverColor.mk ![Color.up, Color.down])
-\end{code}
-
-\subsection{Tensor trees} \label{sec:tensorTrees}
-A tensor expression consists of a series of tensors and operations between them. 
-For example 
-\begin{equation}
-  \eta_{\mu \nu}P^\nu_\sigma+ V_{\mu \sigma},
-\end{equation}
-consists of a product of tensors, a contraction and a addition. 
-Such an expression is a tensor in its own right, and we could just use the operations discussed above 
-to define it. 
-
-However, it is useful for bridging the gap between syntax and a tensor to have a more structured way 
-of representing such expressions.
-This is where tensor trees come in. Tensor trees will also be useful when it comes to proving 
-results about tensors. 
-
-A tensor tree is essentially a tree with nodes representing tensors or operations on tensors.
-For example the tensor tree for the expression above is: 
-
-Since we really only care about tensors with $X = Fin n$, tensor trees in Lean are 
-    implemented only for these. 
-
-In Lean we define a tensor tree as follows: 
-\begin{codeLong}
-/-- A syntax tree for tensor expressions. -/
-inductive TensorTree (S : TensorSpecies) : {n : ℕ} → (Fin n → S.C) → Type where
-  /-- A general tensor node. -/
-  | tensorNode {n : ℕ} {c : Fin n → S.C} (T : S.F.obj (OverColor.mk c)) : TensorTree S c
-  /-- A node corresponding to the addition of two tensors. -/
-  | add {n : ℕ} {c : Fin n → S.C} : TensorTree S c → TensorTree S c → TensorTree S c
-  /-- A node corresponding to the permutation of indices of a tensor. -/
-  | perm {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
-      (σ : (OverColor.mk c) ⟶ (OverColor.mk c1)) (t : TensorTree S c) : TensorTree S c1
-  /-- A node corresponding to the product of two tensors. -/
-  | prod {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
-    (t : TensorTree S c) (t1 : TensorTree S c1) : TensorTree S (Sum.elim c c1 ∘ finSumFinEquiv.symm)
-  /-- A node correpsonding to the scalar multiple of a tensor by a element of the field. -/
-  | smul {n : ℕ} {c : Fin n → S.C} : S.k → TensorTree S c → TensorTree S c
-  /-- A node corresponding to negation of a tensor. -/
-  | neg {n : ℕ} {c : Fin n → S.C} : TensorTree S c → TensorTree S c
-  /-- A node corresponding to the contraction of indices of a tensor. -/
-  | contr {n : ℕ} {c : Fin n.succ.succ → S.C} : (i : Fin n.succ.succ) →
-    (j : Fin n.succ) → (h : c (i.succAbove j) = S.τ (c i)) → TensorTree S c →
-    TensorTree S (c ∘ Fin.succAbove i ∘ Fin.succAbove j)
-  /-- A node correpsonding to the action of a group element on a tensor. -/
-  | action {n : ℕ} {c : Fin n → S.C} : S.G → TensorTree S c → TensorTree S c
-  /-- A node corresponding to the evaluation of an index of a tensor. -/
-  | eval {n : ℕ} {c : Fin n.succ → S.C} : (i : Fin n.succ) → (x : ℕ) → TensorTree S c →
-    TensorTree S (c ∘ Fin.succAbove i)
-\end{codeLong}
-Let us give an example of what this notation means. For each \lstinline|n : ℕ| and map 
-\lstinline|c : Fin n → S.C| we get type \lstinline|TensorTree S c|. This is the type of
-tensor trees corresponding to tensors in \lstinline|S.F.obj (OverColor.mk c)|.
-
-The first constructor \lstinline|tensorNode| generators a tensor tree of type  
-\lstinline|TensorTree S c| from a tensor of type \lstinline|S.F.obj (OverColor.mk c)|.
-The other constructors are slightly more complicated. The constructor \lstinline|contr| says 
-given an index \lstinline|i| and \lstinline|j|, and a tensor tree \lstinline|t| of type 
-\lstinline|TensorTree S c|, we can get a tensor tree of type \lstinline|TensorTree S (c ∘ Fin.succAbove i ∘ Fin.succAbove j)|. 
-
-So in Lean the expression above could be written as follows:
-\js{...}
+We start with a tensor in \lstinline|S.F.obj (OverColor.mk c)|.
+This is mapped into a vector in \lstinline|S.FDiscrete.obj (c i) ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))| via an equivalence from
+\lstinline|S.F.obj (OverColor.mk c)|. The equivalence is constructed using an equivalence
+in \lstinline|OverColor C| to extract \lstinline|i| from \lstinline|c|, and
+then using the tensorate of \lstinline|S.F|.
+Using the evaluation for \lstinline|c i| at the basis element indicated by \lstinline|x| (if \lstinline|x| is too big a natural number for the number of basis elements it defaults to \lstinline|0|), we then get a vector in
+\lstinline|𝟙 ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))|.
+This mapping should be thought of as occuring in the  category of modules over \lstinline|S.k|, rather then in 
+\lstinline|Rep S.G S.k|, since the evaluation is not invariant under the group action.
+We then fininally map  into \lstinline|S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))| 
+using the left-unitor.
 
 
-This definition of a tensor tree does not rely the actual nature of the operations invovled. 
-From a tensor tree we can define a tensor itself using a recursively defined map 
-\begin{code}
-/-- The underlying tensor a tensor tree corresponds to. -/
-def tensor : ∀ {n : ℕ} {c : Fin n → S.C}, TensorTree S c → S.F.obj (OverColor.mk c) := fun
-  | tensorNode t => t
-  | add t1 t2 => t1.tensor + t2.tensor
-  | perm σ t => (S.F.map σ).hom t.tensor
-  | neg t => - t.tensor
-  | smul a t => a • t.tensor
-  | prod t1 t2 => (S.F.map (OverColor.equivToIso finSumFinEquiv).hom).hom
-    ((S.F.μ _ _).hom (t1.tensor ⊗ₜ t2.tensor))
-  | contr i j h t => (S.contrMap _ i j h).hom t.tensor
-  | eval i e t => (S.evalMap i (Fin.ofNat' e Fin.size_pos')) t.tensor
-  | action g t => (S.F.obj (OverColor.mk _)).ρ g t.tensor
-\end{code}
-Note that this definition is recursive, Lean can automatically determine that this will terminate 
-(with a little help about the number of nodes in a tensor tree). 
-This association of a tensor tree with a tensor is not one-to-one (but it is onto).
-Many tensor trees can represent the same tensor, in the same way that many 
-tensor expressions represent the same tensor. 
+\js{Examples of tensor trees here.}
 
+\js{Talk about proving things using tensor trees. }
+\subsection{Syntax and their map to tensor trees}
 
-\subsubsection{Using Tensor trees in proofs} \label{sec:usingTensorTrees}
-Tensor trees can be used in proofs for the following reason. Define a sub-tree of a tensor trees 
-to be a node and all child nodes of that node. 
-If $T$ is a tensor tree and $S$ a sub-tree of $T$, we can replace $S$ in $T$ 
-with another tensor tree $S'$
-to get a new overall tensor-tree $T'$. If $S$ and $S'$ have the same underlying tensor, 
-then $T$ and $T'$ will. 
-
-In Lean this property is encoded in a number of lemmas, for example: 
-\js{lemma}
-
-We will this at play in the example section of this paper.
-
-
-\subsection{Elaboration} \label{sec:elaboration}
 
 We now dicuss how we make the Lean code look similar to what we would use on pen-and-paper physics. 
 
@@ -1321,6 +860,7 @@ e.g. the fact that $T_{\mu \nu} = T_{\nu \mu}$.
 \syntaxElab{\lstinline!\{T | μ ν = T2 | ν μ\}ᵀ!}{\lstinline!(tensorNode T).tensor = (perm _ (tensorNode T2)).tensor!}
 Note the use of the \lstinline!.tensor! to extract the tensor from the tensor tree, it does not really mean much 
 to ask for equalitiy of the tensor trees themselves. 
+
 \section{Examples} \label{sec:examples}
 
 We give two examples in this section. The first example is a simple theorem involving index notation and 
