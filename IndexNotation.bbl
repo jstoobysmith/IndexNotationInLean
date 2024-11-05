@@ -15,6 +15,11 @@ The mathlib Community.
 \newblock \href {https://doi.org/10.1145/3372885.3373824}
   {\path{doi:10.1145/3372885.3373824}}.
 
+\bibitem{FLT}
+Kevin Buzzard and Richard Taylor.
+\newblock A lean proof of fermat’s last theorem.
+\newblock 2024.
+
 \bibitem{josephson}
 Maxwell~P Bobbin, Samiha Sharlin, Parivash Feyzishendi, An~Hong Dang,
   Catherine~M Wraback, and Tyler~R Josephson.
