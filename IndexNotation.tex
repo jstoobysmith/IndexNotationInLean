@@ -308,6 +308,8 @@ For example if \myinline|C| is a type (which can be thought of as similar to a s
 then \myinline|c : C| is an element of the type \myinline|C|. 
 In addition, instead of having two streams of notation for mathematical objects, one from the Lean 
 code and one in LaTeX, we will use Lean code throughout represent mathematical objects.
+Throughout Section~\ref{sec:Implementation}, we will assume a basic knowledge of the theory of 
+symmetric monoidal categories.
 \section{Implementation of index notation into Lean 4}\label{sec:Implementation}
 
 \begin{figure}
@@ -651,7 +653,8 @@ The unit is actually a unit in the sense that contraction with it does nothing. 
     \node at ($(C)!0.5!(D)$) [below] {\lstinline|contr c ⊗ 𝟙|};
   \end{tikzpicture}
 \end{equation}
-where \myinline|ρ_| is the right-unitor, \myinline|λ_| is the left-unitor, and \myinline|α_| is the associator. 
+where \myinline|ρ_| is the right-unitor, \myinline|λ_| is the left-unitor, and \myinline|α_| is the associator
+in the category \lstinline|Rep k G|. 
 
 The final part of the definition of a tensor species is the metric, \myinline|metric|,
 and it's interaction, \myinline|contr_metric|, with the contraction and unit. 
@@ -913,7 +916,7 @@ As a diagram, this is given by
   \end{tikzpicture} 
 }
 The tensor associated with this new tree is obtained by taking the tensor product of the tensors associated with \myinline|t| and \myinline|t1|, 
-giving a vector in \myinline|S.F c ⊗ S.F c1|, using the tensorate of \myinline|S.F| to map this vector into 
+giving a vector in \myinline|S.F c ⊗ S.F c1|, using the tensorator of \myinline|S.F| to map this vector into 
 a vector in \myinline|S.F.obj (OverColor.mk c ⊗ OverColor.mk c1)|, and finally using an isomorphism between \myinline|OverColor.mk c ⊗ OverColor.mk c1| and 
 \myinline|OverColor.mk (Sum.elim c c1 ∘ finSumFinEquiv.symm)| to map this vector into
  \myinline|S.F (Sum.elim c c1 ∘ finSumFinEquiv.symm)|.
@@ -944,7 +947,7 @@ We start with a tensor in \myinline|S.F c|.
 This is mapped into a vector in \myinline|(S.FD (c i) ⊗ S.FD (S.τ (c i))) ⊗ S.F (c ∘ Fin.succAbove i ∘ Fin.succAbove j)| via an equivalence from 
 \myinline|S.F c|. The equivalence is constructed using an equivalence 
 in \myinline|OverColor C| to extract \myinline|i| and \myinline|i.succAbove j| from \myinline|c|,
-then using the tensorate of \myinline|S.F|, and the fact that \myinline|c (i.succAbove j) = S.τ (c i)|. 
+then using the tensorator of \myinline|S.F|, and the fact that \myinline|c (i.succAbove j) = S.τ (c i)|. 
 Using the contraction for \myinline|c i|, we then get a vector in 
 \myinline|𝟙 ⊗ S.F (c ∘ Fin.succAbove i ∘ Fin.succAbove j)| which is then 
 mapped to a tensor in \myinline|S.F (c ∘ Fin.succAbove i ∘ Fin.succAbove j)|
@@ -970,7 +973,7 @@ We start with a tensor in \myinline|S.F c|.
 This is mapped into a vector in \myinline|S.FD (c i) ⊗ S.F (c ∘ Fin.succAbove i)| via an equivalence from
 \myinline|S.F c|. The equivalence is constructed using an equivalence
 in \myinline|OverColor C| to extract \myinline|i| from \myinline|c|, and
-then using the tensorate of \myinline|S.F|.
+then using the tensorator of \myinline|S.F|.
 Using the evaluation for \myinline|c i| at the basis element indicated by \myinline|x| (if \myinline|x| is too big a natural number for the number of basis elements it defaults to \myinline|0|), we then get a vector in
 \myinline|𝟙 ⊗ S.F (c ∘ Fin.succAbove i)|.
 This mapping should be thought of as occurring in the  category of modules over \myinline|S.k|, rather then in 
