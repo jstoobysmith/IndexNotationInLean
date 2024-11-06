@@ -144,6 +144,21 @@
 	}
 	}
 {}
+\usepackage{xpatch}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{realboxes}
+\definecolor{mycolorSubtle}{RGB}{230,240,250}
+\DeclareRobustCommand{\myinline}{\lstinline}
+\makeatletter
+\xpretocmd\myinline{\Colorbox{mycolorSubtle}\bgroup\appto\lst@DeInit{\egroup}}{}{}
+\makeatother
+
+\lstdefinestyle{mystyle}
+{
+  language=lean,
+  backgroundcolor=\color{gray},
+}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Links in code block
 % put at top of code block using
@@ -223,8 +238,6 @@ making it more accessible for physicists to write and prove results within Lean.
 In the background, our implementation leverages a novel application of category theory.
 \end{abstract}
 
-{\color{mycolor} The file you are currently reading is a draft. There will 
-be typos, mistakes, sentences that don't make sense, notation that is not defined etc.}
 \section{Introduction}
 
 In previous work~\cite{HepLean}, the author initiated the digitalization (or formalization) 
@@ -256,15 +269,19 @@ Among these index notation is particularly prevalent,
 Having a way to use index notation in Lean is crucial for the digitalisation of 
 results from high energy physics. 
 As well as, making results from high energy physics easier to write and prove in Lean, 
-it will make the syntax more familiar to high energy physicists. 
-Such an implementation is the subject of this paper. 
-It is a challenge because, we need an implementation that is nice and flexible to use, 
-but which is also formally well-defined and rigorous. 
+it will make the syntax more familiar to high energy physicists.
+However, there are challenges in implementing index notation in Lean.
+Namely th need for a formal and rigorous implementation that is also easy and nice to use. 
+Such an implementation can now be found as part of HepLean 
+\begin{center}
+\url{https://heplean.github.io/HepLean/}
+\end{center}
+and is the subject of this paper.
 We hope that the implementation presented here will
 not only enhances usability of Lean but also promotes the adoption of formal methods in the 
 physics community.
 
-As a taster of what is to come, in our implementation the result regarding Pauli matrices 
+The up-shot is that, for example, in our implementation the result regarding Pauli matrices 
 that $\sigma^{\nu \alpha \dot \beta}\sigma_\nu^{ \alpha' \dot \beta'} = 2 \epsilon^{\alpha \alpha'}\epsilon^{\beta \beta'}$ 
 is written in Lean as follows
 \begin{code}
@@ -273,14 +290,13 @@ is written in Lean as follows
 Lean will correctly interpret this result as a tensor expression with the correct contraction of indices 
 and permutation of indices between the sides of the expression.
 
-Previous implementations of index notation have been made in programming languages like Haskell 
-\cite{haskellPaper}. However, the programs they appear in do not
+Previous implementations of index notation have been made in programming languages like Haskell~\cite{haskellPaper}. However, the programs they appear in do not
  provide the formal verification capabilities inherent in Lean. 
  The formal verification requirement of Lean introduces unique challenges in implementing index 
  notation, necessitating (what we believe is) a novel solution.
 
 In Section~\ref{sec:Implementation} of this paper, we will discuss the details of our implementation. 
-In Section~\ref{sec:examples} we will give two examples of definitions, theorems and proofs using index notation, 
+In Section~\ref{sec:examples} we will give two examples of definitions, theorems and proofs in Lean using index notation, 
 to give the reader an idea of how our implementation works in practice.
 The first of these examples involves a lemma regarding the contraction of indices of symmetric and antisymmetric tensors. 
 The second involves examples related to the Pauli matrices and bispinors. 
@@ -437,7 +453,7 @@ which is a group via \lstinline|G_group|. For complex Lorentz tensors,
 \lstinline|complexLorentzTensor.G| is the group $SL(2, \mathbb{C})$.
 
 The next part of the definition is a type \lstinline|C| which we call the type of colors.
-For complex Lorentz tensors, \lstinline|complexLorentzTensor.C| is set equal to the type
+For complex Lorentz tensors, \lstinline|complexLorentzTensor.C| is equal to the type
 \begin{code}
 inductive Color
   | upL : Color
@@ -451,7 +467,8 @@ which contains six colors.
 Colors can be thought of as labels for each of the building 
 block representations making up the tensor species.  This is made formal by the
 next part of the definition of a tensor species, a functor 
-\lstinline|FD|, which assigns to each color a representation of $G$ over $k$.
+\lstinline|FD| from the discrete category formed by \lstinline|C| to 
+the category of representations of \lstinline|G| over \lstinline|k|. This functor assigns to each color a representation of \lstinline|G| over \lstinline|k|.
 Note that for \lstinline|c : C| to apply \lstinline|FD| we have to write 
 \lstinline|FD.obj (Discrete.mk c)| in Lean. This is somewhat cumbersome, so in what 
 follows we will abbreviate this to \lstinline|FD c|.
@@ -524,12 +541,15 @@ def leftHanded : Rep ℂ SL(2,ℂ) := Rep.of {
       mulVec_mulVec]}
 \end{codeLong} 
 where we have added some explanatory comments to this code, not seen in the actual Lean code, to give 
-the reader an idea of what each part does. 
+the reader an idea of what each part does. Note that the \lstinline|Fermion.| part of the name 
+of \lstinline|Fermion.leftHanded| is dropped in this definition, this is because it is inherented from 
+the Lean namespace in which the definition is made.
 
 The next part of the definition of a tensor species is the map \lstinline|repDim|, which assigns to each color a natural number,
 which corresponds to the dimension of the representation associated to that color. The condition is placed on the representations that they are non-empty, i.e., 
 that the dimension is not equal to zero \lstinline|repDim_neZero|.  
-The part of the definition of a tensor species \lstinline|basis| gives a basis indexed by \lstinline|Fin (repDim c)| (numbers from 0 to $\mathrm{repDim}\; c -1 $)  of each representation for each $c \in C$.  
+The \lstinline|basis| part of the definition of a tensor species gives a basis indexed by \lstinline|Fin (repDim c)| 
+(numbers from \lstinline|0| to \lstinline|repDim c - 1|)  of each representation for each \lstinline|c : C|.  
 We will use this basis in the definition of evaluation of tensor indices. For complex Lorentz tensors, 
 these are the standard basis for Lorentz vectors and Weyl-fermions. 
 
@@ -551,7 +571,7 @@ the map \lstinline|τ| is given by
 The contraction itself is defined in a tensor species by \lstinline|contr|, which is a natural transformation from the functor 
 \lstinline|FD _ ⊗ FD (τ _)|, to the functor \lstinline|𝟙_ (Discrete C ⥤ Rep k G)| takes every object in \lstinline|C| to the trivial representation 
 \lstinline|𝟙_ (Rep k G)|. 
-This natural transformation is simply the assignment to each color $c$ a linear-map from 
+This natural transformation is simply the assignment to each color \lstinline|c| a linear-map from 
 \lstinline|FD c ⊗ FD (τ c)| to \lstinline|k| which is equivariant with respect to the group action. 
 This contraction cannot be defined arbitrarily, but must satisfy the symmetry condition \lstinline|contr_tmul_symm|, 
 which corresponds to the commutative diagram 
@@ -576,10 +596,10 @@ which corresponds to the commutative diagram
     \node at ($(D)!0.5!(C)$) [below] {\lstinline|contr (τ c)|};
   \end{tikzpicture}
 \end{equation}
-where \lstinline|β_| is the braiding of the symmetric monoidal category, and \lstinline|e| is the isomorphism
+where \lstinline|β_| is the braiding of the symmetric monoidal category, and \lstinline|e c| is shorthand for the isomorphism
 in \lstinline|Discrete S.C| between \lstinline|c| and \lstinline|τ (τ c)|, which exists since \lstinline|τ| is an involution.
 
-Along with the contraction the definition of a tensor species includes the \lstinline|unit|, along with its own symmetry condition 
+\sloppy Along with the contraction the definition of a tensor species includes the \lstinline|unit|, along with its own symmetry condition 
 \lstinline|unit_symm|. The unit is a natural transformation from the functor \lstinline|𝟙_ (Discrete C ⥤ Rep k G)| to 
 \lstinline|FD (τ _) ⊗ FD _|. This is the assignment to each color \lstinline|c| an object of 
 \lstinline|FD (τ c) ⊗ FD c| which is invariant with respect to the group action. 
@@ -633,8 +653,8 @@ The unit is actually a unit in the sense that contraction with it does nothing. 
 \end{equation}
 where \lstinline|ρ_| is the right-unitor, \lstinline|λ_| is the left-unitor, and \lstinline|α_| is the associator. 
 
-The final part of the definition of a tensor species is the metric, \lstinline|metric| 
-and it's interaction with the contraction and unit \lstinline|contr_metric|. 
+The final part of the definition of a tensor species is the metric, \lstinline|metric|,
+and it's interaction, \lstinline|contr_metric|, with the contraction and unit. 
 The metric is a natural transformation from the functor \lstinline|𝟙_ (Discrete C ⥤ Rep k G)|
 to the functor \lstinline|FD _ ⊗ FD _|. It thus represents the assignment to each color \lstinline|c| an object of
 \lstinline|FD c ⊗ FD c| which is invariant with respect to the group action.
@@ -675,7 +695,7 @@ corresponds to the diagram
 \end{equation}
 
 For complex Lorentz tensors, the contraction is defined through the dot product, 
-in the sense that e.g., the contraction of $\psi^\mu$ and $\phi_\mu$ is via dot product of the underlying vectors.
+in the sense that, e.g., the contraction of $\psi^\mu$ and $\phi_\mu$ is via dot product of the underlying vectors.
 The metric is defined through the Minkowski metric and the metric tensors e.g. $\epsilon^{\alpha \dot \alpha}$
 for Weyl fermions. Lastly ,the units are defined through identity matrices. 
 
@@ -692,33 +712,41 @@ which we will denote \lstinline|⊗|. The structure such that \lstinline|f ⊗ g
 is the induced map \lstinline|X ⊕ Y → C| where \lstinline|⊕| denotes the disjoint union of types.
 In Lean this is denoted \lstinline|Sum.elim f g|. 
 
-For a given tensor species \lstinline|S|, the functor \lstinline|FD| can be lifted to a functor
+For a given tensor species \lstinline|S|, the functor \lstinline|S.FD| can be lifted to a functor
 to a symmetric monoidal functor from \lstinline|OverColor S.C| to \lstinline|Rep k G|.
-This functor takes \lstinline|f : X → S.C| to the tensor product,
-\lstinline|⨂[k] x, S.FD (f x)|, of all \lstinline|FD (f x)|. 
+Here the monoidal structure on \lstinline|Rep k G| is the tensor product over \lstinline|k|.
+This functor takes \lstinline|f : X → S.C| to the tensor product over \lstinline|k| of all \lstinline|FD (f x)|,
+\lstinline|⨂[k] x, S.FD (f x)|. 
 This construction is general and functorial, allowing us to define the functor 
 \begin{code}
 def OverColor.lift : (Discrete S.C ⥤ Rep S.k S.G) ⥤ BraidedFunctor (OverColor S.C) (Rep S.k S.G) where ...
 \end{code}
-where Lean calls symmetric monoidal functors \lstinline|BraidedFunctor|.
+from functors from \lstinline|Discrete S.C| to \lstinline|Rep S.k S.G|
+to symmetric monoidal functors (or braided functors)  from \lstinline|OverColor S.C| to \lstinline|Rep S.k S.G|.
 
-We denote the lift of \lstinline|S.FD| by \lstinline|F|. Namely, we have
+We denote the lift of \lstinline|S.FD| by \lstinline|S.F|, which is defined through
 \begin{code}
-def F : BraidedFunctor (OverColor S.C) (Rep S.k S.G) := (OverColor.lift).obj S.FD
+def F  (S : TensorSpecies) : BraidedFunctor (OverColor S.C) (Rep S.k S.G) := 
+  (OverColor.lift).obj S.FD
 \end{code}
 
 We can think of an object \lstinline|f : X → S.C| of \lstinline|OverColor S.C| as a type of indices \lstinline|X|,
 and a specification of what color or representation each index is associated to. 
-We can apply the functor \lstinline|S.F| to \lstinline|f : X → S.C| as follows 
+For example for the tensor $\phi^{\mu}_{\phantom{\mu}\nu}$ would have \lstinline|X| as the type of indices which, since there are two of them, 
+is \lstinline|Fin 2|, and \lstinline|f| as the function which assigns to each index the color of the index, 
+so \lstinline|f 0| would be \lstinline|Color.up|, and \lstinline|f 1| would be \lstinline|Color.down|. 
+We can apply the functor \lstinline|S.F| to \lstinline|f : X → S.C| in Lean as follows 
 \lstinline|S.F.obj (OverColor.mk f)|, which we will abbreviate to \lstinline|S.F f|.
-This representation, \lstinline|S.F f|, is the tensor product of each of these representations, so that vectors
+This representation, \lstinline|S.F f|, is the tensor product of each of representations \lstinline|S.FD (f x)| for \lstinline|x : X|. 
+In our example this is equivalent to \lstinline|Lorentz.complexContr ⊕ Lorentz.complexCo|. Vectors of the form
 \lstinline|v : S.F f| can be thought of as tensors with indices indexed by \lstinline|X| of color \lstinline|C|. 
 
 With this in mind, we define a general tensor of a species \lstinline|S| as a vector in a representation 
-\lstinline|S.F f|. 
+\lstinline|S.F f| for some \lstinline|f : OverColor S.C|. 
 
 In physics, we typically focus on objects \lstinline|f : X → S.C| of \lstinline|OverColor S.C|  where \lstinline|X| is a 
-finite type of the form \lstinline|Fin n| for some \lstinline|n : ℕ|. When appropriate in what follows, 
+finite type of the form \lstinline|Fin n| for some \lstinline|n : ℕ|. 
+This is like in our example above. In most of what follows, 
 we will restrict to these objects.
 
 \subsection{Tensor Trees and their map to tensors}
@@ -766,7 +794,7 @@ be thought of a forming a different type of node in a tensor tree.
 Since the interpretation of each of the constructors is down to how we turn them into a tensor,
 we discuss this before discussing each of the constructors in turn. The process 
 of going from a tensor tree to a tensor is proscribed by a function
-\lstinline|TensorTree S c  → S.F.obj (OverColor.mk c)|, which is defined recursively as follows: 
+\lstinline|TensorTree S c  → S.F c|, which is defined recursively as follows: 
 \begin{code}
 /-- The underlying tensor a tensor tree corresponds to. -/
 def TensorTree.tensor {n : ℕ} {c : Fin n → S.C} : TensorTree S c → S.F.obj (OverColor.mk c) := fun
@@ -782,11 +810,10 @@ def TensorTree.tensor {n : ℕ} {c : Fin n → S.C} : TensorTree S c → S.F.obj
   | eval i e t => (S.evalMap i (Fin.ofNat' _ e)) t.tensor
 \end{code}
 
-Let us now discuss each of the constructors in turn, after which we will give some examples 
-tensor trees.  
+Let us now discuss each of the constructors in turn.  
 
-\paragraph{tensorNode:} The constructor \lstinline|tensorNode| based on \lstinline|c|
-creates a tensor tree from a tensor \lstinline|t| in \lstinline|S.F.obj (OverColor.mk c)|. 
+\paragraph{tensorNode:} The constructor \lstinline|tensorNode|
+creates a tensor tree based on \lstinline|c| from a tensor \lstinline|t| in \lstinline|S.F c|. 
 This tensor tree consists of a single node that directly represents the tensor. 
 Since all other tensor tree constructors require an existing tensor tree as input, 
 \lstinline|tensorNode| serves as the foundational base case for building more complex trees. 
@@ -796,7 +823,8 @@ As a diagram such a tree is
     \node[draw=black] (A) at (0,0) {\lstinline|t|};
   \end{tikzpicture} 
 }
-Naturally, the tensor associated with this node is exactly the tensor provided during construction.
+Naturally, the tensor associated with this node is exactly the tensor provided during construction, 
+as can be seen in \lstinline|TensorTree.tensor|.
 
 \paragraph{smul:} The constructor smul takes a scalar \lstinline|a| and an existing tensor tree 
 \lstinline|t| based on \lstinline|c| and constructs a new tensor tree also based on \lstinline|c|. Conceptually, this new tree has a root node labeled 
@@ -872,7 +900,7 @@ to the tensor associated with \lstinline|t|.
 \paragraph{prod:}
 The constructor \lstinline|prod| takes two existing tensor trees \lstinline|t| based on \lstinline|c| and \lstinline|t1| based on \lstinline|c1| and constructs a new tensor tree
 based on \lstinline|Sum.elim c c1 ∘ finSumFinEquiv.symm| which is the map from \lstinline|Fin (n + n1)| 
-acting via \lstinline|c i| on $i=0, \ldots, n-1$ and via \lstinline|c1 (i - n)| on $i = n, \ldots, n + n1 -1$.
+acting via \lstinline|c i| on \lstinline|0 ≤ i ≤ n -1|  and via \lstinline|c1 (i - n)| on \lstinline|n ≤ i ≤ (n + n1) - 1|.
 This new tree has a root node labeled \lstinline|prod|, with the tensor trees \lstinline|t| and \lstinline|t1| as its children.
 As a diagram, this is given by
 \tensorTree{
@@ -885,10 +913,10 @@ As a diagram, this is given by
   \end{tikzpicture} 
 }
 The tensor associated with this new tree is obtained by taking the tensor product of the tensors associated with \lstinline|t| and \lstinline|t1|, 
-giving a vector in \lstinline|S.F.obj (OverColor.mk c) ⊗ S.F.obj (OverColor.mk c1)|, using the tensorate of \lstinline|S.F| to map this vector into 
+giving a vector in \lstinline|S.F c ⊗ S.F c1|, using the tensorate of \lstinline|S.F| to map this vector into 
 a vector in \lstinline|S.F.obj (OverColor.mk c ⊗ OverColor.mk c1)|, and finally using an isomorphism between \lstinline|OverColor.mk c ⊗ OverColor.mk c1| and 
 \lstinline|OverColor.mk (Sum.elim c c1 ∘ finSumFinEquiv.symm)| to map this vector into
- \lstinline|S.F.obj (OverColor.mk (Sum.elim c c1 ∘ finSumFinEquiv.symm))|.
+ \lstinline|S.F (Sum.elim c c1 ∘ finSumFinEquiv.symm)|.
 
 \paragraph{contr:}
 The constructor \lstinline|contr| firstly, takes an existing tensor tree \lstinline|t| based on a 
@@ -912,14 +940,14 @@ As a diagram,
   \end{tikzpicture} 
 }
 The tensor associated with the new tensor tree is constructed as follows. 
-We start with a tensor in \lstinline|S.F.obj (OverColor.mk c)|.
-This is mapped into a vector in \lstinline|(S.FD.obj (c i) ⊗ S.FD.obj (S.τ (c i))) ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i ∘ Fin.succAbove j))| via an equivalence from 
-\lstinline|S.F.obj (OverColor.mk c)|. The equivalence is constructed using an equivalence 
+We start with a tensor in \lstinline|S.F c|.
+This is mapped into a vector in \lstinline|(S.FD (c i) ⊗ S.FD (S.τ (c i))) ⊗ S.F (c ∘ Fin.succAbove i ∘ Fin.succAbove j)| via an equivalence from 
+\lstinline|S.F c|. The equivalence is constructed using an equivalence 
 in \lstinline|OverColor C| to extract \lstinline|i| and \lstinline|i.succAbove j| from \lstinline|c|,
 then using the tensorate of \lstinline|S.F|, and the fact that \lstinline|c (i.succAbove j) = S.τ (c i)|. 
 Using the contraction for \lstinline|c i|, we then get a vector in 
-\lstinline|𝟙 ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i ∘ Fin.succAbove j))| which is then 
-mapped to a tensor in \lstinline|S.F.obj (OverColor.mk (c ∘ Fin.succAbove i ∘ Fin.succAbove j))| 
+\lstinline|𝟙 ⊗ S.F (c ∘ Fin.succAbove i ∘ Fin.succAbove j)| which is then 
+mapped to a tensor in \lstinline|S.F (c ∘ Fin.succAbove i ∘ Fin.succAbove j)|
 using the left-unitor of \lstinline|Rep S.G S.k|.
 This is all contained within the \lstinline|S.contrMap| appearing in the definition of
 function \lstinline|TensorTree.tensor|.
@@ -938,26 +966,26 @@ As a diagram, this corresponds to
   \end{tikzpicture} 
 }
 The tensor associated with the new tensor tree is constructed as follows.
-We start with a tensor in \lstinline|S.F.obj (OverColor.mk c)|.
-This is mapped into a vector in \lstinline|S.FD.obj (c i) ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))| via an equivalence from
-\lstinline|S.F.obj (OverColor.mk c)|. The equivalence is constructed using an equivalence
+We start with a tensor in \lstinline|S.F c|.
+This is mapped into a vector in \lstinline|S.FD (c i) ⊗ S.F (c ∘ Fin.succAbove i)| via an equivalence from
+\lstinline|S.F c|. The equivalence is constructed using an equivalence
 in \lstinline|OverColor C| to extract \lstinline|i| from \lstinline|c|, and
 then using the tensorate of \lstinline|S.F|.
 Using the evaluation for \lstinline|c i| at the basis element indicated by \lstinline|x| (if \lstinline|x| is too big a natural number for the number of basis elements it defaults to \lstinline|0|), we then get a vector in
-\lstinline|𝟙 ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))|.
+\lstinline|𝟙 ⊗ S.F (c ∘ Fin.succAbove i)|.
 This mapping should be thought of as occurring in the  category of modules over \lstinline|S.k|, rather then in 
 \lstinline|Rep S.G S.k|, since the evaluation is not invariant under the group action.
-We then finally map into \lstinline|S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))| 
+We then finally map into \lstinline|S.F (c ∘ Fin.succAbove i)| 
 using the left-unitor. This is all contained within the \lstinline|S.evalMap| appearing in the definition of
 function \lstinline|TensorTree.tensor|.
 
 The main reason tensor trees are nice to work with is that they have the following property: 
 Define a subtree of a tensor trees 
 to be a node and all child nodes of that node. 
-If $T$ is a tensor tree and $S$ a subtree of $T$, we can replace $S$ in $T$ 
-with another tensor tree $S'$
-to get a new overall tensor-tree $T'$. If $S$ and $S'$ have the same underlying tensor, 
-then $T$ and $T'$ will. 
+If \lstinline|t| is a tensor tree and \lstinline|s| a subtree of \lstinline|t|, we can replace  \lstinline|s| in \lstinline|t| 
+with another tensor tree \lstinline|s'|
+to get a new overall tensor-tree \lstinline|t'|. If \lstinline|s| and \lstinline|s'| have the same underlying tensor, 
+then \lstinline|t| and \lstinline|t'| will. 
 
 In Lean this property manifests in a series of lemmas. For instance, for instance 
 for the \lstinline|contr| constructor we have the lemma: 
@@ -1000,12 +1028,13 @@ given above, which on the left denote the syntax and on the right the expression
 
 We can write e.g.,
 \syntaxElab{\lstinline!\{T | μ ν\}ᵀ.tensor!}{{\lstinline!(tensorNode T).tensor!}}
-to get the underlying tensor.
+to get the underlying tensor. We get this notation for free from the way \lstinline|TensorTree.tensor|
+is defined with the prefix \lstinline|TensorTree.|.
 
-Note that we have not lowered or risen the indices, as one would expect from pen-and-paper notation.
-There is one primary reason for this, whether an index is lower or risen does not carry any information, 
+Note that we do not have indicex which are upper or lower, as one would expect from pen-and-paper notation.
+There is one primary reason for this, whether an index is upper or lower does not carry any information, 
 since this information comes from the tensor itself. Also, for something like complex Lorentz tensors, 
-there are at three different types of upper-index. 
+there are at three different types of upper-index, so such notation would be complicated. 
 
 If we want to evaluate an index we can put an explicit index in place of $\mu$ or $\nu$ above, 
 for example:
@@ -1018,7 +1047,7 @@ For scalar multiplication by $a \in k$ we have:
 \syntaxElab{\lstinline!\{a •ₜ T | μ ν\}ᵀ!}{\lstinline!smul a (tensorNode T)!}
 For the group action of $g\in G$ on a tensor $T$ we have:
 \syntaxElab{\lstinline!\{g •ₐ T | μ ν\}ᵀ!}{\lstinline!action g (tensorNode T)!}
-The product of two tensors is also fairly simple, with us having: 
+The product of two tensors is also fairly similar, with us having: 
 \syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | σ\}ᵀ!}{\lstinline!prod (tensorNode T) (tensorNode T2)!}
 
 The syntax for contraction is: 
@@ -1037,11 +1066,11 @@ The elaborator handles both these cases, and generalizations thereof by adding a
 \syntaxElab{\lstinline!\{T | μ ν + T2 | μ ν\}ᵀ!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
 where here the \lstinline!_! is a placeholder for the permutation. For this case will the permutation will be the identity, but for 
 \syntaxElab{\lstinline!\{T | μ ν + T2 | ν μ\}ᵀ!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
-it will be the permutation for the two identities. 
+it will be the permutation for the two indices. 
 
 Despite not forming part of a node in our tensor tree, we also give syntax for equality. 
 This is done in a very similar way to addition, with the addition of a permutation node to account for
-e.g., the fact that $T_{\mu \nu} = T_{\nu \mu}$. 
+e.g., expressions like $T_{\mu \nu} = T_{\nu \mu}$. 
 \syntaxElab{\lstinline!\{T | μ ν = T2 | ν μ\}ᵀ!}{\lstinline!(tensorNode T).tensor = (perm _ (tensorNode T2)).tensor!}
 Note the use of the \lstinline!.tensor! to extract the tensor from the tensor tree, it does not really mean much 
 to ask for equality of the tensor trees themselves. 
@@ -1054,7 +1083,7 @@ We will see examples of this in the next section.
 We give two examples in this section. The first example is a simple theorem involving index notation and 
 tensor trees. We will show here, in rather explicit detail, how we can manipulate tensor trees to solve 
 such theorems. 
-The second example we shall give will show a number of definitions in HepLean concerning index notation.
+The second example we shall give will show a number of definitions related to Pauli matrices and bispinors in HepLean concerning index notation.
 Here we will not give so much detail, the point rather being to show the reader the broad use of our 
 construction. 
 
@@ -1100,7 +1129,7 @@ we have
   is antisymmetric.}{
  \begin{tikzpicture}
     \node[draw=black] (A) at (-2,-1) {A};
-    \node[draw=black] (D1) at (0,0) {perm};
+    \node[draw=black] (D1) at (0,0) {perm \_};
     \node[draw=black] (E1) at (0,-1) {neg};
     \node[draw=black] (F1) at (0,-2) {A};
     \node (eq) at (-1, -1) {$=$};
@@ -1116,7 +1145,7 @@ Similarly, the parameter \lstinline|hs| is stating that $S$ is symmetric. Expand
   is symmetric.}{
  \begin{tikzpicture}
     \node[draw=black] (A) at (-2,-0.5) {S};
-    \node[draw=black] (D1) at (0,0) {perm};
+    \node[draw=black] (D1) at (0,0) {perm \_};
     \node[draw=black] (F1) at (0,-1) {S};
     \node (eq) at (-1, -0.5) {$=$};
     \path [->] (D1) edge (F1);
@@ -1168,7 +1197,7 @@ We go through each step in turn.
     \node[draw=black] (A) at (0,0) {contr 0 0};
     \node[draw=black] (B) at (0,-1) {contr 0 1};
     \node[draw=black] (C) at (0,-2) {prod};
-    \node[draw=red] (D1) at (-1,-3) {perm};
+    \node[draw=red] (D1) at (-1,-3) {perm \_};
     \node[draw=red] (E1) at (-1,-4) {neg};
     \node[draw=red] (F1) at (-1,-5) {A};
     \node[draw=black] (D2) at (1,-3) {S};
@@ -1192,10 +1221,10 @@ We go through each step in turn.
     \node[draw=black] (A) at (0,0) {contr 0 0};
     \node[draw=black] (B) at (0,-1) {contr 0 1};
     \node[draw=black] (C) at (0,-2) {prod};
-    \node[draw=black] (D1) at (-1,-3) {perm};
+    \node[draw=black] (D1) at (-1,-3) {perm \_};
     \node[draw=black] (E1) at (-1,-4) {neg};
     \node[draw=black] (F1) at (-1,-5) {A};
-    \node[draw=red] (D2) at (1,-3) {perm};
+    \node[draw=red] (D2) at (1,-3) {perm \_};
     \node[draw=red] (F2) at (1,-4) {S};
     \path [->] (A) edge (B);
     \path [->] (B) edge (C);
@@ -1214,11 +1243,11 @@ We go through each step in turn.
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
     \node[draw=black] (B) at (0,-1) {contr 0 1};
-    \node[draw=red] (C) at (0,-2) {perm};
+    \node[draw=red] (C) at (0,-2) {perm \_};
     \node[draw=red] (D) at (0,-3) {prod};
     \node[draw=black] (E1) at (-1,-4) {neg};
     \node[draw=black] (F1) at (-1,-5) {A};
-    \node[draw=black] (E2) at (1,-4) {perm};
+    \node[draw=black] (E2) at (1,-4) {perm \_};
     \node[draw=black] (F2) at (1,-5) {S};
     \path [->] (A) edge (B);
     \path [->] (B) edge (C);
@@ -1237,8 +1266,8 @@ We go through each step in turn.
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
     \node[draw=black] (B) at (0,-1) {contr 0 1};
-    \node[draw=black] (C) at (0,-2) {perm};
-    \node[draw=red] (D) at (0,-3) {perm};
+    \node[draw=black] (C) at (0,-2) {perm \_};
+    \node[draw=red] (D) at (0,-3) {perm \_};
     \node[draw=red] (E) at (0,-4) {prod};
     \node[draw=black] (F1) at (-1,-5) {neg};
     \node[draw=black] (G1) at (-1,-6) {A};
@@ -1260,7 +1289,7 @@ We go through each step in turn.
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
     \node[draw=black] (B) at (0,-1) {contr 0 1};
-    \node[draw=red] (C) at (0,-2) {perm};
+    \node[draw=red] (C) at (0,-2) {perm \_};
     \node[draw=black] (D) at (0,-3) {prod};
     \node[draw=black] (E1) at (-1,-4) {neg};
     \node[draw=black] (F1) at (-1,-5) {A};
@@ -1281,7 +1310,7 @@ We go through each step in turn.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
-    \node[draw=red] (B) at (0,-1) {perm};
+    \node[draw=red] (B) at (0,-1) {perm \_};
     \node[draw=red] (C) at (0,-2) {contr 1 2};
     \node[draw=black] (D) at (0,-3) {prod};
     \node[draw=black] (E1) at (-1,-4) {neg};
@@ -1301,7 +1330,7 @@ We go through each step in turn.
   indices to \lstinline|0| and \lstinline|0| (Lean will check if this is correct).
 }{
   \begin{tikzpicture}
-    \node[draw=red] (A) at (0,0) {perm};
+    \node[draw=red] (A) at (0,0) {perm \_};
     \node[draw=red] (B) at (0,-1) {contr 0 0};
     \node[draw=black] (C) at (0,-2) {contr 1 2};
     \node[draw=black] (D) at (0,-3) {prod};
@@ -1323,8 +1352,8 @@ We go through each step in turn.
   a permutation.
 }{
   \begin{tikzpicture}
-    \node[draw=black] (A) at (0,0) {perm};
-    \node[draw=red] (A') at (0,-1) {perm};
+    \node[draw=black] (A) at (0,0) {perm \_};
+    \node[draw=red] (A') at (0,-1) {perm \_};
     \node[draw=red] (B) at (0,-2) {contr 0 0};
     \node[draw=red] (C) at (0,-3) {contr 0 1};
     \node[draw=black] (D) at (0,-4) {prod};
@@ -1345,7 +1374,7 @@ We go through each step in turn.
   Description: Here \lstinline|perm_perm| uses functoriality to combine the two permutations.
 }{
   \begin{tikzpicture}
-    \node[draw=red] (A) at (0,0) {perm};
+    \node[draw=red] (A) at (0,0) {perm \_};
     \node[draw=black] (B) at (0,-1) {contr 0 0};
     \node[draw=black] (C) at (0,-2) {contr 0 1};
     \node[draw=black] (D) at (0,-3) {prod};
@@ -1366,7 +1395,7 @@ We go through each step in turn.
   whilst \lstinline|neg_fst_prod| moves the negation through the product.
 }{
   \begin{tikzpicture}
-    \node[draw=black] (A) at (0,0) {perm};
+    \node[draw=black] (A) at (0,0) {perm \_};
     \node[draw=black] (B) at (0,-1) {contr 0 0};
     \node[draw=black] (C) at (0,-2) {contr 0 1};
     \node[draw=red] (D) at (0,-3) {neg};
@@ -1387,7 +1416,7 @@ We go through each step in turn.
   whilst \lstinline|neg_contr| moves the negation through the first contraction.
 }{
   \begin{tikzpicture}
-    \node[draw=black] (A) at (0,0) {perm};
+    \node[draw=black] (A) at (0,0) {perm \_};
     \node[draw=black] (B) at (0,-1) {contr 0 0};
     \node[draw=red] (C) at (0,-2) {neg};
     \node[draw=red] (D) at (0,-3) {contr 0 1};
@@ -1408,7 +1437,7 @@ We go through each step in turn.
   whilst \lstinline|neg_contr| moves the negation through the second contraction.
 }{
   \begin{tikzpicture}
-    \node[draw=black] (A) at (0,0) {perm};
+    \node[draw=black] (A) at (0,0) {perm \_};
     \node[draw=red] (B) at (0,-1) {neg};
     \node[draw=red] (C) at (0,-2) {contr 0 0};
     \node[draw=black] (D) at (0,-3) {contr 0 1};
@@ -1451,9 +1480,13 @@ def pauliCoDown := {pauliCo | μ α β ⊗ εL' | α α' ⊗ εR' | β β'}ᵀ.t
 def pauliContrDown := {pauliContr | μ α β ⊗ εL' | α α' ⊗ εR' | β β'}ᵀ.tensor
 \end{code}
 The first of these definitions depends on \lstinline|PauliMatrix.asConsTensor| which is defined 
-using an explicit basis expansion as a map \lstinline|𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexContr ⊗ Fermion.leftHanded ⊗ Fermion.rightHanded |, which Lean 
+using an explicit basis expansion as a map 
+\begin{code}
+  𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexContr ⊗ Fermion.leftHanded ⊗ Fermion.rightHanded
+\end{code}
+which Lean 
 knows how to treat as a tensor. Here \lstinline|complexContr| is the representation of complex Lorentz vectors 
-under $SL(2, \mathbb{C})$.
+under $SL(2, \mathbb{C})$ defined above as \lstinline|Lorentz.complexContr|.
 
 In these expressions we have the appearance of metrics \lstinline|η'| is the metric usually written as 
 $\eta_{\mu \nu}$, \lstinline|η| the metric $\eta^{\mu \nu}$, \lstinline|εL'| the  metric 
@@ -1476,7 +1509,8 @@ def coBispinorUp (p : complexCo) := {pauliContr | μ α β ⊗ p | μ}ᵀ.tensor
 def coBispinorDown (p : complexCo) :=
   {εL' | α α' ⊗ εR' | β β' ⊗ coBispinorUp p | α β}ᵀ.tensor
 \end{code}
-Here  \lstinline|complexCo| corresponds to the representation of covariant complex Lorentz vectors.
+Here  \lstinline|complexCo| corresponds to the representation of covariant complex Lorentz vectors, 
+defined above as \lstinline|Lorentz.complexCo|.
 
 Using these definitions we can start to prove results about the pauli matrices and bispinors. 
 These proofs rely on essentially the sorts of manipulations in the last section, although in some cases 
@@ -1511,7 +1545,15 @@ informal_lemma coBispinorUp_eq_metric_contr_coBispinorDown where
 These informal lemmas are written in strings, and are not type checked.
 They also include dependencies indicating what definitions and lemmas we expect to be used in their statement or proof.
 They are intended to be a guide for future formalization efforts, either by humans or 
-automated.
+automated. All the informal lemmas and the related informal definitions which are in HepLean are 
+given on the HepLean website in a dependency graph, a screenshot of part of which is shown in Figure \ref{fig:informalLemmas}.
+\begin{figure}
+  \centering
+  \includegraphics[width=0.6\textwidth]{informalLemmas.png}
+  \caption{A screenshot of the informal dependency graph in HepLean. Gray nodes indicate informal results, whilst 
+  blue nodes results already formalised.}
+  \label{fig:informalLemmas}
+\end{figure}
 
 As demonstrated in our earlier examples, manipulating tensor expressions can involve tedious
  calculations, especially when dealing with directly with tensor trees. 
