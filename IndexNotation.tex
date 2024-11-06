@@ -539,7 +539,7 @@ the map \lstinline|τ| is given by
 \end{code}
 
 The contraction is defined by \lstinline|contr|, which is a natural transformation from the functor 
-\lstinline|FD _ ⊗ FD (τ _)|, to the functor \lstinline|𝟙_ (Discrete C ⥤ Rep k G)| takes every object in $C$ to the trivial representation 
+\lstinline|FD _ ⊗ FD (τ _)|, to the functor \lstinline|𝟙_ (Discrete C ⥤ Rep k G)| takes every object in \lstinline|C| to the trivial representation 
 \lstinline|𝟙_ (Rep k G)|. 
 This natural transformation is simply the assignment to each color $c$ a linear-map from 
 \lstinline|FD c ⊗ FD (τ c)| to \lstinline|k| which is equivariant with respect to the group action. 
@@ -551,7 +551,7 @@ which corresponds to the commutative diagram
     \node (A) at (0, 0) {\lstinline|FD c ⊗ FD (τ c)|};
     \node (B) at (7, 0) {\lstinline|FD (τ c) ⊗ FD c|};
     \node (C) at (0, -2){\lstinline|𝟙_(Rep k G)|};
-    \node (D) at (7, -2) {\lstinline|FD (τ c) ⊗ FD (τ (τ c))|};
+    \node (D) at (7, -2 ) {\lstinline|FD (τ c) ⊗ FD (τ (τ c))|};
   
     % Draw the edges without labels
     \draw[->] (A) -- (B);
@@ -570,41 +570,99 @@ where \lstinline|β_| is the braiding of the symmetric monoidal category, and \l
 in \lstinline|Discrete S.C| between \lstinline|c| and \lstinline|τ (τ c)|, which exists since \lstinline|τ| is an involution.
 
 Along with the contraction we define the \lstinline|unit|, along with its own symmetry condition 
-\lstinline|unit_symm|. The unit is a natural transformation from the functor  $\mathbbm{1}$ to 
-$F_D(\tau(\_)) \otimes F_D (\_)$. This is the assignment to each color $c$ an object of 
-$F_D(\tau(c)) \otimes F_D (c)$ which is invariant with respect to the group action. 
-The symmetry condition \lstinline|unit_symm| is represented by the diagram 
-\begin{equation} 
-  \begin{tikzcd}
-    \mathbb{I} \arrow[r, "{\delta(c)}"] \arrow[d, "{\delta(\tau(c))}"] & F_D(\tau c) \otimes F_D(c) \\
-    F_D(\tau \tau c) \otimes F_D(\tau c) \arrow[r, "{\beta}"] & F_D(\tau c) \otimes F_D(\tau \tau c) \arrow[u, "{\mathbbm{1} \otimes F_D \tau_c}"]
-  \end{tikzcd}
-\end{equation} 
+\lstinline|unit_symm|. The unit is a natural transformation from the functor \lstinline|𝟙_ (Discrete C ⥤ Rep k G)| to 
+\lstinline|FD (τ _) ⊗ FD _|. This is the assignment to each color \lstinline|c| an object of 
+\lstinline|FD (τ c) ⊗ FD c| which is invariant with respect to the group action. 
+The symmetry condition \lstinline|unit_symm| is represented by the commutative diagram 
+\begin{equation}
+  \begin{tikzpicture}[>=stealth, node distance=5cm]
+    % Define the nodes
+    \node (A) at (0, 0) {\lstinline|𝟙_(Rep k G)|};
+    \node (B) at (7, 0) {\lstinline|FD (τ c) ⊗ FD c|};
+    \node (C) at (0, -2){\lstinline|FD (τ (τ c)) ⊗ FD (τ c)|};
+    \node (D) at (7, -2 ) {\lstinline|FD (τ c) ⊗ FD (τ (τ c))|};
+  
+    % Draw the edges without labels
+    \draw[->] (A) -- (B);
+    \draw[->] (A) -- (C);
+    \draw[->] (D) -- (B);
+    \draw[->] (C) -- (D);
+
+    % Place labels as separate nodes along the edges
+    \node at ($(A)!0.5!(B)$) [above] {\lstinline|unit c|};
+    \node at ($(A)!0.5!(C)$) [left] {\lstinline|unit (τ c)|};
+    \node at ($(D)!0.5!(B)$) [right] {\lstinline|𝟙 ⊗ FD.map (e c)|};
+    \node at ($(C)!0.5!(D)$) [below] {\lstinline|β_|};
+  \end{tikzpicture}
+\end{equation}
 The unit is actually a unit in the sense that contraction with it does nothing. This is made formal with the condition 
 \lstinline|contr_unit|, which is corresponds to the diagram 
 \begin{equation}
-  \begin{tikzcd}
-    F_D(c) \arrow[r, "{\rho^{-1}}"] &  F_D(c) \otimes \mathbb{I} \arrow[r, "{\mathbbm{1}\otimes \delta(c)}"] & F_D(c) \otimes (F_D (\tau c) \otimes F_D(c)) \arrow[d, "{\alpha^{-1}}"] \\
-    \mathbb{I} \otimes F_D(c) \arrow[u, "{\lambda}"] &   &(F_D(c) \otimes F_D(\tau c)) \otimes F_D(c) \arrow[ll, "{\mathcal{C}(c)\otimes \mathbbm{1}}"] 
-\end{tikzcd}
+  \begin{tikzpicture}[>=stealth, node distance=2cm and 2.5cm] % Adjusted node distance here
+    % Define the nodes with relative positioning
+    \node (A) at (0, 0) {\lstinline|FD c|};
+    \node[right=of A] (E) {\lstinline|FD c ⊗ 𝟙_(Rep k G)|};
+    \node[right=of E] (B) {\lstinline|FD c ⊗ (FD (τ c) ⊗ FD c)|};
+    \node[below=of A] (C) {\lstinline|𝟙_(Rep k G) ⊗ FD c|};
+    \node[below=of B] (D) {\lstinline|(FD c ⊗ FD (τ c)) ⊗ FD c|};
+  
+    % Draw the edges without labels
+    \draw[->] (A) -- (E);
+    \draw[->] (E) -- (B);
+    \draw[->] (C) -- (A);
+    \draw[->] (B) -- (D);
+    \draw[->] (D) -- (C);
+
+    % Place labels as separate nodes along the edges
+    \node at ($(A)!0.4!(E)$) [above] {\lstinline|(ρ_)⁻¹|};
+    \node at ($(E)!0.45!(B)$) [above] {\lstinline|𝟙 ⊗ unit c|}; 
+    \node at ($(A)!0.5!(C)$) [left] {\lstinline|λ_|};
+    \node at ($(D)!0.5!(B)$) [right] {\lstinline|(α_)⁻¹|};
+    \node at ($(C)!0.5!(D)$) [below] {\lstinline|contr c ⊗ 𝟙|};
+  \end{tikzpicture}
 \end{equation}
-where $\rho$ is the right-unitor, $\lambda$ the left-unitor, and $\alpha$ is the associator. 
+where \lstinline|ρ_| is the right-unitor, \lstinline|λ_| is the left-unitor, and \lstinline|α_| is the associator. 
 
 The final part of the definition of a tensor species is the definition of the metric, \lstinline|metric| 
 and it's interaction with the contraction and unit \lstinline|contr_metric|. 
-The metric is a natural transformation from the functor $\mathbbm{1}$
-to the functor $F_D(\_) \otimes F_D (\_)$. It thus represents the assignement to each color $c$ an object of
-$F_D(c) \otimes F_D (c)$ which is invariant with respect to the group action.
+The metric is a natural transformation from the functor \lstinline|𝟙_ (Discrete C ⥤ Rep k G)|
+to the functor \lstinline|FD _ ⊗ FD _|. It thus represents the assignement to each color \lstinline|c| an object of
+\lstinline|FD c ⊗ FD c| which is invariant with respect to the group action.
 The metric can be used to change an index into a dual index. The condition \lstinline|contr_metric|
 corresponds to the diagram 
 \begin{equation}
-  \begin{tikzcd}
-    \mathbb{I} \arrow[r, "{\delta(c)}"] \arrow[d, "{\eta(c)\otimes \eta(\tau(c))}"] & F_D(\tau c) \otimes F_D (c) \\ 
-    (F_D c \otimes F_d c) \otimes (F_D (\tau c) \otimes F_D (\tau c) ) \arrow [d]  & F_D (c) \otimes F_D(\tau c) \arrow[u, "{\beta}"] \\ 
-    F_D c \otimes (F_d c \otimes (F_D (\tau c) \otimes F_D (\tau c) )) \arrow [r] &  F_D c \otimes ((F_d c \otimes F_D (\tau c)) \otimes F_D (\tau c) ) \arrow[u, "{\mathbbm{1} \otimes(\mathcal{C}(c) \otimes \mathbbm{1})}"]
-  \end{tikzcd}
-\end{equation}
+  \begin{tikzpicture}[>=stealth, node distance=1.5cm and 1cm] % Adjusted node distance here
+    % Define the nodes with relative positioning
+    \node (B1) {\lstinline|𝟙_(Rep k G)|};
+    \node[left=of B1] (A1) {\lstinline|𝟙_(Rep k G) ⊗ 𝟙_(Rep k G)|};
+    \node[below=of A1] (A2) {\lstinline|(FD c ⊗ FD c) ⊗ (FD (τ c) ⊗ FD (τ c))|};
+    \node[below=of A2] (A3) {\lstinline|FD c ⊗ (FD c ⊗ (FD (τ c) ⊗ FD (τ c)))|};
+    \node[below=of B1] (B2) {};
+    \node[below=of B2] (B3) {};
+    \node[below=of B3] (B4) {\lstinline|FD c ⊗ ((FD c ⊗ FD (τ c)) ⊗ FD (τ c))|};
+    \node[right=of B1] (C1) {\lstinline|FD (τ c) ⊗ FD c|};
+    \node[below=of C1] (C2) {\lstinline|FD c ⊗ FD (τ c)|};
+    \node[below=of C2] (C3) {\lstinline|FD c ⊗ (𝟙_(Rep k G) ⊗ FD (τ c))|};
 
+    \draw[->] (B1) -- (A1);
+    \draw[->] (B1) -- (C1);
+    \draw[->] (A1) -- (A2);
+    \draw[->] (A2) -- (A3);
+    \draw[->] (A3) -- (B4);
+    \draw[->] (B4) -- (C3);
+    \draw[->] (C3) -- (C2);
+    \draw[->] (C2) -- (C1);
+
+    \node at ($(B1)!0.3!(A1)$) [above] {\lstinline|(ρ_)⁻¹|};
+    \node at ($(B1)!0.45!(C1)$) [above] {\lstinline|unit c|};
+    \node at ($(A1)!0.5!(A2)$) [left] {\lstinline|metric c ⊗ metric (τ c)|};
+    \node at ($(A2)!0.5!(A3)$) [left] {\lstinline|α_|};
+    \node at ($(A3)!0.5!(B4)$) [left, xshift=-5mm] {\lstinline|𝟙 ⊗ (α_)⁻¹|};
+    \node at ($(B4)!0.5!(C3)$) [right, xshift=5mm] {\lstinline|𝟙 ⊗ (contr c ⊗ 𝟙)|};
+    \node at ($(C3)!0.5!(C2)$) [right] {\lstinline|𝟙 ⊗ λ_|};
+    \node at ($(C2)!0.5!(C1)$) [right] {\lstinline|β_|};
+  \end{tikzpicture}
+\end{equation}
 \subsection{Tensors} 
 
 Given any type \lstinline|C|, we define the category \lstinline|OverColor C| as follows. 
@@ -1043,6 +1101,7 @@ Similarly, the parameter \lstinline|hs| is stating that $S$ is symmetric. Expand
 The line \lstinline!{A | μ ν ⊗ S | μ ν = - A | μ ν ⊗ S | μ ν}ᵀ! is the statment we are trying to prove. 
 In terms of tree diagrams it says that 
 \begin{center}
+  \fcolorbox{mycolor}{white}{
 \begin{tikzpicture}
   \node (eq) at (2.5,-1) {$=$};
   \node (t1) at (1.5,-1) {\lstinline|.tensor|};
@@ -1069,7 +1128,7 @@ In terms of tree diagrams it says that
   \path [->] (B') edge (C');
   \path [->] (C') edge (D1');
   \path [->] (C') edge (D2');
-\end{tikzpicture}
+\end{tikzpicture}}
 \end{center}
 The perm here actually does nothing, but is included by Lean. 
 
