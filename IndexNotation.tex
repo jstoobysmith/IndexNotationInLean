@@ -220,7 +220,7 @@
 \newcommand{\Rep}[2]{\mathrm{Rep} \; #1 \; #2}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Title, author, date
-\title{Index notation in Lean 4}
+\title{Formally verified formalization of index notation in Lean 4}
 \author{Joseph Tooby-Smith \\ \textit{Reykjavik University, Reykjavik, Iceland}}
 \date{\today}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -364,7 +364,7 @@ Before we discuss these processes in more detail we do some set-up by defining f
 
 \subsection{Tensor Species}
 
-A tensor species is a formalization of the data needed to define e.g., complex Lorentz tensors, 
+A tensor species is a novel formalization of the data needed to define e.g., complex Lorentz tensors, 
 real Lorentz tensors or Einstein tensors. The word `species' is a nod to `graphical species'
 defined in~\cite{JOYAL2011105,raynor2021graphical}, from which our construction is inspired.
 
@@ -1091,7 +1091,7 @@ construction.
 If $A^{\mu \nu}$ is an antisymmetric tensor and $S_{\mu \nu}$ and $S$ is a symmetric tensor, then
 it is true that $A^{\mu \nu} S_{\mu \nu} = - A^{\mu \nu} S_{\mu \nu}$. In Lean this result, and 
 it's proof are written as follows: 
-\begin{code}
+\begin{codeLong}
 lemma antiSymm_contr_symm 
     {A : complexLorentzTensor.F.obj (OverColor.mk ![Color.up, Color.up])}
     {S : complexLorentzTensor.F.obj (OverColor.mk ![Color.down, Color.down])}
@@ -1113,7 +1113,7 @@ lemma antiSymm_contr_symm
     rw [perm_tensor_eq <| neg_contr _]
   apply perm_congr _ rfl
   decide
-\end{code}
+\end{codeLong}
 Let us break this down. The statements 
 \begin{code} 
 {A : complexLorentzTensor.F.obj (OverColor.mk ![Color.up, Color.up])}
@@ -1569,7 +1569,10 @@ etc. We do not anticipate any insurmountable challenges in pursuing these extens
 They represent promising avenues for future research and have the potential to significantly enhance
 the utility of formal methods in physics.
 \section*{Acknowledgments}
-\js{Fill in}
+I thank Tarmo Uustalu for helpful discussions related to this project.
+I also thank Jan Idziak, Tomas Skrivan, and Thomas Murrills for 
+dicussions related to index notation near the start of this project. 
+I thank members of the Lean Zulip for answering my Lean related questions.
 
 \bibliographystyle{unsrturl}
 \begin{spacing}{0.5}
