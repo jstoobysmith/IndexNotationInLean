@@ -83,6 +83,8 @@
 \usepackage{tikz-cd} 			
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta}
+\usetikzlibrary{calc}
+\usetikzlibrary{positioning}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Paragraph markers
 %\newcommand{\paragraphMarker}[1]{ %{\color{gray} $\langle$#1$\rangle$}
@@ -542,15 +544,30 @@ The contraction is defined by \lstinline|contr|, which is a natural transformati
 This natural transformation is simply the assignment to each color $c$ a linear-map from 
 \lstinline|FD c ⊗ FD (τ c)| to \lstinline|k| which is equivariant with respect to the group action. 
 This contraction cannot be defined arbitarily, but must satisfy the symmetry condition \lstinline|contr_tmul_symm|, 
-which corresponds to the diagram \js{Finish improving this diagram.}
+which corresponds to the commutative diagram 
 \begin{equation}
-\begin{tikzcd}
-  \text{\lstinline|FD c ⊗ FD (τ c)|} \arrow[r, "{\beta}"] \arrow[d, "{\text{\lstinline|contr c|}}", swap] & F_D(\tau c) \otimes F_D (c) \arrow[d, "\mathbbm{1} \otimes F_D \tau_c"] \\
-  \mathbbm{1} & F_D(\tau c) \otimes F_D (\tau \tau c) \arrow[l, "{\text{\lstinline|contr (τ c)|}}", ] 
-\end{tikzcd}
+  \begin{tikzpicture}[>=stealth, node distance=5cm]
+    % Define the nodes
+    \node (A) at (0, 0) {\lstinline|FD c ⊗ FD (τ c)|};
+    \node (B) at (7, 0) {\lstinline|FD (τ c) ⊗ FD c|};
+    \node (C) at (0, -2){\lstinline|𝟙_(Rep k G)|};
+    \node (D) at (7, -2) {\lstinline|FD (τ c) ⊗ FD (τ (τ c))|};
+  
+    % Draw the edges without labels
+    \draw[->] (A) -- (B);
+    \draw[->] (A) -- (C);
+    \draw[->] (B) -- (D);
+    \draw[->] (D) -- (C);
+
+    % Place labels as separate nodes along the edges
+    \node at ($(A)!0.5!(B)$) [above] {\lstinline|β_|};
+    \node at ($(A)!0.5!(C)$) [left] {\lstinline|contr c|};
+    \node at ($(B)!0.5!(D)$) [right] {\lstinline|𝟙 ⊗ FD.map (e c)|};
+    \node at ($(D)!0.5!(C)$) [below] {\lstinline|contr (τ c)|};
+  \end{tikzpicture}
 \end{equation}
-commuting, where $\beta$ is the braiding of the symmetric monoidal category, and $\tau_c$ is the isomorphism
-in $C$ between $\tau(\tau(c))$ and $c$, which exists since $\tau$ is an involution.
+where \lstinline|β_| is the braiding of the symmetric monoidal category, and \lstinline|e| is the isomorphism
+in \lstinline|Discrete S.C| between \lstinline|c| and \lstinline|τ (τ c)|, which exists since \lstinline|τ| is an involution.
 
 Along with the contraction we define the \lstinline|unit|, along with its own symmetry condition 
 \lstinline|unit_symm|. The unit is a natural transformation from the functor  $\mathbbm{1}$ to 
