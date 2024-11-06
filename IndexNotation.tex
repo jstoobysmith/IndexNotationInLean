@@ -90,7 +90,7 @@
 %\newcommand{\paragraphMarker}[1]{ %{\color{gray} $\langle$#1$\rangle$}
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Lean formating
+%Lean formatting
 \usepackage{listings}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -153,7 +153,7 @@
   }
   \newcommand{\codeBreakdownLink}[2]{
   \vspace{-0.5cm}\hfill\href{https://github.com/HEPLean/HepLean/blob/1b951994ae3d882242b02d23957ef1ee7fa05f3d/HepLean/#1}{(source)}
-  (breakdown \ref{#2})
+  (breakdown~\ref{#2})
   }
  \newcommand{\textLink}[1]{\href{https://github.com/HEPLean/HepLean/blob/1b951994ae3d882242b02d23957ef1ee7fa05f3d/HepLean/#1}{source}}
  \newcommand{\textLinkB}[1]{\href{https://github.com/HEPLean/HepLean/blob/1b951994ae3d882242b02d23957ef1ee7fa05f3d/HepLean/#1}{(source)}}
@@ -237,7 +237,7 @@ which are then automatically checked for correctness using dependent-type theory
 The HepLean project is driven by four primary motivations: to facilitate easier look-up of results
  through a linear storage of information; to support the creation and proof of new results using 
  automated tactics and AI tools; to facilitate correctness checking of result in high energy physics; 
- and to introduce new pedogocial methods for high-energy physics and computer science.
+ and to introduce new pedagogical methods for high-energy physics and computer science.
 
 HepLean is part of a broader movement of projects
 to formalize parts, or all, of 
@@ -258,8 +258,8 @@ results from high energy physics.
 As well as, making results from high energy physics easier to write and prove in Lean, 
 it will make the syntax more familiar to high energy physicists. 
 Such an implementation is the subject of this paper. 
-It is a challenge because, we need an implementation that is nice and flexiable to use, 
-but which is also formally well-defined and rigourous. 
+It is a challenge because, we need an implementation that is nice and flexible to use, 
+but which is also formally well-defined and rigorous. 
 We hope that the implementation presented here will
 not only enhances usability of Lean but also promotes the adoption of formal methods in the 
 physics community.
@@ -282,7 +282,7 @@ Previous implementations of index notation have been made in programming languag
 In Section~\ref{sec:Implementation} of this paper, we will discuss the details of our implementation. 
 In Section~\ref{sec:examples} we will give two examples of definitions, theorems and proofs using index notation, 
 to give the reader an idea of how our implementation works in practice.
-The first of these examples involves a lemma regarding the contraction of indices of symmetric and anti-symmetric tensors. 
+The first of these examples involves a lemma regarding the contraction of indices of symmetric and antisymmetric tensors. 
 The second involves examples related to the Pauli matrices and bispinors. 
 We finish this paper in Section~\ref{sec:future} by discussing potential future work related to this project.
 
@@ -328,7 +328,7 @@ for Pauli matrices is an example of syntax.\footnote{In practice there is a repr
  which is as a sequence of tokens in file which is parsed by Lean into a more structured syntax. For simplicity,
  we think of these representations as the same here.} 
 
-The second representation of a tensor expression is a \emph{tensor tree}. This representaiton is 
+The second representation of a tensor expression is a \emph{tensor tree}. This representation is 
 mathematically formal, but easy to use and manipulate. 
 It is a structured tree which has different types 
 of nodes for each of the main operations that one can perform on tensors.
@@ -337,7 +337,7 @@ The process of going from syntax to a tensor tree is done via an elaborator
 which follows a number of (informally defined) rules.
 
 The third and final representation is a bona-fide \emph{tensor}. This representation 
-is the mathematical object that we are actually intrested in. However, in going to this representation
+is the mathematical object that we are actually interested in. However, in going to this representation
 we lose the structure of the tensor expression itself, making it difficult to work with. 
 
 The process of going from a tensor tree to a tensor involves properties from a symmetric monoidal 
@@ -353,11 +353,11 @@ real Lorentz tensors or Einstein tensors. The word `species' is a nod to `graphi
 defined in~\cite{JOYAL2011105,raynor2021graphical}, from which our construction is inspired.
 
 We will start by giving the complete definition of a tensor species in Lean, and then 
-disect this definition, discussing each of the components in turn. 
+dissect this definition, discussing each of the components in turn. 
 
 In Lean a tensor species is defined as follows:
 \begin{codeLong}
-/-- The sturcture of a type of tensors e.g. Lorentz tensors, Einstien tensors,
+/-- The structure of a type of tensors e.g., Lorentz tensors, Einstein tensors,
 complex Lorentz tensors. -/
 structure TensorSpecies where
   /-- The commutative ring  over which we want to consider the tensors to live in,
@@ -426,8 +426,8 @@ structure TensorSpecies where
 
 Let us go through this definition piece by piece.
 The first part of the definition of a tensor species is a type \lstinline|k| 
-which is a commuative ring via \lstinline|k_commRing|. 
-For a given \lstinline|S : TensorSpecies|, we retrive \lstinline|k| and all of the 
+which is a commutative ring via \lstinline|k_commRing|. 
+For a given \lstinline|S : TensorSpecies|, we retrieve \lstinline|k| and all of the 
 components of \lstinline|TensorSpecies| via \lstinline|S.k| etc. 
 For the tensor species of complex Lorentz tensors, denoted 
 \lstinline|complexLorentzTensor|, the ring \lstinline|complexLorentzTensor.k| is the ring of complex numbers.
@@ -498,7 +498,7 @@ def leftHanded : Rep ℂ SL(2,ℂ) := Rep.of {
   /- The function from SL(2,ℂ) to endomorphisms of LeftHandedModule 
     (which corresponds to the vector space ℂ^2). -/
   toFun := fun M => {
-    /- Start of the definiton of the linear map. -/
+    /- Start of the definition of the linear map. -/
     /- The function underlying the linear map. Defined as the dot product. -/
     toFun := fun (ψ : LeftHandedModule) =>
       LeftHandedModule.toFin2ℂEquiv.symm (M.1 *ᵥ ψ.toFin2ℂ),
@@ -510,7 +510,7 @@ def leftHanded : Rep ℂ SL(2,ℂ) := Rep.of {
     map_smul' := by
       intro r ψ
       simp [mulVec_smul]
-    /- End of the definiton of the linear map. -/}
+    /- End of the definition of the linear map. -/}
   /- Proof that (the outer) toFun gives the identity map on the identity of SL(2,ℂ). -/
   map_one' := by
     ext i
@@ -523,7 +523,7 @@ def leftHanded : Rep ℂ SL(2,ℂ) := Rep.of {
     simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearEquiv.apply_symm_apply,
       mulVec_mulVec]}
 \end{codeLong} 
-where we have added some explainatary comments to this code, not seen in the actual Lean code, to give 
+where we have added some explanatory comments to this code, not seen in the actual Lean code, to give 
 the reader an idea of what each part does. 
 
 The next part of the definition of a tensor species is the map \lstinline|repDim|, which assigns to each color a natural number,
@@ -553,7 +553,7 @@ The contraction itself is defined in a tensor species by \lstinline|contr|, whic
 \lstinline|𝟙_ (Rep k G)|. 
 This natural transformation is simply the assignment to each color $c$ a linear-map from 
 \lstinline|FD c ⊗ FD (τ c)| to \lstinline|k| which is equivariant with respect to the group action. 
-This contraction cannot be defined arbitarily, but must satisfy the symmetry condition \lstinline|contr_tmul_symm|, 
+This contraction cannot be defined arbitrarily, but must satisfy the symmetry condition \lstinline|contr_tmul_symm|, 
 which corresponds to the commutative diagram 
 \begin{equation}
   \begin{tikzpicture}[>=stealth, node distance=5cm]
@@ -764,7 +764,7 @@ Each constructor here, e.g. \lstinline|tensorNode|, \lstinline|smul|, \lstinline
 be thought of a forming a different type of node in a tensor tree.
 
 Since the interpretation of each of the constructors is down to how we turn them into a tensor,
-we dicuss this before dicussing each of the constructors in turn. The process 
+we discuss this before discussing each of the constructors in turn. The process 
 of going from a tensor tree to a tensor is proscribed by a function
 \lstinline|TensorTree S c  → S.F.obj (OverColor.mk c)|, which is defined recursively as follows: 
 \begin{code}
@@ -858,7 +858,7 @@ The tensor associated with this new tree is obtained by acting on the tensor ass
 The constructor \lstinline|perm| takes a morphism \lstinline|σ| from \lstinline|c| to \lstinline|c1| in \lstinline|OverColor S.C| and 
   an existing tensor tree \lstinline|t| based on \lstinline|c|, and constructs a new tensor tree based on \lstinline|c1|.
 This new tree has a root node labeled \lstinline|perm σ|, with the tensor tree \lstinline|t| as its child.
-Diagramatically, this is given by 
+Diagramatically, this is given by: 
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|perm σ|};
@@ -952,9 +952,9 @@ using the left-unitor. This is all contained within the \lstinline|S.evalMap| ap
 function \lstinline|TensorTree.tensor|.
 
 The main reason tensor trees are nice to work with is that they have the following property: 
-Define a sub-tree of a tensor trees 
+Define a subtree of a tensor trees 
 to be a node and all child nodes of that node. 
-If $T$ is a tensor tree and $S$ a sub-tree of $T$, we can replace $S$ in $T$ 
+If $T$ is a tensor tree and $S$ a subtree of $T$, we can replace $S$ in $T$ 
 with another tensor tree $S'$
 to get a new overall tensor-tree $T'$. If $S$ and $S'$ have the same underlying tensor, 
 then $T$ and $T'$ will. 
@@ -970,22 +970,22 @@ lemma contr_tensor_eq {n : ℕ} {c : Fin n.succ.succ → S.C} {T1 T2 : TensorTre
   rw [h]
 \end{code}
 These lemmas allow us to navigate to the certain places in tensor trees and replace 
-sub-trees with other sub-trees. We will see this used exensively in the examples. 
+subtrees with other subtrees. We will see this used exensively in the examples. 
 
 \subsection{Syntax and their map to tensor trees}
 
 
 We now dicuss how we make the Lean code look similar to what we would use on pen-and-paper physics. 
 
-This is done using a two step process. Firstly, we define syntax for tensor expressions. 
-Then we write code to turn this syntax into a tensor tree. This process is not formally defined or 
+This is done using a two-step process. Firstly, we define syntax for tensor expressions. 
+Then we write code, called elaboration, to turn this syntax into a tensor tree. This process is not formally defined or 
 verified, Lean takes the outputed tensor tree as the formal object to work with.
 
-Instead of deleving into the nitty-gritty details of how this process works under the hood, 
+Instead of delving into the nitty-gritty details of how this process works under the hood, 
 we give some examples to see how it works. 
 
 In what follows we will assume that \lstinline|T|, \lstinline|T1|, etc are tensors defined as 
-\lstinline|S.F c|, \lstinline|S.F c1|, etc for 
+elements of \lstinline|S.F c|, \lstinline|S.F c1|, etc for 
 some tensor species \lstinline|S| and some \lstinline|c : Fin n → S.C|, \lstinline|c1 : Fin n1 → S.C|, etc 
 for which the below expressions make sense.
 
@@ -995,31 +995,30 @@ for a tensor node. Here the \lstinline|μ| and \lstinline|ν| are free variables
 matter what we call them - Lean will elaborate the expression in the same way.
 The elaborator also knows how many indices to expect for a tensor \lstinline|T| and will raise an error if
 the wrong number are given. The \lstinline|{_}ᵀ| notation is used to tell Lean that the syntax
-is to be treated as a tensor expression. 
+is to be treated as a tensor expression. Throughout this section we will use the two-sided boxes 
+given above, which on the left denote the syntax and on the right the expression it is elaborated to. 
 
-We can write e.g. 
+We can write e.g.,
 \syntaxElab{\lstinline!\{T | μ ν\}ᵀ.tensor!}{{\lstinline!(tensorNode T).tensor!}}
 to get the underlying tensor.
 
 Note that we have not lowered or risen the indices, as one would expect from pen-and-paper notation.
 There is one primary reason for this, whether an index is lower or risen does not carry any information, 
 since this information comes from the tensor itself. Also, for something like complex Lorentz tensors, 
-there are at least three different types of upper-index. 
+there are at three different types of upper-index. 
 
-We can extract the tensor from a tensor tree using the following syntax
 If we want to evaluate an index we can put an explicit index in place of $\mu$ or $\nu$ above, 
-for example
+for example:
 \syntaxElab{\lstinline!\{T | 1 ν\}ᵀ!}{\lstinline!eval 0 1 (tensorNode T)!}
 
 The syntax and elaboration for negation, scalar multiplication and the group action 
-are fairly similar. For negation we have 
+are fairly similar. For negation we have:
 \syntaxElab{\lstinline!\{T | μ ν\}ᵀ!}{\lstinline!neg (tensorNode T)!}
-For scalar multiplication by $a \in k$ we have 
+For scalar multiplication by $a \in k$ we have:
 \syntaxElab{\lstinline!\{a •ₜ T | μ ν\}ᵀ!}{\lstinline!smul a (tensorNode T)!}
-For the group action of $g\in G$ on a tensor $T$ we have
+For the group action of $g\in G$ on a tensor $T$ we have:
 \syntaxElab{\lstinline!\{g •ₐ T | μ ν\}ᵀ!}{\lstinline!action g (tensorNode T)!}
-
-For the product of two tensors is also fairly simple, we have 
+The product of two tensors is also fairly simple, with us having: 
 \syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | σ\}ᵀ!}{\lstinline!prod (tensorNode T) (tensorNode T2)!}
 
 The syntax for contraction is as one expect, 
@@ -1027,25 +1026,28 @@ The syntax for contraction is as one expect,
 On the RHS here the first argument (\lstinline!1!) of \lstinline!contr! is the index of the first \lstinline|ν| on the LHS, 
 the second argument  (also \lstinline!1!) is the second index. The \lstinline!rfl! is a proof that the
 colors of the two contracted indices are actually dual to one another. If they are not, this proof will 
-fail and the elaborator will complain. It will also complain if more then two indices are traying 
+fail and the elaborator will complain. It will also complain if more than two indices are trying 
 to be contracted. Although, this depends on where exactly the indices sit in the expression. For example 
 \syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | ν ν\}ᵀ!}{\lstinline!(prod (tensorNode T) (contr 0 0 rfl (tensorNode T2)))!}
-works fine becuase the inner contraction is done before the product. 
+works fine because the inner contraction is done before the product. 
 
-We now turn to addition. Our syntax allows for e.g. \lstinline!{T | μ ν + T2 | μ ν}ᵀ! and also 
+We now turn to addition. Our syntax allows for e.g., \lstinline!{T | μ ν + T2 | μ ν}ᵀ! and also 
 \lstinline!{T | μ ν + T2 | ν μ}ᵀ!, provided of course that the indices are of the correct color (which Lean will check). 
-The elabor handles both these cases, and generalizations thereof by adding a permutation node. Thus we have 
+The elaborator handles both these cases, and generalizations thereof by adding a permutation node. Thus we have 
 \syntaxElab{\lstinline!\{T | μ ν + T2 | μ ν\}ᵀ!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
-where here the \lstinline!_! is a placeholder for the permutation, and in this case will be trivial, but for 
+where here the \lstinline!_! is a placeholder for the permutation. For this case will the permutation will be the identity, but for 
 \syntaxElab{\lstinline!\{T | μ ν + T2 | ν μ\}ᵀ!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
-it will be the permutation for the two indentities. 
+it will be the permutation for the two identities. 
 
-Despite not forming part of a node in our tensor tree, we also give syntax for equalitiy. 
+Despite not forming part of a node in our tensor tree, we also give syntax for equality. 
 This is done in a very similar way to addition, with the addition of a permutation node to account for
-e.g. the fact that $T_{\mu \nu} = T_{\nu \mu}$. 
+e.g., the fact that $T_{\mu \nu} = T_{\nu \mu}$. 
 \syntaxElab{\lstinline!\{T | μ ν = T2 | ν μ\}ᵀ!}{\lstinline!(tensorNode T).tensor = (perm _ (tensorNode T2)).tensor!}
 Note the use of the \lstinline!.tensor! to extract the tensor from the tensor tree, it does not really mean much 
-to ask for equalitiy of the tensor trees themselves. 
+to ask for equality of the tensor trees themselves. 
+
+With this syntax we can write complicated tensor expressions in a way close to pen-and-paper index notation. 
+We will see examples of this in the next section.
 
 \section{Examples} \label{sec:examples}
 
@@ -1056,8 +1058,8 @@ The second example we shall give will show a number of definitions in HepLean co
 Here we will not give so much detail, the point rather being to show the reader the broad use of our 
 construction. 
 
-\subsection{Example 1: Symmetric and anti-symmetric tensor} \label{sec:exampleSymmAntiSymm}
-If $A^{\mu \nu}$ is an anti-symmetric tensor and $S_{\mu \nu}$ and $S$ is a symmetric tensor, then
+\subsection{Example 1: Symmetric and antisymmetric tensor} \label{sec:exampleSymmAntiSymm}
+If $A^{\mu \nu}$ is an antisymmetric tensor and $S_{\mu \nu}$ and $S$ is a symmetric tensor, then
 it is true that $A^{\mu \nu} S_{\mu \nu} = - A^{\mu \nu} S_{\mu \nu}$. In Lean this result, and 
 it's proof are written as follows: 
 \begin{code}
@@ -1089,13 +1091,13 @@ Let us break this down. The statements
 {S : complexLorentzTensor.F.obj (OverColor.mk ![Color.down, Color.down])}
 \end{code}
 are simply defining $A$ and $S$ to be tensors of type $A^{\mu \nu}$ and $S_{\mu \nu}$ respectively.
-Here \lstinline|![Color.up, Color.up]| is short-hand for the map \lstinline|Fin 2 → complexLorentzTensor.C| that sends
+Here \lstinline|![Color.up, Color.up]| is shorthand for the map \lstinline|Fin 2 → complexLorentzTensor.C| that sends
 $0$ to \lstinline|Color.up| and $1$ to \lstinline|Color.up|.
 
-The parameter \lstinline|hA| is stating that $A$ is anti-symmetric. Expanded in terms of tree diagrams 
+The parameter \lstinline|hA| is stating that $A$ is antisymmetric. Expanded in terms of tree diagrams 
 we have
 \proofstep{\lstinline!hA : \{A | μ ν = - (A | ν μ)\}ᵀ!}{Description: The tensor $A$ 
-  is anti-symmetric.}{
+  is antisymmetric.}{
  \begin{tikzpicture}
     \node[draw=black] (A) at (-2,-1) {A};
     \node[draw=black] (D1) at (0,0) {perm};
@@ -1106,7 +1108,7 @@ we have
     \path [->] (E1) edge (F1);
   \end{tikzpicture} 
 }
-Where by equality of tensor trees in the above diagram, we really mean equality 
+where by equality of tensor trees in the above diagram, we really mean equality 
 of the underlying tensors of those tensor trees. This will be left implicit throughout.  
 
 Similarly, the parameter \lstinline|hs| is stating that $S$ is symmetric. Expanded in terms of tree diagrams
@@ -1121,7 +1123,7 @@ Similarly, the parameter \lstinline|hs| is stating that $S$ is symmetric. Expand
   \end{tikzpicture} 
 }
 
-The line \lstinline!{A | μ ν ⊗ S | μ ν = - A | μ ν ⊗ S | μ ν}ᵀ! is the statment we are trying to prove. 
+The line \lstinline!{A | μ ν ⊗ S | μ ν = - A | μ ν ⊗ S | μ ν}ᵀ! is the statement we are trying to prove. 
 In terms of tree diagrams it says that 
 \begin{center}
   \fcolorbox{mycolor}{white}{
@@ -1317,7 +1319,7 @@ We go through each step in turn.
 
 \proofstep{\lstinline!rw [perm_tensor_eq <| contr_contr _ _ _]!}{
   Description: Here \lstinline|perm_tensor_eq| navigates to the correct place in the tensor tree,
-  whilst \lstinline|contr_contr| swaps the two contractions, in the mean time inducing 
+  whilst \lstinline|contr_contr| swaps the two contractions, in the meantime inducing 
   a permutation.
 }{
   \begin{tikzpicture}
@@ -1523,7 +1525,7 @@ First, we could incorporate the spinor-helicity formalism, which is used in the 
 amplitudes. Second, we could extend our approach to encompass tensor \emph{fields}, their derivatives
 etc. We do not anticipate any insurmountable challenges in pursuing these extensions. 
 They represent promising avenues for future research and have the potential to significantly enhance
-the utility of formal methods in physics.
+the utility of formal methods in physics. sdfljk
 \section*{Acknowledgments}
 \js{Fill in}
 
