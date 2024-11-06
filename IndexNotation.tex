@@ -990,7 +990,7 @@ The syntax allows us to write the following
 \syntaxElab{\lstinline!\{T | μ ν\}ᵀ!}{{\lstinline!tensorNode T!}}
 for a tensor node. Here the \lstinline|μ| and \lstinline|ν| are free variables and it does not 
 matter what we call them - Lean will elaborate the expression in the same way.
-The elaborator also knows how many indices to expect for a tensor $T$ and will raise an error if
+The elaborator also knows how many indices to expect for a tensor \lstinline|T| and will raise an error if
 the wrong number are given. The \lstinline|{_}ᵀ| notation is used to tell Lean that the syntax
 is to be treated as a tensor expression. 
 
@@ -1154,11 +1154,10 @@ The lines of the proof in the \lstinline|conv| block are manipulations of the te
 LHS of the equation. The \lstinline|rw| tactic is used to rewrite the tensor tree using the various lemmas. 
 We go through each step in turn. 
 \proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| prod_tensor_eq_fst <| hA]!}{
-  Description: Replace the node \lstinline|A| with the RHS of \lstinline|hA|.
-
-  Here \lstinline|contr_tensor_eq| and \lstinline|prod_tensor_eq_fst| are used to
-  navigate to the correct place in the tensor tree, whilst the \lstinline|hA| lemma specifies the 
-  substitution to be made.
+  Description: Here
+  \lstinline|contr_tensor_eq| and \lstinline|prod_tensor_eq_fst| navigate to the correct place in the tensor tree, 
+  whilst 
+  \lstinline|hA| replaces the node \lstinline|A| with the RHS of \lstinline|hA|.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
@@ -1178,7 +1177,11 @@ We go through each step in turn.
 }
 
 \proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| prod_tensor_eq_snd <| hs]!}{
-  Description: Replace the node \lstinline|S| with the RHS of \lstinline|hS|.
+  Description: 
+  Here
+  \lstinline|contr_tensor_eq| and \lstinline|prod_tensor_eq_fst| navigate to the correct place in the tensor tree, 
+  whilst 
+  \lstinline|hS| replaces the node \lstinline|S| with the RHS of \lstinline|hS|.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
@@ -1200,7 +1203,8 @@ We go through each step in turn.
 }
 
 \proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| prod_perm_left _ _ _ _]!}{
-  Description: Move the left permutation through the product.
+  Description: Here \lstinline|contr_tensor_eq| navigates to the correct place in the tensor tree,
+  whilst \lstinline|prod_perm_left| moves the permutation on the left through the product.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
@@ -1222,7 +1226,8 @@ We go through each step in turn.
 }
 
 \proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| perm_tensor_eq <| prod_perm_right _ _ _ _]!}{
-  Description: Move the right permutation through the product.
+  Description: Here \lstinline|contr_tensor_eq| and \lstinline|perm_tensor_eq| navigate to the correct place in the tensor tree,
+  whilst \lstinline|prod_perm_right| moves the permutation on the right through the product.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
@@ -1244,7 +1249,8 @@ We go through each step in turn.
 }
 
 \proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| perm_perm _ _ _]!}{
-  Description: Combine the two permutations (using functoriality).
+  Description: Here \lstinline|contr_tensor_eq| navigates to the correct place in the tensor tree,
+  whilst \lstinline|perm_perm| uses functoriality to combine the two permutations.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
@@ -1264,7 +1270,8 @@ We go through each step in turn.
 }
 
 \proofstep{\lstinline!rw [contr_tensor_eq <| perm_contr_congr 1 2]!}{
-  Description: Move the permutation through the contraction. And simplify the contraction 
+  Description: Here \lstinline|contr_tensor_eq| navigates to the correct place in the tensor tree,
+  whilst \lstinline|perm_contr_congr| moves the permutation through the contraction, and simplifies the contraction
   indices to \lstinline|1| and \lstinline|2| (Lean will check if this is correct).
 }{
   \begin{tikzpicture}
@@ -1285,7 +1292,7 @@ We go through each step in turn.
 }
 
 \proofstep{\lstinline!rw [perm_contr_congr 0 0]!}{
-  Description: Move the permutation through the contraction. And simplify the contraction 
+  Description: Here \lstinline|perm_contr_congr| moves the permutation through the contraction, and simplifies the contraction
   indices to \lstinline|0| and \lstinline|0| (Lean will check if this is correct).
 }{
   \begin{tikzpicture}
@@ -1306,7 +1313,9 @@ We go through each step in turn.
 }
 
 \proofstep{\lstinline!rw [perm_tensor_eq <| contr_contr _ _ _]!}{
-  Description: Swap the two contractions. This introduces a permutation.
+  Description: Here \lstinline|perm_tensor_eq| navigates to the correct place in the tensor tree,
+  whilst \lstinline|contr_contr| swaps the two contractions, in the mean time inducing 
+  a permutation.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {perm};
@@ -1328,7 +1337,7 @@ We go through each step in turn.
 }
 
 \proofstep{\lstinline!rw [perm_perm]!}{
-  Description: Combine the two permutations.
+  Description: Here \lstinline|perm_perm| uses functoriality to combine the two permutations.
 }{
   \begin{tikzpicture}
     \node[draw=red] (A) at (0,0) {perm};
@@ -1348,7 +1357,8 @@ We go through each step in turn.
 }
 
 \proofstep{\lstinline!rw [perm_tensor_eq <| contr_tensor_eq <| contr_tensor_eq <| neg_fst_prod _ _]!}{
-  Description: Move the negation through the product.
+  Description: Here \lstinline|perm_tensor_eq| and \lstinline|contr_tensor_eq| navigate to the correct place in the tensor tree,
+  whilst \lstinline|neg_fst_prod| moves the negation through the product.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {perm};
@@ -1368,7 +1378,8 @@ We go through each step in turn.
 }
 
 \proofstep{\lstinline!rw [perm_tensor_eq <| contr_tensor_eq <| neg_contr _]!}{
-  Description: Move the negation through the first contraction.
+  Description: Here \lstinline|perm_tensor_eq| and \lstinline|contr_tensor_eq| navigate to the correct place in the tensor tree,
+  whilst \lstinline|neg_contr| moves the negation through the first contraction.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {perm};
@@ -1388,7 +1399,8 @@ We go through each step in turn.
 }
 
 \proofstep{\lstinline!rw [perm_tensor_eq <| neg_contr _]!}{
-  Description: Move the negation through the second contraction.
+  Description: Here \lstinline|perm_tensor_eq| navigates to the correct place in the tensor tree,
+  whilst \lstinline|neg_contr| moves the negation through the second contraction.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {perm};
@@ -1439,7 +1451,8 @@ knows how to treat as a tensor. Here \lstinline|complexContr| is the representat
 under $SL(2, \mathbb{C})$.
 
 In these expressions we have the appearence of metrics \lstinline|η'| is the metric usually written as 
-$\eta_{\mu \nu}$, \js{etc.}
+$\eta_{\mu \nu}$, \lstinline|η| the metric $\eta^{\mu \nu}$, \lstinline|εL'| the  metric 
+$\epsilon_{\alpha \alpha'}$, and \lstinline|εR'| the metric $\epsilon_{\dot \beta \dot \beta'}$.
 
 With these we can also define bispinors 
 \begin{code}
@@ -1505,7 +1518,8 @@ amplitudes. Second, we could extend our approach to encompass tensor \emph{field
 etc. We do not anticipate any insurmountable challenges in pursuing these extensions. 
 They represent promising avenues for future research and have the potential to significantly enhance
 the utility of formal methods in physics.
-
+\section*{Acknowledgments}
+\js{Fill in}
 
 \bibliographystyle{unsrturl}
 \begin{spacing}{0.5}
