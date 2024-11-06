@@ -6,6 +6,16 @@ Joseph Tooby-Smith.
 \newblock 5 2024.
 \newblock \href {https://arxiv.org/abs/2405.08863} {\path{arXiv:2405.08863}}.
 
+\bibitem{lean}
+Leonardo De~Moura, Soonho Kong, Jeremy Avigad, Floris Van~Doorn, and Jakob von
+  Raumer.
+\newblock The lean theorem prover (system description).
+\newblock In {\em Automated Deduction-CADE-25: 25th International Conference on
+  Automated Deduction, Berlin, Germany, August 1-7, 2015, Proceedings 25},
+  pages 378--388. Springer, 2015.
+\newblock \href {https://doi.org/10.1007/978-3-319-21401-6_26}
+  {\path{doi:10.1007/978-3-319-21401-6_26}}.
+
 \bibitem{mathlib}
 The mathlib Community.
 \newblock The lean mathematical library.

@@ -229,7 +229,7 @@ be typos, mistakes, sentences that don't make sense, notation that is not define
 
 In previous work~\cite{HepLean}, the author initiated the digitalization (or formalization) 
 of high energy physics 
-results using the interactive theorem prover Lean 4 in a project called HepLean. 
+results using the interactive theorem prover Lean 4~\cite{lean} in a project called HepLean. 
 Lean is a
 programming language with syntax resembling traditional pen-and-paper mathematics. 
 Users can write definitions, theorems, and proofs in Lean,
@@ -471,7 +471,7 @@ The representations appearing here are:
   \item The representation of left-handed Weyl fermions, 
     denoted in Lean as \lstinline|Fermion.leftHanded|, and corresponding to the 
     representation of $SL(2, \mathbb{C})$ taking $v \mapsto M v$ for $M \in SL(2, \mathbb{C})$.
-  \item The representation of `alternative' left-handed Weyl fermions, 
+  \item \sloppy The representation of `alternative' left-handed Weyl fermions, 
     denoted in Lean as \lstinline|Fermion.altLeftHanded|, and corresponding to the 
     representation of $SL(2, \mathbb{C})$ taking $v \mapsto M^{-1 T} v$ for $M \in SL(2, \mathbb{C})$.
   \item The representation of right-handed Weyl fermions, 
@@ -636,7 +636,7 @@ where \lstinline|ρ_| is the right-unitor, \lstinline|λ_| is the left-unitor, a
 The final part of the definition of a tensor species is the metric, \lstinline|metric| 
 and it's interaction with the contraction and unit \lstinline|contr_metric|. 
 The metric is a natural transformation from the functor \lstinline|𝟙_ (Discrete C ⥤ Rep k G)|
-to the functor \lstinline|FD _ ⊗ FD _|. It thus represents the assignement to each color \lstinline|c| an object of
+to the functor \lstinline|FD _ ⊗ FD _|. It thus represents the assignment to each color \lstinline|c| an object of
 \lstinline|FD c ⊗ FD c| which is invariant with respect to the group action.
 The metric can be used to change an index into a dual index. The condition \lstinline|contr_metric|
 corresponds to the diagram 
@@ -711,14 +711,14 @@ We can think of an object \lstinline|f : X → S.C| of \lstinline|OverColor S.C|
 and a specification of what color or representation each index is associated to. 
 We can apply the functor \lstinline|S.F| to \lstinline|f : X → S.C| as follows 
 \lstinline|S.F.obj (OverColor.mk f)|, which we will abbreviate to \lstinline|S.F f|.
-This representaiton, \lstinline|S.F f|, is the tensor product of each of these representations, so that vectors
+This representation, \lstinline|S.F f|, is the tensor product of each of these representations, so that vectors
 \lstinline|v : S.F f| can be thought of as tensors with indices indexed by \lstinline|X| of color \lstinline|C|. 
 
 With this in mind, we define a general tensor of a species \lstinline|S| as a vector in a representation 
 \lstinline|S.F f|. 
 
 In physics, we typically focus on objects \lstinline|f : X → S.C| of \lstinline|OverColor S.C|  where \lstinline|X| is a 
-finite type of the form \lstinline|Fin n| for some \lstinline|n : ℕ|. When appropraite in what follows, 
+finite type of the form \lstinline|Fin n| for some \lstinline|n : ℕ|. When appropriate in what follows, 
 we will restrict to these objects.
 
 \subsection{Tensor Trees and their map to tensors}
@@ -731,20 +731,20 @@ They also have nodes for tensors themselves.
 
 Given a species \lstinline|S|, we have a type of tensor tree for each map of the form
 \lstinline|c : Fin n → S.C| in \lstinline|OverColor S.C|. 
-This restriction to \lstinline|Fin n| is done for convience.
+This restriction to \lstinline|Fin n| is done for convenience.
 
 Tensor trees are defined inductively through a number of constructors: 
 \begin{codeLong}
 inductive TensorTree (S : TensorSpecies) : {n : ℕ} → (Fin n → S.C) → Type where
   /-- A general tensor node. -/
   | tensorNode {n : ℕ} {c : Fin n → S.C} (T : S.F.obj (OverColor.mk c)) : TensorTree S c
-  /-- A node correpsonding to the scalar multiple of a tensor by a element of the field. -/
+  /-- A node corresponding to the scalar multiple of a tensor by a element of the field. -/
   | smul {n : ℕ} {c : Fin n → S.C} : S.k → TensorTree S c → TensorTree S c
   /-- A node corresponding to negation of a tensor. -/
   | neg {n : ℕ} {c : Fin n → S.C} : TensorTree S c → TensorTree S c
   /-- A node corresponding to the addition of two tensors. -/
   | add {n : ℕ} {c : Fin n → S.C} : TensorTree S c → TensorTree S c → TensorTree S c
-  /-- A node correpsonding to the action of a group element on a tensor. -/
+  /-- A node corresponding to the action of a group element on a tensor. -/
   | action {n : ℕ} {c : Fin n → S.C} : S.G → TensorTree S c → TensorTree S c
   /-- A node corresponding to the permutation of indices of a tensor. -/
   | perm {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
@@ -893,7 +893,7 @@ a vector in \lstinline|S.F.obj (OverColor.mk c ⊗ OverColor.mk c1)|, and finall
 \paragraph{contr:}
 The constructor \lstinline|contr| firstly, takes an existing tensor tree \lstinline|t| based on a 
 \lstinline|c : Fin n.succ.succ -> S.C|. Here \lstinline|n.succ.succ| is $n + 1 + 1$ with \lstinline|succ| meaning 
-the succesor of a natural number. 
+the successor of a natural number. 
 It also takes,
 an \lstinline|i| of type \lstinline|Fin n.succ.succ|, \lstinline|j| of type \lstinline|Fin n.succ|
 and a proof that \lstinline|c (i.succAbove j) = S.τ (c i)|, where \lstinline|i.succAbove| is the map from \lstinline|Fin n.succ| to \lstinline|Fin n.succ.succ| with a hole at \lstinline|i|. 
@@ -911,7 +911,7 @@ As a diagram,
     \draw[->] (A) -- (B);
   \end{tikzpicture} 
 }
-The tensor associated with the new tensor tree is construced as follows. 
+The tensor associated with the new tensor tree is constructed as follows. 
 We start with a tensor in \lstinline|S.F.obj (OverColor.mk c)|.
 This is mapped into a vector in \lstinline|(S.FD.obj (c i) ⊗ S.FD.obj (S.τ (c i))) ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i ∘ Fin.succAbove j))| via an equivalence from 
 \lstinline|S.F.obj (OverColor.mk c)|. The equivalence is constructed using an equivalence 
@@ -945,9 +945,9 @@ in \lstinline|OverColor C| to extract \lstinline|i| from \lstinline|c|, and
 then using the tensorate of \lstinline|S.F|.
 Using the evaluation for \lstinline|c i| at the basis element indicated by \lstinline|x| (if \lstinline|x| is too big a natural number for the number of basis elements it defaults to \lstinline|0|), we then get a vector in
 \lstinline|𝟙 ⊗ S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))|.
-This mapping should be thought of as occuring in the  category of modules over \lstinline|S.k|, rather then in 
+This mapping should be thought of as occurring in the  category of modules over \lstinline|S.k|, rather then in 
 \lstinline|Rep S.G S.k|, since the evaluation is not invariant under the group action.
-We then fininally map  into \lstinline|S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))| 
+We then finally map into \lstinline|S.F.obj (OverColor.mk (c ∘ Fin.succAbove i))| 
 using the left-unitor. This is all contained within the \lstinline|S.evalMap| appearing in the definition of
 function \lstinline|TensorTree.tensor|.
 
@@ -970,12 +970,12 @@ lemma contr_tensor_eq {n : ℕ} {c : Fin n.succ.succ → S.C} {T1 T2 : TensorTre
   rw [h]
 \end{code}
 These lemmas allow us to navigate to the certain places in tensor trees and replace 
-subtrees with other subtrees. We will see this used exensively in the examples. 
+subtrees with other subtrees. We will see this used extensively in the examples. 
 
 \subsection{Syntax and their map to tensor trees}
 
 
-We now dicuss how we make the Lean code look similar to what we would use on pen-and-paper physics. 
+We now discuss how we make the Lean code look similar to what we would use on pen-and-paper physics. 
 
 This is done using a two-step process. Firstly, we define syntax for tensor expressions. 
 Then we write code, called elaboration, to turn this syntax into a tensor tree. This process is not formally defined or 
@@ -1021,7 +1021,7 @@ For the group action of $g\in G$ on a tensor $T$ we have:
 The product of two tensors is also fairly simple, with us having: 
 \syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | σ\}ᵀ!}{\lstinline!prod (tensorNode T) (tensorNode T2)!}
 
-The syntax for contraction is as one expect, 
+The syntax for contraction is: 
 \syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | ν σ\}ᵀ!}{\lstinline!contr 1 1 rfl (prod (tensorNode T) (tensorNode T2))!}
 On the RHS here the first argument (\lstinline!1!) of \lstinline!contr! is the index of the first \lstinline|ν| on the LHS, 
 the second argument  (also \lstinline!1!) is the second index. The \lstinline!rfl! is a proof that the
@@ -1451,11 +1451,11 @@ def pauliCoDown := {pauliCo | μ α β ⊗ εL' | α α' ⊗ εR' | β β'}ᵀ.t
 def pauliContrDown := {pauliContr | μ α β ⊗ εL' | α α' ⊗ εR' | β β'}ᵀ.tensor
 \end{code}
 The first of these definitions depends on \lstinline|PauliMatrix.asConsTensor| which is defined 
-using an explcit basis expansion as a map \lstinline|𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexContr ⊗ Fermion.leftHanded ⊗ Fermion.rightHanded |, which Lean 
+using an explicit basis expansion as a map \lstinline|𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexContr ⊗ Fermion.leftHanded ⊗ Fermion.rightHanded |, which Lean 
 knows how to treat as a tensor. Here \lstinline|complexContr| is the representation of complex Lorentz vectors 
 under $SL(2, \mathbb{C})$.
 
-In these expressions we have the appearence of metrics \lstinline|η'| is the metric usually written as 
+In these expressions we have the appearance of metrics \lstinline|η'| is the metric usually written as 
 $\eta_{\mu \nu}$, \lstinline|η| the metric $\eta^{\mu \nu}$, \lstinline|εL'| the  metric 
 $\epsilon_{\alpha \alpha'}$, and \lstinline|εR'| the metric $\epsilon_{\dot \beta \dot \beta'}$.
 
@@ -1494,7 +1494,7 @@ theorem pauliCo_contr_pauliContr :
     {pauliCo | ν α β ⊗ pauliContr | ν α' β' = 2 •ₜ εL | α α' ⊗ εR | β β'}ᵀ := by
 \end{code}
 We do not give the proofs of these lemmas explicitly. 
-The former, however, is a fairly simple application of  associativity of the tensor product, and appropratly shuffling 
+The former, however, is a fairly simple application of  associativity of the tensor product, and appropriately shuffling 
 around of the contractions. 
 
 \section{Future work} \label{sec:future}
@@ -1525,7 +1525,7 @@ First, we could incorporate the spinor-helicity formalism, which is used in the 
 amplitudes. Second, we could extend our approach to encompass tensor \emph{fields}, their derivatives
 etc. We do not anticipate any insurmountable challenges in pursuing these extensions. 
 They represent promising avenues for future research and have the potential to significantly enhance
-the utility of formal methods in physics. sdfljk
+the utility of formal methods in physics.
 \section*{Acknowledgments}
 \js{Fill in}
 
