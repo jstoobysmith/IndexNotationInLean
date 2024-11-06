@@ -782,7 +782,7 @@ def TensorTree.tensor {n : ℕ} {c : Fin n → S.C} : TensorTree S c → S.F.obj
   | eval i e t => (S.evalMap i (Fin.ofNat' _ e)) t.tensor
 \end{code}
 
-Let us now dicuss each of the constructors in turn, after which we will give some examples 
+Let us now discuss each of the constructors in turn, after which we will give some examples 
 tensor trees.  
 
 \paragraph{tensorNode:} The constructor \lstinline|tensorNode| based on \lstinline|c|
@@ -790,7 +790,7 @@ creates a tensor tree from a tensor \lstinline|t| in \lstinline|S.F.obj (OverCol
 This tensor tree consists of a single node that directly represents the tensor. 
 Since all other tensor tree constructors require an existing tensor tree as input, 
 \lstinline|tensorNode| serves as the foundational base case for building more complex trees. 
-Diagramatically, such a tree is 
+As a diagram such a tree is 
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|t|};
@@ -801,7 +801,7 @@ Naturally, the tensor associated with this node is exactly the tensor provided d
 \paragraph{smul:} The constructor smul takes a scalar \lstinline|a| and an existing tensor tree 
 \lstinline|t| based on \lstinline|c| and constructs a new tensor tree also based on \lstinline|c|. Conceptually, this new tree has a root node labeled 
 \lstinline|smul a|, with the tensor tree 
-\lstinline|t| as its child. Diagramatically, such a tree is 
+\lstinline|t| as its child. As a diagram such a tree is 
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|smul a|};
@@ -815,7 +815,7 @@ The tensor associated with this new tree is obtained by multiplying the tensor a
 \paragraph{neg:} The constructor \lstinline|neg| takes an existing tensor tree \lstinline|t|
  based on \lstinline|c| and constructs a new tensor tree also based on \lstinline|c|.
 This new tree has a root node labeled \lstinline|neg|, with the tensor tree \lstinline|t| as its child.
-Diagramatically, we have 
+As a diagram, we have 
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|neg|};
@@ -829,7 +829,7 @@ The tensor associated with this new tree is obtained by negating the tensor asso
 \paragraph{add:} 
 The constructor \lstinline|add| takes two existing tensor trees \lstinline|t1| and \lstinline|t2|, based on the same \lstinline|c|, and 
 constructs a new tensor tree. This new tree has a root node labeled \lstinline|add|, with the tensor trees \lstinline|t1| and \lstinline|t2| as its children.
-Diagramatically, this corresponds to 
+As a diagram, this corresponds to 
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|add|};
@@ -844,7 +844,7 @@ The tensor associated with this new tree is obtained by adding the tensors assoc
 \paragraph{action:}
 The constructor \lstinline|action| takes a group element \lstinline|g| of \lstinline|S.G|, an existing tensor tree \lstinline|t| based on \lstinline|c|, and constructs a new tensor tree also based on \lstinline|c|.
 This new tree has a root node labeled \lstinline|action g|, with the tensor tree \lstinline|t| as its child.
-Diagramatically, 
+As a diagram, 
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|action g|};
@@ -858,7 +858,7 @@ The tensor associated with this new tree is obtained by acting on the tensor ass
 The constructor \lstinline|perm| takes a morphism \lstinline|σ| from \lstinline|c| to \lstinline|c1| in \lstinline|OverColor S.C| and 
   an existing tensor tree \lstinline|t| based on \lstinline|c|, and constructs a new tensor tree based on \lstinline|c1|.
 This new tree has a root node labeled \lstinline|perm σ|, with the tensor tree \lstinline|t| as its child.
-Diagramatically, this is given by: 
+As a diagram, this is given by: 
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|perm σ|};
@@ -874,7 +874,7 @@ The constructor \lstinline|prod| takes two existing tensor trees \lstinline|t| b
 based on \lstinline|Sum.elim c c1 ∘ finSumFinEquiv.symm| which is the map from \lstinline|Fin (n + n1)| 
 acting via \lstinline|c i| on $i=0, \ldots, n-1$ and via \lstinline|c1 (i - n)| on $i = n, \ldots, n + n1 -1$.
 This new tree has a root node labeled \lstinline|prod|, with the tensor trees \lstinline|t| and \lstinline|t1| as its children.
-Diagramatically, this is given by
+As a diagram, this is given by
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|prod|};
@@ -903,7 +903,7 @@ Note that we use a \lstinline|j| in \lstinline|Fin n.succ| and \lstinline|i.succ
 of another index in  \lstinline|Fin n.succ.succ| to ensure the two indices to be contracted are not the same. 
 The constructor outputs a new tensor tree based on \lstinline|c ∘ i.succAbove ∘ j.succAbove|. 
 This new tree has a root node labeled \lstinline|contr i j|, with the tensor tree \lstinline|t| as its child.
-Diagramatically, 
+As a diagram, 
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|contr i j|};
@@ -929,7 +929,7 @@ The final constructor \lstinline|eval| takes an existing tensor tree \lstinline|
 an \lstinline|i| of type \lstinline|Fin n.succ|, and a natural number $x$.  
 The constructor outputs a new tensor tree based on \lstinline|c ∘ Fin.succAbove i|.
 This new tree has a root node labeled \lstinline|eval i x|, with the tensor tree \lstinline|t| as its child.
-Diagramatically, this corresponds to 
+As a diagram, this corresponds to 
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|eval i x|};
@@ -979,7 +979,7 @@ We now dicuss how we make the Lean code look similar to what we would use on pen
 
 This is done using a two-step process. Firstly, we define syntax for tensor expressions. 
 Then we write code, called elaboration, to turn this syntax into a tensor tree. This process is not formally defined or 
-verified, Lean takes the outputed tensor tree as the formal object to work with.
+verified, Lean takes the output tensor tree as the formal object to work with.
 
 Instead of delving into the nitty-gritty details of how this process works under the hood, 
 we give some examples to see how it works. 
