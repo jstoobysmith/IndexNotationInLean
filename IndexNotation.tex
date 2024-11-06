@@ -280,7 +280,8 @@ Previous implementations of index notation have been made in programming languag
  notation, necessitating (what we believe is) a novel solution.
 
 In Section~\ref{sec:Implementation} of this paper, we will discuss the details of our implementation. 
-In Section~\ref{sec:examples} we will give two examples of definitions, theorems and proofs using index notation.
+In Section~\ref{sec:examples} we will give two examples of definitions, theorems and proofs using index notation, 
+to give the reader an idea of how our implementation works in practice.
 The first of these examples involves a lemma regarding the contraction of indices of symmetric and anti-symmetric tensors. 
 The second involves examples related to the Pauli matrices and bispinors. 
 We finish this paper in Section~\ref{sec:future} by discussing potential future work related to this project.
@@ -323,7 +324,9 @@ expressions and maps between them. This is illustrated in Figure~\ref{fig:overvi
 The first representation is \emph{syntax}. This can (roughly) be thought of as the informal string
 that represents the tensor expression. It is what the user interacts with when 
 writing results in Lean, and what appears in raw Lean files. The code snippet above, 
-for Pauli matrices is an example of syntax. 
+for Pauli matrices is an example of syntax.\footnote{In practice there is a representation before syntax, 
+ which is as a sequence of tokens in file which is parsed by Lean into a more structured syntax. For simplicity,
+ we think of these representations as the same here.} 
 
 The second representation of a tensor expression is a \emph{tensor tree}. This representaiton is 
 mathematically formal, but easy to use and manipulate. 
@@ -1503,7 +1506,10 @@ informal_lemma coBispinorUp_eq_metric_contr_coBispinorDown where
   proof :≈ "Expand `coBispinorDown` and use fact that metrics contract to the identity."
   deps :≈ [``coBispinorUp, ``coBispinorDown, ``leftMetric, ``rightMetric]
 \end{code}
-We hope others — or even automated systems — will formalize these informal lemmas in the future.
+These informal lemmas are written in strings, and are not type checked.
+They also include dependencies indicating what definitions and lemmas we expect to be used in their statement or proof.
+They are intended to be a guide for future formalization efforts, either by humans or 
+automated.
 
 As demonstrated in our earlier examples, manipulating tensor expressions can involve tedious
  calculations, especially when dealing with directly with tensor trees. 
