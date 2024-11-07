@@ -17,4 +17,6 @@ This paper introduces the first formally verified implementation of index notati
 interactive theorem prover Lean 4. By integrating index notation into Lean, we bridge the gap between 
 traditional physics notation and formal verification tools, 
 making it more accessible for physicists to write and prove results within Lean.
-In the background, our implementation leverages a novel application of category theory.
+We also open up a new avenue through which AI tools can be used to proof results
+related to tensors in physics.
+Behind-the-scenes our implementation leverages a novel application of category theory.

@@ -235,7 +235,9 @@ This paper introduces the first formally verified implementation of index notati
 interactive theorem prover Lean 4. By integrating index notation into Lean, we bridge the gap between 
 traditional physics notation and formal verification tools, 
 making it more accessible for physicists to write and prove results within Lean.
-In the background, our implementation leverages a novel application of category theory.
+We also open up a new avenue through which AI tools can be used to proof results
+related to tensors in physics.
+Behind-the-scenes our implementation leverages a novel application of category theory.
 \end{abstract}
 
 \section{Introduction}
@@ -247,15 +249,15 @@ Lean is a
 programming language with syntax resembling traditional pen-and-paper mathematics. 
 Users can write definitions, theorems, and proofs in Lean,
 which are then automatically checked for correctness using dependent-type theory.
-The HepLean project is driven by four primary motivations: to facilitate easier look-up of results
- through a linear storage of information; to support the creation and proof of new results using 
- automated tactics and AI tools; to facilitate correctness checking of result in high energy physics; 
- and to introduce new pedagogical methods for high-energy physics and computer science.
+The HepLean project is driven by four primary motivations: (1) to facilitate easier look-up of results
+ through a linear storage of information; (2) to support the creation and proof of new results using 
+ automated tactics and AI tools; (3) to facilitate checking of result in high energy physics for correctness; 
+ and (4) to introduce new pedagogical methods for high-energy physics and computer science.
 
 HepLean is part of a broader movement of projects
 to formalize parts, or all, of 
 mathematics and science. The largest of these projects is Mathlib~\cite{mathlib}, which aims to formalize
-mathematics. Indeed, HepLean uses many results from Mathlib, and is built downstream thereof.
+mathematics. Indeed, HepLean uses many results from Mathlib, and has Mathlib as an import.
 Other projects in mathematics include the ongoing effort led by Kevin Buzzard to formalize the proof of Fermat's
 Last Theorem into Lean~\cite{FLT}. 
 In the realm of the sciences, the paper~\cite{josephson} looks at absorption theory, thermodynamics, and kinematics in Lean, 
@@ -268,27 +270,27 @@ Among these index notation is particularly prevalent,
 
 Having a way to use index notation in Lean is crucial for the digitalisation of 
 results from high energy physics. 
-As well as, making results from high energy physics easier to write and prove in Lean, 
+In addition to making results from high energy physics easier to write and prove in Lean, 
 it will make the syntax more familiar to high energy physicists.
-However, there are challenges in implementing index notation in Lean.
-Namely th need for a formal and rigorous implementation that is also easy and nice to use. 
-Such an implementation can now be found as part of HepLean 
+However, there are challenges in implementing index notation in Lean,
+namely, the need for a formal and rigorous implementation that is also easy and nice to use. 
+Such an implementation can now be found as part of HepLean:
 \begin{center}
 \url{https://heplean.github.io/HepLean/}
 \end{center}
 and is the subject of this paper.
 We hope that the implementation presented here will
-not only enhances usability of Lean but also promotes the adoption of formal methods in the 
+not only enhance usability of Lean but also promotes the adoption of formal methods in the 
 physics community.
 
-The up-shot is that, for example, in our implementation the result regarding Pauli matrices 
+To give an example of the up-shot of our implementation, the result regarding Pauli matrices
 that $\sigma^{\nu \alpha \dot \beta}\sigma_\nu^{ \alpha' \dot \beta'} = 2 \epsilon^{\alpha \alpha'}\epsilon^{\beta \beta'}$ 
 is written in Lean as follows
 \begin{code}
 {pauliCo | ν α β ⊗ pauliContr | ν α' β' = 2 •ₜ εL | α α' ⊗ εR | β β'}ᵀ
 \end{code}
 Lean will correctly interpret this result as a tensor expression with the correct contraction of indices 
-and permutation of indices between the sides of the expression.
+and permutation of indices between each side of the expression.
 
 Previous implementations of index notation have been made in programming languages like Haskell~\cite{haskellPaper}. However, the programs they appear in do not
  provide the formal verification capabilities inherent in Lean. 
@@ -296,7 +298,7 @@ Previous implementations of index notation have been made in programming languag
  notation, necessitating (what we believe is) a novel solution.
 
 In Section~\ref{sec:Implementation} of this paper, we will discuss the details of our implementation. 
-In Section~\ref{sec:examples} we will give two examples of definitions, theorems and proofs in Lean using index notation, 
+In Section~\ref{sec:examples} we will give two examples of definitions, theorems and proofs in Lean using index notation 
 to give the reader an idea of how our implementation works in practice.
 The first of these examples involves a lemma regarding the contraction of indices of symmetric and antisymmetric tensors. 
 The second involves examples related to the Pauli matrices and bispinors. 
@@ -341,8 +343,9 @@ expressions and maps between them. This is illustrated in Figure~\ref{fig:overvi
 
 The first representation is \emph{syntax}. This can (roughly) be thought of as the informal string
 that represents the tensor expression. It is what the user interacts with when 
-writing results in Lean, and what appears in raw Lean files. The code snippet above, 
-for Pauli matrices is an example of syntax.\footnote{In practice there is a representation before syntax, 
+writing results in Lean, and what appears in raw Lean files. 
+An example of syntax is given in the the code snippet we gave above 
+for Pauli matrices.\footnote{In practice there is a representation before syntax, 
  which is as a sequence of tokens in file which is parsed by Lean into a more structured syntax. For simplicity,
  we think of these representations as the same here.} 
 
@@ -361,8 +364,9 @@ we lose the structure of the tensor expression itself, making it difficult to wo
 The process of going from a tensor tree to a tensor involves properties from a symmetric monoidal 
 category of representations. 
 
-Before we discuss these processes in more detail we do some set-up by defining formally a 
-`tensor species'. 
+Throughout our discussion we will need the notion of a `tensor species'.
+Thus, we first give formal definition of this, before discussing each of the above 
+representations and the processes between them in more detail.
 
 \subsection{Tensor Species}
 
@@ -442,7 +446,7 @@ structure TensorSpecies where
     = (unit.app (Discrete.mk c)).hom (1 : k)
 \end{codeLong}
 
-Let us go through this definition piece by piece.
+Let us work through through this definition piece by piece.
 The first part of the definition of a tensor species is a type \myinline|k| 
 which is a commutative ring via \myinline|k_commRing|. 
 For a given \myinline|S : TensorSpecies|, we retrieve \myinline|k| and all of the 
@@ -470,9 +474,12 @@ Colors can be thought of as labels for each of the building
 block representations making up the tensor species.  This is made formal by the
 next part of the definition of a tensor species, a functor 
 \myinline|FD| from the discrete category formed by \myinline|C| to 
-the category of representations of \myinline|G| over \myinline|k|. This functor assigns to each color a representation of \myinline|G| over \myinline|k|.
+the category of representations of \myinline|G| over \myinline|k|, \lstinline|Rep k G|.
+The category  \lstinline|Rep k G| and its properties are defined in Mathlib, along 
+with the necessary category theory we use in this paper.
+The functor \myinline|FD| assigns to each color a representation of \myinline|G| over \myinline|k|.
 Note that for \myinline|c : C| to apply \myinline|FD| we have to write 
-\myinline|FD.obj (Discrete.mk c)| in Lean. This is somewhat cumbersome, so in what 
+\myinline|FD.obj (Discrete.mk c)| in Lean. This is somewhat cumbersome, hence in what 
 follows we will abbreviate this to \myinline|FD c|.
 For complex Lorentz tensors, the functor \myinline|complexLorentzTensor.FD| is defined as:
 \begin{code}
@@ -542,13 +549,13 @@ def leftHanded : Rep ℂ SL(2,ℂ) := Rep.of {
     simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearEquiv.apply_symm_apply,
       mulVec_mulVec]}
 \end{codeLong} 
-where we have added some explanatory comments to this code, not seen in the actual Lean code, to give 
+We have added some explanatory comments to this code, not seen in the actual Lean code, to give 
 the reader an idea of what each part does. Note that the \myinline|Fermion.| part of the name 
-of \myinline|Fermion.leftHanded| is dropped in this definition, this is because it is inherented from 
+of \myinline|Fermion.leftHanded| is dropped in this definition, as it is inherited from 
 the Lean namespace in which the definition is made.
 
-The next part of the definition of a tensor species is the map \myinline|repDim|, which assigns to each color a natural number,
-which corresponds to the dimension of the representation associated to that color. The condition is placed on the representations that they are non-empty, i.e., 
+The next part of the definition of a tensor species is the map \myinline|repDim|, which assigns to each color a natural number
+corresponding to the dimension of the representation associated to that color. The condition is placed on the representations that they are non-empty, i.e., 
 that the dimension is not equal to zero \myinline|repDim_neZero|.  
 The \myinline|basis| part of the definition of a tensor species gives a basis indexed by \myinline|Fin (repDim c)| 
 (numbers from \myinline|0| to \myinline|repDim c - 1|)  of each representation for each \myinline|c : C|.  
@@ -558,7 +565,7 @@ these are the standard basis for Lorentz vectors and Weyl-fermions.
 Next in the definition of a  tensor species is the map 
 \myinline|τ|, which is an involution via \myinline|τ_involution|.
 This assigns to each color its `dual' corresponding to the color it can be contracted with. So, for complex Lorentz tensors 
-the map \myinline|τ| is given by 
+the map \myinline|τ| is given by: 
 \begin{code} 
 τ := fun c =>
   match c with
@@ -571,7 +578,7 @@ the map \myinline|τ| is given by
 \end{code}
 
 The contraction itself is defined in a tensor species by \myinline|contr|, which is a natural transformation from the functor 
-\myinline|FD _ ⊗ FD (τ _)|, to the functor \myinline|𝟙_ (Discrete C ⥤ Rep k G)| takes every object in \myinline|C| to the trivial representation 
+\myinline|FD _ ⊗ FD (τ _)|, to the constant functor \myinline|𝟙_ (Discrete C ⥤ Rep k G)| which takes every object in \myinline|C| to the trivial representation 
 \myinline|𝟙_ (Rep k G)|. 
 This natural transformation is simply the assignment to each color \myinline|c| a linear-map from 
 \myinline|FD c ⊗ FD (τ c)| to \myinline|k| which is equivariant with respect to the group action. 
@@ -601,7 +608,7 @@ which corresponds to the commutative diagram
 where \myinline|β_| is the braiding of the symmetric monoidal category, and \myinline|e c| is shorthand for the isomorphism
 in \myinline|Discrete S.C| between \myinline|c| and \myinline|τ (τ c)|, which exists since \myinline|τ| is an involution.
 
-\sloppy Along with the contraction the definition of a tensor species includes the \myinline|unit|, along with its own symmetry condition 
+\sloppy Along with the contraction, the definition of a tensor species includes the \myinline|unit|, along with its own symmetry condition 
 \myinline|unit_symm|. The unit is a natural transformation from the functor \myinline|𝟙_ (Discrete C ⥤ Rep k G)| to 
 \myinline|FD (τ _) ⊗ FD _|. This is the assignment to each color \myinline|c| an object of 
 \myinline|FD (τ c) ⊗ FD c| which is invariant with respect to the group action. 
@@ -627,8 +634,8 @@ The symmetry condition \myinline|unit_symm| is represented by the commutative di
     \node at ($(C)!0.5!(D)$) [below] {\lstinline|β_|};
   \end{tikzpicture}
 \end{equation}
-The unit is actually a unit in the sense that contraction with it does nothing. This is made formal with the condition 
-\myinline|contr_unit|, which is corresponds to the diagram 
+The next condition, \myinline|contr_unit|, makes formal the statement that contraction with the 
+unit does nothing. It corresponds to the diagram 
 \begin{equation}
   \begin{tikzpicture}[>=stealth, node distance=2cm and 2.5cm] % Adjusted node distance here
     % Define the nodes with relative positioning
@@ -697,10 +704,10 @@ corresponds to the diagram
   \end{tikzpicture}
 \end{equation}
 
-For complex Lorentz tensors, the contraction is defined through the dot product, 
-in the sense that, e.g., the contraction of $\psi^\mu$ and $\phi_\mu$ is via dot product of the underlying vectors.
+For complex Lorentz tensors, the contraction is defined through the dot product,
+e.g., the contraction of $\psi^\mu$ and $\phi_\mu$ is via dot product of the underlying vectors.
 The metric is defined through the Minkowski metric and the metric tensors e.g. $\epsilon^{\alpha \dot \alpha}$
-for Weyl fermions. Lastly ,the units are defined through identity matrices. 
+for Weyl fermions. Lastly,the units are defined through identity matrices. 
 
 \subsection{Tensors} 
 
@@ -710,7 +717,7 @@ Objects are functions \myinline|f : X → C| for some type \myinline|X|. A morph
 \myinline|φ : X → Y| such that \myinline|f = g ∘ φ|. This category is equivalent to the core of the
 category of types sliced over \myinline|C|. 
 
-The category \myinline|OverColor C| is not any old category, it carries a symmetric monoidal structure,
+The category \myinline|OverColor C| carries a symmetric monoidal structure,
 which we will denote \myinline|⊗|. The structure such that \myinline|f ⊗ g| for objects \myinline|f| and \myinline|g|
 is the induced map \myinline|X ⊕ Y → C| where \myinline|⊕| denotes the disjoint union of types.
 In Lean this is denoted \myinline|Sum.elim f g|. 
@@ -735,7 +742,7 @@ def F  (S : TensorSpecies) : BraidedFunctor (OverColor S.C) (Rep S.k S.G) :=
 
 We can think of an object \myinline|f : X → S.C| of \myinline|OverColor S.C| as a type of indices \myinline|X|,
 and a specification of what color or representation each index is associated to. 
-For example for the tensor $\phi^{\mu}_{\phantom{\mu}\nu}$ would have \myinline|X| as the type of indices which, since there are two of them, 
+For example, for the tensor $\phi^{\mu}_{\phantom{\mu}\nu}$ would have \myinline|X| as the type of indices which, since there are two of them, 
 is \myinline|Fin 2|, and \myinline|f| as the function which assigns to each index the color of the index, 
 so \myinline|f 0| would be \myinline|Color.up|, and \myinline|f 1| would be \myinline|Color.down|. 
 We can apply the functor \myinline|S.F| to \myinline|f : X → S.C| in Lean as follows 
@@ -748,8 +755,7 @@ With this in mind, we define a general tensor of a species \myinline|S| as a vec
 \myinline|S.F f| for some \myinline|f : OverColor S.C|. 
 
 In physics, we typically focus on objects \myinline|f : X → S.C| of \myinline|OverColor S.C|  where \myinline|X| is a 
-finite type of the form \myinline|Fin n| for some \myinline|n : ℕ|. 
-This is like in our example above. In most of what follows, 
+finite type of the form \myinline|Fin n| for some \myinline|n : ℕ|. In most of what follows, 
 we will restrict to these objects.
 
 \subsection{Tensor Trees and their map to tensors}
@@ -792,10 +798,10 @@ inductive TensorTree (S : TensorSpecies) : {n : ℕ} → (Fin n → S.C) → Typ
     TensorTree S (c ∘ Fin.succAbove i)
 \end{codeLong}
 Each constructor here, e.g. \myinline|tensorNode|, \myinline|smul|, \myinline|neg|, etc., can 
-be thought of a forming a different type of node in a tensor tree.
+be thought of as forming a different type of node in a tensor tree.
 
 Since the interpretation of each of the constructors is down to how we turn them into a tensor,
-we discuss this before discussing each of the constructors in turn. The process 
+we discuss this before outlining each of the constructors in turn. The process 
 of going from a tensor tree to a tensor is proscribed by a function
 \myinline|TensorTree S c  → S.F c|, which is defined recursively as follows: 
 \begin{code}
@@ -820,7 +826,7 @@ creates a tensor tree based on \myinline|c| from a tensor \myinline|t| in \myinl
 This tensor tree consists of a single node that directly represents the tensor. 
 Since all other tensor tree constructors require an existing tensor tree as input, 
 \myinline|tensorNode| serves as the foundational base case for building more complex trees. 
-As a diagram such a tree is 
+As a diagram such a tree is:
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|t|};
@@ -832,7 +838,7 @@ as can be seen in \myinline|TensorTree.tensor|.
 \paragraph{smul:} The constructor smul takes a scalar \myinline|a| and an existing tensor tree 
 \myinline|t| based on \myinline|c| and constructs a new tensor tree also based on \myinline|c|. Conceptually, this new tree has a root node labeled 
 \myinline|smul a|, with the tensor tree 
-\myinline|t| as its child. As a diagram such a tree is 
+\myinline|t| as its child. As a diagram such a tree is:
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|smul a|};
@@ -846,7 +852,7 @@ The tensor associated with this new tree is obtained by multiplying the tensor a
 \paragraph{neg:} The constructor \myinline|neg| takes an existing tensor tree \myinline|t|
  based on \myinline|c| and constructs a new tensor tree also based on \myinline|c|.
 This new tree has a root node labeled \myinline|neg|, with the tensor tree \myinline|t| as its child.
-As a diagram, we have 
+As a diagram, we have:
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|neg|};
@@ -860,7 +866,7 @@ The tensor associated with this new tree is obtained by negating the tensor asso
 \paragraph{add:} 
 The constructor \myinline|add| takes two existing tensor trees \myinline|t1| and \myinline|t2|, based on the same \myinline|c|, and 
 constructs a new tensor tree. This new tree has a root node labeled \myinline|add|, with the tensor trees \myinline|t1| and \myinline|t2| as its children.
-As a diagram, this corresponds to 
+As a diagram, this corresponds to:
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|add|};
@@ -875,7 +881,7 @@ The tensor associated with this new tree is obtained by adding the tensors assoc
 \paragraph{action:}
 The constructor \myinline|action| takes a group element \myinline|g| of \myinline|S.G|, an existing tensor tree \myinline|t| based on \myinline|c|, and constructs a new tensor tree also based on \myinline|c|.
 This new tree has a root node labeled \myinline|action g|, with the tensor tree \myinline|t| as its child.
-As a diagram, 
+As a diagram:
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|action g|};
@@ -905,7 +911,7 @@ The constructor \myinline|prod| takes two existing tensor trees \myinline|t| bas
 based on \myinline|Sum.elim c c1 ∘ finSumFinEquiv.symm| which is the map from \myinline|Fin (n + n1)| 
 acting via \myinline|c i| on \myinline|0 ≤ i ≤ n -1|  and via \myinline|c1 (i - n)| on \myinline|n ≤ i ≤ (n + n1) - 1|.
 This new tree has a root node labeled \myinline|prod|, with the tensor trees \myinline|t| and \myinline|t1| as its children.
-As a diagram, this is given by
+As a diagram, this is given by:
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|prod|};
@@ -928,13 +934,13 @@ the successor of a natural number.
 It also takes,
 an \myinline|i| of type \myinline|Fin n.succ.succ|, \myinline|j| of type \myinline|Fin n.succ|
 and a proof that \myinline|c (i.succAbove j) = S.τ (c i)|, where \myinline|i.succAbove| is the map from \myinline|Fin n.succ| to \myinline|Fin n.succ.succ| with a hole at \myinline|i|. 
-The proof says that the color of the index \myinline|i.succAbove j| is the dual of the color of the index \myinline|i|, and thus that these 
+The proof says that the color of the index \myinline|i.succAbove j| is the dual of the color of the index \myinline|i|, and thus these 
 two indices can be contracted.
 Note that we use a \myinline|j| in \myinline|Fin n.succ| and \myinline|i.succAbove j| as the index to be contracted, instead 
 of another index in  \myinline|Fin n.succ.succ| to ensure the two indices to be contracted are not the same. 
 The constructor outputs a new tensor tree based on \myinline|c ∘ i.succAbove ∘ j.succAbove|. 
 This new tree has a root node labeled \myinline|contr i j|, with the tensor tree \myinline|t| as its child.
-As a diagram, 
+As a diagram:
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|contr i j|};
@@ -960,7 +966,7 @@ The final constructor \myinline|eval| takes an existing tensor tree \myinline|t|
 an \myinline|i| of type \myinline|Fin n.succ|, and a natural number $x$.  
 The constructor outputs a new tensor tree based on \myinline|c ∘ Fin.succAbove i|.
 This new tree has a root node labeled \myinline|eval i x|, with the tensor tree \myinline|t| as its child.
-As a diagram, this corresponds to 
+As a diagram, this corresponds to:
 \tensorTree{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {\lstinline|eval i x|};
@@ -976,21 +982,21 @@ in \myinline|OverColor C| to extract \myinline|i| from \myinline|c|, and
 then using the tensorator of \myinline|S.F|.
 Using the evaluation for \myinline|c i| at the basis element indicated by \myinline|x| (if \myinline|x| is too big a natural number for the number of basis elements it defaults to \myinline|0|), we then get a vector in
 \myinline|𝟙 ⊗ S.F (c ∘ Fin.succAbove i)|.
-This mapping should be thought of as occurring in the  category of modules over \myinline|S.k|, rather then in 
+This mapping should be thought of as occurring in the  category of modules over \myinline|S.k|, rather than in 
 \myinline|Rep S.G S.k|, since the evaluation is not invariant under the group action.
 We then finally map into \myinline|S.F (c ∘ Fin.succAbove i)| 
 using the left-unitor. This is all contained within the \myinline|S.evalMap| appearing in the definition of
 function \myinline|TensorTree.tensor|.
 
-The main reason tensor trees are nice to work with is that they have the following property: 
+The main reason tensor trees are easy to work with is the following. 
 Define a subtree of a tensor trees 
 to be a node and all child nodes of that node. 
 If \myinline|t| is a tensor tree and \myinline|s| a subtree of \myinline|t|, we can replace  \myinline|s| in \myinline|t| 
 with another tensor tree \myinline|s'|
 to get a new overall tensor-tree \myinline|t'|. If \myinline|s| and \myinline|s'| have the same underlying tensor, 
-then \myinline|t| and \myinline|t'| will. 
+then \myinline|t| and \myinline|t'| will also. 
 
-In Lean this property manifests in a series of lemmas. For instance, for instance 
+In Lean this property manifests in a series of lemmas. For instance,
 for the \myinline|contr| constructor we have the lemma: 
 \begin{code}
 lemma contr_tensor_eq {n : ℕ} {c : Fin n.succ.succ → S.C} {T1 T2 : TensorTree S c}
@@ -1000,25 +1006,23 @@ lemma contr_tensor_eq {n : ℕ} {c : Fin n.succ.succ → S.C} {T1 T2 : TensorTre
   simp only [Nat.succ_eq_add_one, contr_tensor]
   rw [h]
 \end{code}
-These lemmas allow us to navigate to the certain places in tensor trees and replace 
-subtrees with other subtrees. We will see this used extensively in the examples. 
+These lemmas allow us to navigate to certain places in tensor trees and replace 
+subtrees with other subtrees. We will see this used extensively in the examples in Section~\ref{sec:examples}. 
 
 \subsection{Syntax and their map to tensor trees}
 
+Syntax allows index notation in Lean code to look similar to 
+pen-and-paper index notation. 
+The syntax is turned into a tensor tree through a process called elaboration. 
+Although, elaboration is not formally-verified in Lean, the tensor tree it outputs is.
 
-We now discuss how we make the Lean code look similar to what we would use on pen-and-paper physics. 
-
-This is done using a two-step process. Firstly, we define syntax for tensor expressions. 
-Then we write code, called elaboration, to turn this syntax into a tensor tree. This process is not formally defined or 
-verified, Lean takes the output tensor tree as the formal object to work with.
-
-Instead of delving into the nitty-gritty details of how this process works under the hood, 
-we give some examples to see how it works. 
+Instead of delving into the finer details of this process, 
+we give illustrative examples. 
 
 In what follows we will assume that \myinline|T|, \myinline|T1|, etc are tensors defined as 
 elements of \myinline|S.F c|, \myinline|S.F c1|, etc for 
 some tensor species \myinline|S| and some \myinline|c : Fin n → S.C|, \myinline|c1 : Fin n1 → S.C|, etc 
-for which the below expressions make sense.
+for which the expressions below make sense.
 
 The syntax allows us to write the following 
 \syntaxElab{\lstinline!\{T | μ ν\}ᵀ!}{{\lstinline!tensorNode T!}}
@@ -1027,17 +1031,18 @@ matter what we call them - Lean will elaborate the expression in the same way.
 The elaborator also knows how many indices to expect for a tensor \myinline|T| and will raise an error if
 the wrong number are given. The \myinline|{_}ᵀ| notation is used to tell Lean that the syntax
 is to be treated as a tensor expression. Throughout this section we will use the two-sided boxes 
-given above, which on the left denote the syntax and on the right the expression it is elaborated to. 
+given above, which denote the syntax on the left and the expression it is elaborated to on the right. 
 
 We can write e.g.,
 \syntaxElab{\lstinline!\{T | μ ν\}ᵀ.tensor!}{{\lstinline!(tensorNode T).tensor!}}
-to get the underlying tensor. We get this notation for free from the way \myinline|TensorTree.tensor|
+to get the underlying tensor. We get this notation from the way \myinline|TensorTree.tensor|
 is defined with the prefix \myinline|TensorTree.|.
 
-Note that we do not have indicex which are upper or lower, as one would expect from pen-and-paper notation.
-There is one primary reason for this, whether an index is upper or lower does not carry any information, 
+Note that we do not have indices which are upper or lower as one would expect from pen-and-paper notation
+ (e.g., $\eta^\mu_{\phantom{\mu}\nu}$).
+There is one primary reason for this; whether an index is upper or lower does not carry any information, 
 since this information comes from the tensor itself. Also, for something like complex Lorentz tensors, 
-there are at three different types of upper-index, so such notation would be complicated. 
+there are three different types of upper-index, so such notation would be complicated. 
 
 If we want to evaluate an index we can put an explicit index in place of $\mu$ or $\nu$ above, 
 for example:
@@ -1055,19 +1060,19 @@ The product of two tensors is also fairly similar, with us having:
 
 The syntax for contraction is: 
 \syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | ν σ\}ᵀ!}{\lstinline!contr 1 1 rfl (prod (tensorNode T) (tensorNode T2))!}
-On the RHS here the first argument (\myinline!1!) of \myinline!contr! is the index of the first \myinline|ν| on the LHS, 
+On the right-hand side the first argument (\myinline!1!) of \myinline!contr! is the index of the first \myinline|ν| on the left-hand side, 
 the second argument  (also \myinline!1!) is the second index. The \myinline!rfl! is a proof that the
 colors of the two contracted indices are actually dual to one another. If they are not, this proof will 
 fail and the elaborator will complain. It will also complain if more than two indices are trying 
-to be contracted. Although, this depends on where exactly the indices sit in the expression. For example 
+to be contracted, although this depends on where exactly the indices sit in the expression, for example 
 \syntaxElab{\lstinline!\{T | μ ν ⊗ T2 | ν ν\}ᵀ!}{\lstinline!(prod (tensorNode T) (contr 0 0 rfl (tensorNode T2)))!}
-works fine because the inner contraction is done before the product. 
+works fine because the inner contraction is computed before the product. 
 
 We now turn to addition. Our syntax allows for e.g., \myinline!{T | μ ν + T2 | μ ν}ᵀ! and also 
-\myinline!{T | μ ν + T2 | ν μ}ᵀ!, provided of course that the indices are of the correct color (which Lean will check). 
-The elaborator handles both these cases, and generalizations thereof by adding a permutation node. Thus we have 
+\myinline!{T | μ ν + T2 | ν μ}ᵀ!, provided that the indices are of the correct color (which Lean will check). 
+The elaborator handles both these cases and generalizations thereof by adding a permutation node. Thus we have 
 \syntaxElab{\lstinline!\{T | μ ν + T2 | μ ν\}ᵀ!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
-where here the \myinline!_! is a placeholder for the permutation. For this case will the permutation will be the identity, but for 
+where the \myinline!_! is a placeholder for the permutation, something we will use frequently in what follows. For the case above the permutation will be the identity, but for 
 \syntaxElab{\lstinline!\{T | μ ν + T2 | ν μ\}ᵀ!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
 it will be the permutation for the two indices. 
 
@@ -1075,8 +1080,8 @@ Despite not forming part of a node in our tensor tree, we also give syntax for e
 This is done in a very similar way to addition, with the addition of a permutation node to account for
 e.g., expressions like $T_{\mu \nu} = T_{\nu \mu}$. 
 \syntaxElab{\lstinline!\{T | μ ν = T2 | ν μ\}ᵀ!}{\lstinline!(tensorNode T).tensor = (perm _ (tensorNode T2)).tensor!}
-Note the use of the \myinline!.tensor! to extract the tensor from the tensor tree, it does not really mean much 
-to ask for equality of the tensor trees themselves. 
+Note that in the elaborated expression we ask for equality of
+tensors through \myinline!.tensor!. Tensors are, after all, the objects we care about.
 
 With this syntax we can write complicated tensor expressions in a way close to pen-and-paper index notation. 
 We will see examples of this in the next section.
@@ -1084,10 +1089,10 @@ We will see examples of this in the next section.
 \section{Examples} \label{sec:examples}
 
 We give two examples in this section. The first example is a simple theorem involving index notation and 
-tensor trees. We will show here, in rather explicit detail, how we can manipulate tensor trees to solve 
+tensor trees. We will demonstrate, in rather explicit detail, how we can manipulate tensor trees to solve 
 such theorems. 
-The second example we shall give will show a number of definitions related to Pauli matrices and bispinors in HepLean concerning index notation.
-Here we will not give so much detail, the point rather being to show the reader the broad use of our 
+The second example we give will show a number of definitions related to Pauli matrices and bispinors in HepLean concerning index notation.
+Here we won't give as much detail, the point being to show the reader the broad use of our 
 construction. 
 
 \subsection{Example 1: Symmetric and antisymmetric tensor} \label{sec:exampleSymmAntiSymm}
@@ -1140,8 +1145,9 @@ we have
     \path [->] (E1) edge (F1);
   \end{tikzpicture} 
 }
-where by equality of tensor trees in the above diagram, we really mean equality 
-of the underlying tensors of those tensor trees. This will be left implicit throughout.  
+In the tensor-tree diagram on the right-hand side we implicitly mean 
+equality of the underlying tensors of the given trees. 
+This will be left implicit throughout.  
 
 Similarly, the parameter \myinline|hs| is stating that $S$ is symmetric. Expanded in terms of tree diagrams
 \proofstep{\lstinline!hS : \{S | μ ν = S | ν μ\}ᵀ!}{Description: The tensor \myinline|S|
@@ -1156,7 +1162,7 @@ Similarly, the parameter \myinline|hs| is stating that $S$ is symmetric. Expande
 }
 
 The line \myinline!{A | μ ν ⊗ S | μ ν = - A | μ ν ⊗ S | μ ν}ᵀ! is the statement we are trying to prove. 
-In terms of tree diagrams it says that 
+In terms of tree diagrams it says that:
 \begin{center}
   \fcolorbox{mycolor}{white}{
 \begin{tikzpicture}
@@ -1189,7 +1195,7 @@ The perm here actually does nothing, but is included by Lean.
 
 The lines of the proof in the \myinline|conv| block are manipulations of the tensor tree on the 
 LHS of the equation. The \myinline|rw| tactic is used to rewrite the tensor tree using the various lemmas. 
-We go through each step in turn. 
+We work through each step in turn. 
 \proofstep{\lstinline!rw [contr_tensor_eq <| contr_tensor_eq <| prod_tensor_eq_fst <| hA]!}{
   Description: Here
   \myinline|contr_tensor_eq| and \myinline|prod_tensor_eq_fst| navigate to the correct place in the tensor tree, 
@@ -1465,7 +1471,7 @@ helps Lean to understand that the two sides of the equation are equal.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Example 2: Pauli matrices and bispinors} \label{sec:examplePauliBispinor}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Using the formlism we have set up thus far it is possible to define Pauli matrices and bispinors 
+Using the formalism we have set up thus far, it is possible to define Pauli matrices and bispinors 
 as complex Lorentz tensors.
  
 The Pauli matrices appear in HepLean as follows:
@@ -1491,12 +1497,13 @@ which Lean
 knows how to treat as a tensor. Here \myinline|complexContr| is the representation of complex Lorentz vectors 
 under $SL(2, \mathbb{C})$ defined above as \myinline|Lorentz.complexContr|.
 
-In these expressions we have the appearance of metrics \myinline|η'| is the metric usually written as 
-$\eta_{\mu \nu}$, \myinline|η| the metric $\eta^{\mu \nu}$, \myinline|εL'| the  metric 
-$\epsilon_{\alpha \alpha'}$, and \myinline|εR'| the metric $\epsilon_{\dot \beta \dot \beta'}$.
+In these expressions we have the appearance of metrics. 
+The metric \myinline|η'| is what is usually denoted 
+$\eta_{\mu \nu}$, the metric \myinline|η| is what is usually denoted $\eta^{\mu \nu}$, the metric \myinline|εL'| is what is usually denoted 
+$\epsilon_{\alpha \alpha'}$, and the metric \myinline|εR'| is what is usually denoted $\epsilon_{\dot \beta \dot \beta'}$.
 
-With these we can also define bispinors 
-\begin{code}
+With these we can also define bispinors:
+\begin{codeLong}
 /-- A bispinor `pᵃᵃ` created from a lorentz vector `p^μ`. -/
 def contrBispinorUp (p : complexContr) :=
   {pauliCo | μ α β ⊗ p | μ}ᵀ.tensor
@@ -1511,12 +1518,12 @@ def coBispinorUp (p : complexCo) := {pauliContr | μ α β ⊗ p | μ}ᵀ.tensor
 /-- A bispinor `pₐₐ` created from a lorentz vector `p_μ`. -/
 def coBispinorDown (p : complexCo) :=
   {εL' | α α' ⊗ εR' | β β' ⊗ coBispinorUp p | α β}ᵀ.tensor
-\end{code}
+\end{codeLong}
 Here  \myinline|complexCo| corresponds to the representation of covariant complex Lorentz vectors, 
 defined above as \myinline|Lorentz.complexCo|.
 
 Using these definitions we can start to prove results about the pauli matrices and bispinors. 
-These proofs rely on essentially the sorts of manipulations in the last section, although in some cases 
+These proofs essentially rely on the sorts of manipulations in the last section, although in some cases 
 we expand tensors in terms of a basis and use rules about how the basis interacts with the operations in a tensor tree. 
 
 As an example, we prove the following lemmas
@@ -1531,14 +1538,14 @@ theorem pauliCo_contr_pauliContr :
     {pauliCo | ν α β ⊗ pauliContr | ν α' β' = 2 •ₜ εL | α α' ⊗ εR | β β'}ᵀ := by
 \end{code}
 We do not give the proofs of these lemmas explicitly. 
-The former, however, is a fairly simple application of  associativity of the tensor product, and appropriately shuffling 
+The former, however, is a fairly simple application of associativity of the tensor product, and shuffling 
 around of the contractions. 
 
 \section{Future work} \label{sec:future}
 The scale of formalizing all results regarding index notation is a task that surpasses 
 the capacity of any single individual. Inspired by the Lean community's 
 blueprint projects, we have added to HepLean informal lemmas related to index notation and tensors. 
-An example of such is 
+An example of such is: 
 \begin{code} 
 informal_lemma coBispinorUp_eq_metric_contr_coBispinorDown where
   math :≈ "{coBispinorUp p | α β = εL | α α' ⊗ εR | β β' ⊗ coBispinorDown p | α' β' }ᵀ"
@@ -1549,18 +1556,18 @@ These informal lemmas are written in strings, and are not type checked.
 They also include dependencies indicating what definitions and lemmas we expect to be used in their statement or proof.
 They are intended to be a guide for future formalization efforts, either by humans or 
 automated. All the informal lemmas and the related informal definitions which are in HepLean are 
-given on the HepLean website in a dependency graph, a screenshot of part of which is shown in Figure \ref{fig:informalLemmas}.
+given on the HepLean website in a dependency graph, part of which is shown in Figure \ref{fig:informalLemmas}.
 \begin{figure}
   \centering
   \includegraphics[width=0.6\textwidth]{informalLemmas.png}
   \caption{A screenshot of the informal dependency graph in HepLean. Gray nodes indicate informal results, whilst 
-  blue nodes results already formalised.}
+  blue nodes indicate results already formalised.}
   \label{fig:informalLemmas}
 \end{figure}
 
 As demonstrated in our earlier examples, manipulating tensor expressions can involve tedious
- calculations, especially when dealing with directly with tensor trees. 
-In the future, we intend to automate many of these routine steps by developing suitable tactics 
+ calculations, especially when dealing directly with tensor trees. 
+In future, we intend to automate many of these routine steps by developing suitable tactics 
 within Lean. We are optimistic that the structured nature of tensor trees will lend itself well to 
 such automation, thereby streamlining computations and enhancing the efficiency of formal proofs
 involving index notation and tensor species.
