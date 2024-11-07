@@ -220,7 +220,7 @@
 \newcommand{\Rep}[2]{\mathrm{Rep} \; #1 \; #2}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Title, author, date
-\title{Formally verified formalization of index notation in Lean 4}
+\title{Formalization of index notation in Lean 4}
 \author{Joseph Tooby-Smith \\ \textit{Reykjavik University, Reykjavik, Iceland}}
 \date{\today}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1546,8 +1546,8 @@ around of the contractions.
 
 \section{Future work} \label{sec:future}
 The scale of formalizing all results regarding index notation is a task that surpasses 
-the capacity of any single individual. Inspired by the Lean community's 
-blueprint projects, we have added to HepLean informal lemmas related to index notation and tensors. 
+the capacity of any single individual. Inspired by Lean
+blueprints~\cite{leanblueprint}, we have added to HepLean informal lemmas related to index notation and tensors. 
 An example of such is: 
 \begin{code} 
 informal_lemma coBispinorUp_eq_metric_contr_coBispinorDown where
@@ -1562,8 +1562,8 @@ automated. All the informal lemmas and the related informal definitions which ar
 given on the HepLean website in a dependency graph, part of which is shown in Figure \ref{fig:informalLemmas}.
 \begin{figure}
   \centering
-  \includegraphics[width=0.6\textwidth]{informalLemmas.png}
-  \caption{A screenshot of the informal dependency graph in HepLean. Gray nodes indicate informal results, whilst 
+  \includegraphics[width=\textwidth]{informalLemmas.png}
+  \caption{Part of the informal dependency graph in HepLean. Gray nodes indicate informal results, whilst 
   blue nodes indicate results already formalised.}
   \label{fig:informalLemmas}
 \end{figure}
@@ -1582,8 +1582,8 @@ etc. We do not anticipate any insurmountable challenges in pursuing these extens
 They represent promising avenues for future research and have the potential to significantly enhance
 the utility of formal methods in physics.
 \section*{Acknowledgments}
-I thank Tarmo Uustalu for helpful discussions related to this project.
-I also thank Jan Idziak, Tomas Skrivan, and Thomas Murrills for 
+I thank Sven Krippendorf, Andreas Schachner, and Tarmo Uustalu for helpful discussions related to this project.
+I also thank Jan Idziak,  Thomas Murrills, and Tomas Skrivan for 
 dicussions related to index notation near the start of this project. 
 I thank members of the Lean Zulip for answering my Lean related questions.
 

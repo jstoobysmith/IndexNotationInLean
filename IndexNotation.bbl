@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{HepLean}
 Joseph Tooby-Smith.
@@ -50,7 +50,7 @@ Jean-Philippe Bernardy and Patrik Jansson.
 \newblock {\em arXiv preprint arXiv:2312.02664}, 2023.
 
 \bibitem{JOYAL2011105}
-AndrÃ© Joyal and Joachim Kock.
+Andr\'{e} Joyal and Joachim Kock.
 \newblock Feynman graphs, and nerve theorem for compact symmetric
   multicategories (extended abstract).
 \newblock {\em Electronic Notes in Theoretical Computer Science},
@@ -66,5 +66,11 @@ AndrÃ© Joyal and Joachim Kock.
 Sophie Raynor.
 \newblock Graphical combinatorics and a distributive law for modular operads.
 \newblock {\em Advances in Mathematics}, 392:108011, 2021.
+
+\bibitem{leanblueprint}
+Patrick Massot.
+\newblock Lean blueprints.
+\newblock {\em GitHub repository}.
+\newblock URL: \url{https://github.com/PatrickMassot/leanblueprint}.
 
 \end{thebibliography}
