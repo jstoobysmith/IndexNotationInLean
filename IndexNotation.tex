@@ -13,6 +13,7 @@
 %Hyperlinks
 \usepackage{hyperref}
 \definecolor{mycolor}{RGB}{0,88,204}
+\definecolor{mydarkcolor}{RGB}{128, 0, 32}
 \hypersetup{
   colorlinks=true,
   linkcolor=mycolor,
@@ -285,7 +286,7 @@ physics community.
 
 To give an example of the up-shot of our implementation, the result regarding Pauli matrices
 that $\sigma^{\nu \alpha \dot \beta}\sigma_\nu^{ \alpha' \dot \beta'} = 2 \epsilon^{\alpha \alpha'}\epsilon^{\beta \beta'}$ 
-is written in Lean as follows
+is written in Lean as follows:
 \begin{code}
 {pauliCo | ν α β ⊗ pauliContr | ν α' β' = 2 •ₜ εL | α α' ⊗ εR | β β'}ᵀ
 \end{code}
@@ -462,7 +463,7 @@ which is a group via \myinline|G_group|. For complex Lorentz tensors,
 \myinline|complexLorentzTensor.G| is the group $SL(2, \mathbb{C})$.
 
 The next part of the definition is a type \myinline|C| which we call the type of colors.
-For complex Lorentz tensors, \myinline|complexLorentzTensor.C| is equal to the type
+For complex Lorentz tensors, \myinline|complexLorentzTensor.C| is equal to the type:
 \begin{code}
 inductive Color
   | upL : Color
@@ -586,7 +587,7 @@ The contraction itself is defined in a tensor species by \myinline|contr|, which
 This natural transformation is simply the assignment to each color \myinline|c| a linear-map from 
 \myinline|FD c ⊗ FD (τ c)| to \myinline|k| which is equivariant with respect to the group action. 
 This contraction cannot be defined arbitrarily, but must satisfy the symmetry condition \myinline|contr_tmul_symm|, 
-which corresponds to the commutative diagram 
+which corresponds to the commutative diagram: 
 \begin{equation}
   \begin{tikzpicture}[>=stealth, node distance=5cm]
     % Define the nodes
@@ -615,7 +616,7 @@ in \myinline|Discrete S.C| between \myinline|c| and \myinline|τ (τ c)|, which 
 \myinline|unit_symm|. The unit is a natural transformation from the functor \myinline|𝟙_ (Discrete C ⥤ Rep k G)| to 
 \myinline|FD (τ _) ⊗ FD _|. This is the assignment to each color \myinline|c| an object of 
 \myinline|FD (τ c) ⊗ FD c| which is invariant with respect to the group action. 
-The symmetry condition \myinline|unit_symm| is represented by the commutative diagram 
+The symmetry condition \myinline|unit_symm| is represented by the commutative diagram:
 \begin{equation}
   \begin{tikzpicture}[>=stealth, node distance=5cm]
     % Define the nodes
@@ -638,7 +639,7 @@ The symmetry condition \myinline|unit_symm| is represented by the commutative di
   \end{tikzpicture}
 \end{equation}
 The next condition, \myinline|contr_unit|, makes formal the statement that contraction with the 
-unit does nothing. It corresponds to the diagram 
+unit does nothing. It corresponds to the diagram: 
 \begin{equation}
   \begin{tikzpicture}[>=stealth, node distance=2cm and 2.5cm] % Adjusted node distance here
     % Define the nodes with relative positioning
@@ -672,7 +673,7 @@ The metric is a natural transformation from the functor \myinline|𝟙_ (Discret
 to the functor \myinline|FD _ ⊗ FD _|. It thus represents the assignment to each color \myinline|c| an object of
 \myinline|FD c ⊗ FD c| which is invariant with respect to the group action.
 The metric can be used to change an index into a dual index. The condition \myinline|contr_metric|
-corresponds to the diagram 
+corresponds to the diagram:
 \begin{equation}
   \begin{tikzpicture}[>=stealth, node distance=1.5cm and 1cm] % Adjusted node distance here
     % Define the nodes with relative positioning
@@ -730,7 +731,7 @@ to a symmetric monoidal functor from \myinline|OverColor S.C| to \myinline|Rep k
 Here the monoidal structure on \myinline|Rep k G| is the tensor product over \myinline|k|.
 This functor takes \myinline|f : X → S.C| to the tensor product over \myinline|k| of all \myinline|FD (f x)|,
 \myinline|⨂[k] x, S.FD (f x)|. 
-This construction is general and functorial, allowing us to define the functor 
+This construction is general and functorial, allowing us to define the functor: 
 \begin{code}
 def OverColor.lift : (Discrete S.C ⥤ Rep S.k S.G) ⥤ BraidedFunctor (OverColor S.C) (Rep S.k S.G) where ...
 \end{code}
@@ -1027,7 +1028,7 @@ elements of \myinline|S.F c|, \myinline|S.F c1|, etc for
 some tensor species \myinline|S| and some \myinline|c : Fin n → S.C|, \myinline|c1 : Fin n1 → S.C|, etc 
 for which the expressions below make sense.
 
-The syntax allows us to write the following 
+The syntax allows us to write the following:
 \syntaxElab{\lstinline!\{T | μ ν\}ᵀ!}{{\lstinline!tensorNode T!}}
 for a tensor node. Here the \myinline|μ| and \myinline|ν| are free variables and it does not 
 matter what we call them - Lean will elaborate the expression in the same way.
@@ -1036,7 +1037,7 @@ the wrong number are given. The \myinline|{_}ᵀ| notation is used to tell Lean 
 is to be treated as a tensor expression. Throughout this section we will use the two-sided boxes 
 given above, which denote the syntax on the left and the expression it is elaborated to on the right. 
 
-We can write e.g.,
+We can write, for example:
 \syntaxElab{\lstinline!\{T | μ ν\}ᵀ.tensor!}{{\lstinline!(tensorNode T).tensor!}}
 to get the underlying tensor. We get this notation from the way \myinline|TensorTree.tensor|
 is defined with the prefix \myinline|TensorTree.|.
@@ -1073,15 +1074,15 @@ works fine because the inner contraction is computed before the product.
 
 We now turn to addition. Our syntax allows for e.g., \myinline!{T | μ ν + T2 | μ ν}ᵀ! and also 
 \myinline!{T | μ ν + T2 | ν μ}ᵀ!, provided that the indices are of the correct color (which Lean will check). 
-The elaborator handles both these cases and generalizations thereof by adding a permutation node. Thus we have 
+The elaborator handles both these cases and generalizations thereof by adding a permutation node. Thus we have:
 \syntaxElab{\lstinline!\{T | μ ν + T2 | μ ν\}ᵀ!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
-where the \myinline!_! is a placeholder for the permutation, something we will use frequently in what follows. For the case above the permutation will be the identity, but for 
+where the \myinline!_! is a placeholder for the permutation, something we will use frequently in what follows. For the case above the permutation will be the identity, but for: 
 \syntaxElab{\lstinline!\{T | μ ν + T2 | ν μ\}ᵀ!}{\lstinline!add (tensorNode T) (perm _ (tensorNode T2))!}
 it will be the permutation for the two indices. 
 
 Despite not forming part of a node in our tensor tree, we also give syntax for equality. 
 This is done in a very similar way to addition, with the addition of a permutation node to account for
-e.g., expressions like $T_{\mu \nu} = T_{\nu \mu}$. 
+e.g., expressions like $T_{\mu \nu} = T_{\nu \mu}$. In particular, we have:
 \syntaxElab{\lstinline!\{T | μ ν = T2 | ν μ\}ᵀ!}{\lstinline!(tensorNode T).tensor = (perm _ (tensorNode T2)).tensor!}
 Note that in the elaborated expression we ask for equality of
 tensors through \myinline!.tensor!. Tensors are, after all, the objects we care about.
@@ -1209,15 +1210,15 @@ We work through each step in turn.
     \node[draw=black] (A) at (0,0) {contr 0 0};
     \node[draw=black] (B) at (0,-1) {contr 0 1};
     \node[draw=black] (C) at (0,-2) {prod};
-    \node[draw=red] (D1) at (-1,-3) {perm \_};
-    \node[draw=red] (E1) at (-1,-4) {neg};
-    \node[draw=red] (F1) at (-1,-5) {A};
+    \node[draw=mydarkcolor] (D1) at (-1,-3) {perm \_};
+    \node[draw=mydarkcolor] (E1) at (-1,-4) {neg};
+    \node[draw=mydarkcolor] (F1) at (-1,-5) {A};
     \node[draw=black] (D2) at (1,-3) {S};
     \path [->] (A) edge (B);
     \path [->] (B) edge (C);
     \path [->] (C) edge (D1);
-    \path [->, color = red] (D1) edge (E1);
-    \path [->, color = red] (E1) edge (F1);
+    \path [->, color = mydarkcolor] (D1) edge (E1);
+    \path [->, color = mydarkcolor] (E1) edge (F1);
     \path [->] (C) edge (D2);
   \end{tikzpicture}
 }
@@ -1236,15 +1237,15 @@ We work through each step in turn.
     \node[draw=black] (D1) at (-1,-3) {perm \_};
     \node[draw=black] (E1) at (-1,-4) {neg};
     \node[draw=black] (F1) at (-1,-5) {A};
-    \node[draw=red] (D2) at (1,-3) {perm \_};
-    \node[draw=red] (F2) at (1,-4) {S};
+    \node[draw=mydarkcolor] (D2) at (1,-3) {perm \_};
+    \node[draw=mydarkcolor] (F2) at (1,-4) {S};
     \path [->] (A) edge (B);
     \path [->] (B) edge (C);
     \path [->] (C) edge (D1);
     \path [->] (D1) edge (E1);
     \path [->] (E1) edge (F1);
     \path [->] (C) edge (D2);
-    \path [->, color=red] (D2) edge (F2);
+    \path [->, color=mydarkcolor] (D2) edge (F2);
   \end{tikzpicture}
 }
 
@@ -1255,16 +1256,16 @@ We work through each step in turn.
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
     \node[draw=black] (B) at (0,-1) {contr 0 1};
-    \node[draw=red] (C) at (0,-2) {perm \_};
-    \node[draw=red] (D) at (0,-3) {prod};
+    \node[draw=mydarkcolor] (C) at (0,-2) {perm \_};
+    \node[draw=mydarkcolor] (D) at (0,-3) {prod};
     \node[draw=black] (E1) at (-1,-4) {neg};
     \node[draw=black] (F1) at (-1,-5) {A};
     \node[draw=black] (E2) at (1,-4) {perm \_};
     \node[draw=black] (F2) at (1,-5) {S};
     \path [->] (A) edge (B);
     \path [->] (B) edge (C);
-    \path [->, color = red] (C) edge (D);
-    \path [->, color = red] (D) edge (E1);
+    \path [->, color = mydarkcolor] (C) edge (D);
+    \path [->, color = mydarkcolor] (D) edge (E1);
     \path [->] (E1) edge (F1);
     \path [->] (D) edge (E2);
     \path [->] (E2) edge (F2);
@@ -1279,17 +1280,17 @@ We work through each step in turn.
     \node[draw=black] (A) at (0,0) {contr 0 0};
     \node[draw=black] (B) at (0,-1) {contr 0 1};
     \node[draw=black] (C) at (0,-2) {perm \_};
-    \node[draw=red] (D) at (0,-3) {perm \_};
-    \node[draw=red] (E) at (0,-4) {prod};
+    \node[draw=mydarkcolor] (D) at (0,-3) {perm \_};
+    \node[draw=mydarkcolor] (E) at (0,-4) {prod};
     \node[draw=black] (F1) at (-1,-5) {neg};
     \node[draw=black] (G1) at (-1,-6) {A};
     \node[draw=black] (F2) at (1,-5) {S};
     \path [->] (A) edge (B);
     \path [->] (B) edge (C);
     \path [->] (C) edge (D);
-    \path [->, color = red] (D) edge (E);
+    \path [->, color = mydarkcolor] (D) edge (E);
     \path [->] (E) edge (F1);
-    \path [->, color = red] (E) edge (F2);
+    \path [->, color = mydarkcolor] (E) edge (F2);
     \path [->] (F1) edge (G1);
   \end{tikzpicture}
 }
@@ -1301,7 +1302,7 @@ We work through each step in turn.
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
     \node[draw=black] (B) at (0,-1) {contr 0 1};
-    \node[draw=red] (C) at (0,-2) {perm \_};
+    \node[draw=mydarkcolor] (C) at (0,-2) {perm \_};
     \node[draw=black] (D) at (0,-3) {prod};
     \node[draw=black] (E1) at (-1,-4) {neg};
     \node[draw=black] (F1) at (-1,-5) {A};
@@ -1322,15 +1323,15 @@ We work through each step in turn.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {contr 0 0};
-    \node[draw=red] (B) at (0,-1) {perm \_};
-    \node[draw=red] (C) at (0,-2) {contr 1 2};
+    \node[draw=mydarkcolor] (B) at (0,-1) {perm \_};
+    \node[draw=mydarkcolor] (C) at (0,-2) {contr 1 2};
     \node[draw=black] (D) at (0,-3) {prod};
     \node[draw=black] (E1) at (-1,-4) {neg};
     \node[draw=black] (F1) at (-1,-5) {A};
     \node[draw=black] (E2) at (1,-4) {S};
     \path [->] (A) edge (B);
-    \path [->, color = red] (B) edge (C);
-    \path [->, color = red] (C) edge (D);
+    \path [->, color = mydarkcolor] (B) edge (C);
+    \path [->, color = mydarkcolor] (C) edge (D);
     \path [->] (D) edge (E1);
     \path [->] (D) edge (E2);
     \path [->] (E1) edge (F1);
@@ -1342,15 +1343,15 @@ We work through each step in turn.
   indices to \myinline|0| and \myinline|0| (Lean will check if this is correct).
 }{
   \begin{tikzpicture}
-    \node[draw=red] (A) at (0,0) {perm \_};
-    \node[draw=red] (B) at (0,-1) {contr 0 0};
+    \node[draw=mydarkcolor] (A) at (0,0) {perm \_};
+    \node[draw=mydarkcolor] (B) at (0,-1) {contr 0 0};
     \node[draw=black] (C) at (0,-2) {contr 1 2};
     \node[draw=black] (D) at (0,-3) {prod};
     \node[draw=black] (E1) at (-1,-4) {neg};
     \node[draw=black] (F1) at (-1,-5) {A};
     \node[draw=black] (E2) at (1,-4) {S};
-    \path [->, color = red] (A) edge (B);
-    \path [->, color = red] (B) edge (C);
+    \path [->, color = mydarkcolor] (A) edge (B);
+    \path [->, color = mydarkcolor] (B) edge (C);
     \path [->] (C) edge (D);
     \path [->] (D) edge (E1);
     \path [->] (D) edge (E2);
@@ -1365,17 +1366,17 @@ We work through each step in turn.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {perm \_};
-    \node[draw=red] (A') at (0,-1) {perm \_};
-    \node[draw=red] (B) at (0,-2) {contr 0 0};
-    \node[draw=red] (C) at (0,-3) {contr 0 1};
+    \node[draw=mydarkcolor] (A') at (0,-1) {perm \_};
+    \node[draw=mydarkcolor] (B) at (0,-2) {contr 0 0};
+    \node[draw=mydarkcolor] (C) at (0,-3) {contr 0 1};
     \node[draw=black] (D) at (0,-4) {prod};
     \node[draw=black] (E1) at (-1,-5) {neg};
     \node[draw=black] (F1) at (-1,-6) {A};
     \node[draw=black] (E2) at (1,-5) {S};
     \path [->] (A) edge (A');
-    \path [->, color = red] (A') edge (B);
-    \path [->, color = red] (B) edge (C);
-    \path [->, color = red] (C) edge (D);
+    \path [->, color = mydarkcolor] (A') edge (B);
+    \path [->, color = mydarkcolor] (B) edge (C);
+    \path [->, color = mydarkcolor] (C) edge (D);
     \path [->] (D) edge (E1);
     \path [->] (D) edge (E2);
     \path [->] (E1) edge (F1);
@@ -1386,7 +1387,7 @@ We work through each step in turn.
   Description: Here \myinline|perm_perm| uses functoriality to combine the two permutations.
 }{
   \begin{tikzpicture}
-    \node[draw=red] (A) at (0,0) {perm \_};
+    \node[draw=mydarkcolor] (A) at (0,0) {perm \_};
     \node[draw=black] (B) at (0,-1) {contr 0 0};
     \node[draw=black] (C) at (0,-2) {contr 0 1};
     \node[draw=black] (D) at (0,-3) {prod};
@@ -1410,15 +1411,15 @@ We work through each step in turn.
     \node[draw=black] (A) at (0,0) {perm \_};
     \node[draw=black] (B) at (0,-1) {contr 0 0};
     \node[draw=black] (C) at (0,-2) {contr 0 1};
-    \node[draw=red] (D) at (0,-3) {neg};
-    \node[draw=red] (E) at (0,-4) {prod};
+    \node[draw=mydarkcolor] (D) at (0,-3) {neg};
+    \node[draw=mydarkcolor] (E) at (0,-4) {prod};
     \node[draw=black] (F1) at (-1,-5) {A};
     \node[draw=black] (F2) at (1,-5) {S};
     \path [->] (A) edge (B);
     \path [->] (B) edge (C);
     \path [->] (C) edge (D);
-    \path [->, color = red] (D) edge (E);
-    \path [->, color = red] (E) edge (F1);
+    \path [->, color = mydarkcolor] (D) edge (E);
+    \path [->, color = mydarkcolor] (E) edge (F1);
     \path [->] (E) edge (F2);
   \end{tikzpicture}
 }
@@ -1430,15 +1431,15 @@ We work through each step in turn.
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {perm \_};
     \node[draw=black] (B) at (0,-1) {contr 0 0};
-    \node[draw=red] (C) at (0,-2) {neg};
-    \node[draw=red] (D) at (0,-3) {contr 0 1};
+    \node[draw=mydarkcolor] (C) at (0,-2) {neg};
+    \node[draw=mydarkcolor] (D) at (0,-3) {contr 0 1};
     \node[draw=black] (E) at (0,-4) {prod};
     \node[draw=black] (F1) at (-1,-5) {A};
     \node[draw=black] (F2) at (1,-5) {S};
     \path [->] (A) edge (B);
     \path [->] (B) edge (C);
-    \path [->, color = red] (C) edge (D);
-    \path [->, color = red] (D) edge (E);
+    \path [->, color = mydarkcolor] (C) edge (D);
+    \path [->, color = mydarkcolor] (D) edge (E);
     \path [->] (E) edge (F1);
     \path [->] (E) edge (F2);
   \end{tikzpicture}
@@ -1450,15 +1451,15 @@ We work through each step in turn.
 }{
   \begin{tikzpicture}
     \node[draw=black] (A) at (0,0) {perm \_};
-    \node[draw=red] (B) at (0,-1) {neg};
-    \node[draw=red] (C) at (0,-2) {contr 0 0};
+    \node[draw=mydarkcolor] (B) at (0,-1) {neg};
+    \node[draw=mydarkcolor] (C) at (0,-2) {contr 0 0};
     \node[draw=black] (D) at (0,-3) {contr 0 1};
     \node[draw=black] (E) at (0,-4) {prod};
     \node[draw=black] (F1) at (-1,-5) {A};
     \node[draw=black] (F2) at (1,-5) {S};
     \path [->] (A) edge (B);
-    \path [->, color = red] (B) edge (C);
-    \path [->, color = red] (C) edge (D);
+    \path [->, color = mydarkcolor] (B) edge (C);
+    \path [->, color = mydarkcolor] (C) edge (D);
     \path [->] (D) edge (E);
     \path [->] (E) edge (F1);
     \path [->] (E) edge (F2);
@@ -1492,7 +1493,7 @@ def pauliCoDown := {pauliCo | μ α β ⊗ εL' | α α' ⊗ εR' | β β'}ᵀ.t
 def pauliContrDown := {pauliContr | μ α β ⊗ εL' | α α' ⊗ εR' | β β'}ᵀ.tensor
 \end{code}
 The first of these definitions depends on \myinline|PauliMatrix.asConsTensor| which is defined 
-using an explicit basis expansion as a map 
+using an explicit basis expansion as a map: 
 \begin{code}
   𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexContr ⊗ Fermion.leftHanded ⊗ Fermion.rightHanded
 \end{code}
@@ -1545,8 +1546,7 @@ The former, however, is a fairly simple application of associativity of the tens
 around of the contractions. 
 
 \section{Future work} \label{sec:future}
-The scale of formalizing all results regarding index notation is a task that surpasses 
-the capacity of any single individual. Inspired by Lean
+Inspired by Lean
 blueprints~\cite{leanblueprint}, we have added to HepLean informal lemmas related to index notation and tensors. 
 An example of such is: 
 \begin{code} 
