@@ -235,7 +235,7 @@ This paper introduces the first formally verified implementation of index notati
 interactive theorem prover Lean 4. By integrating index notation into Lean, we bridge the gap between 
 traditional physics notation and formal verification tools, 
 making it more accessible for physicists to write and prove results within Lean.
-We also open up a new avenue through which AI tools can be used to proof results
+We also open up a new avenue through which AI tools can be used to prove results
 related to tensors in physics.
 Behind-the-scenes our implementation leverages a novel application of category theory.
 \end{abstract}
@@ -291,6 +291,9 @@ is written in Lean as follows
 \end{code}
 Lean will correctly interpret this result as a tensor expression with the correct contraction of indices 
 and permutation of indices between each side of the expression.
+Our implementation can  handle different species of tensors, 
+for example real Lorentz tensors, complex Lorentz tensors and Einstein tenors 
+(although as of writing the most involved, complex Lorentz tensors, have been implemented). 
 
 Previous implementations of index notation have been made in programming languages like Haskell~\cite{haskellPaper}. However, the programs they appear in do not
  provide the formal verification capabilities inherent in Lean. 
