@@ -1,5 +1,5 @@
 # Index Notation In Lean
-
+# This paper is now on arXiv at: [arXiv:2411.07667](https://arxiv.org/abs/2411.07667)
 This is a draft manuscript discussing the implementation of index notation into Lean 4. 
 The actual implementation can be found as part of [HepLean](https://github.com/HEPLean/HepLean).
 
